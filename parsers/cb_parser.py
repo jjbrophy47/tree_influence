@@ -3,7 +3,6 @@ import json
 import shutil
 
 import numpy as np
-from catboost import CatBoostClassifier
 
 from tree import Tree
 from tree import TreeEnsemble
@@ -28,12 +27,15 @@ def _parse_cb_tree(tree_dict):
         'leaf_values': [float, float, ...]
     }
 
+    IF multiclass, then 'leaf_values': [[float, float, ...], [float, ...]]
+
     Notes:
         - No. leaves = 2 ^ no. splits.
         - There is only one split condition PER LEVEL in CB trees.
-        - 'split' list is given bottom up.
+        - 'split' list is given bottom up (need to reverse splits list).
 
-    Returns Tree.
+    Returns one tree if binary class., otherwise returns a list of trees,
+    one for each class.
     """
     _validate_data(tree_dict)
 

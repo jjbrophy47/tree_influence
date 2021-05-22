@@ -1,4 +1,5 @@
 from cb_parser import parse_cb_ensemble
+from lgb_parser import parse_lgb_ensemble
 from tree import TreeEnsembleRegressor
 from tree import TreeEnsembleBinaryClassifier
 from tree import TreeEnsembleMulticlassClassifier
@@ -12,14 +13,17 @@ def parse_model(model):
     if 'CatBoost' in str(model):
         trees, scale, bias = parse_cb_ensemble(model)
 
-        if 'Regressor' in str(model):
-            ensemble_type = 'regressor'
+    elif 'LGBM' in str(model):
+        trees, scale, bias = parse_lgb_ensemble(model)
 
     else:
         raise ValueError(f'Could not parse {str(model)}')
 
     # figure out the ensemble type of the original model
-    if ensemble_type != 'regressor':
+    if 'Regressor' in str(model):
+        ensemble_type = 'regressor'
+
+    else:
 
         if trees.ndim == 1:
             ensemble_type = 'binary_classifier'

@@ -1,10 +1,13 @@
 import argparse
 
 import numpy as np
-from catboost import CatBoostClassifier
 from catboost import CatBoostRegressor
+from catboost import CatBoostClassifier
+from lightgbm import LGBMRegressor
+from lightgbm import LGBMClassifier
 
 from __init__ import parse_model
+
 
 def get_test_data(args, n_class=2):
     rng = np.random.default_rng(args.rs)
@@ -61,7 +64,7 @@ def test_cb_regressor(args):
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
-    print(f'test_cb_regressor: {status}')
+    print(status)
 
 
 def test_cb_binary_classifier(args):
@@ -78,7 +81,7 @@ def test_cb_binary_classifier(args):
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
-    print(f'test_cb_binary_classifier: {status}')
+    print(status)
 
 
 def test_cb_multiclass_classifier(args):
@@ -95,7 +98,62 @@ def test_cb_multiclass_classifier(args):
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
-    print(f'test_cb_multiclass_classifier: {status}')
+    print(status)
+
+
+"""
+LightGBM
+"""
+
+def test_lgb_regressor(args):
+    print(f'\n***** test_lgb_regressor *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
+
+    tree = LGBMRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
+                         random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_lgb_binary_classifier(args):
+    print(f'\n***** test_lgb_binary_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
+
+    tree = LGBMClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                         random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_lgb_multiclass_classifier(args):
+    print(f'\n***** test_lgb_binary_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=3)
+
+    tree = LGBMClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                         random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
 
 
 if __name__ == '__main__':
@@ -112,3 +170,7 @@ if __name__ == '__main__':
     test_cb_regressor(args)
     test_cb_binary_classifier(args)
     test_cb_multiclass_classifier(args)
+
+    test_lgb_regressor(args)
+    test_lgb_binary_classifier(args)
+    test_lgb_multiclass_classifier(args)
