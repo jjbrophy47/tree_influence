@@ -15,16 +15,18 @@ def parse_lgb_ensemble(model):
     json_data = _get_json_data_from_lgb_model(model)
     trees = np.array([_parse_lgb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))
 
+    bias  = 0.0
+
     # multiclass
     if hasattr(model, 'classes_'):
         n_class = model.classes_.shape[0]
+
         if n_class > 2:
             n_trees = int(trees.shape[0] / n_class)
             trees = trees.reshape((n_trees, n_class))
+            bias = [0.0] * n_class
 
-    scale, bias = 1.0, 0.0
-
-    return trees, scale, bias
+    return trees, bias
 
 
 # private

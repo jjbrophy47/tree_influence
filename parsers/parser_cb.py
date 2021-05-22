@@ -14,8 +14,8 @@ def parse_cb_ensemble(model):
     """
     json_data = _get_json_data_from_cb_model(model)
     trees = np.array([_parse_cb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))
-    scale, bias = model.get_scale_and_bias()
-    return trees, scale, bias
+    _, bias = model.get_scale_and_bias()
+    return trees, bias
 
 
 # private

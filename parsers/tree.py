@@ -123,16 +123,15 @@ class TreeEnsemble(object):
     """
     Abstract class for the TreeEnsemble class.
     """
-    def __init__(self, trees, scale, bias):
+    def __init__(self, trees, bias):
         """
-        Input should be a 1d list of Tree objects.
+        Input
+            trees: A 1d (or 2d for multiclass) array of Tree objects.
+            bias: A single or 1d list (for multiclass) of floats.
 
-        NOTE: Only works for binary classification and regression.
-              Multiclass classification must override this method.
         """
         assert trees.dtype == np.dtype(object)
         self.trees = trees
-        self.scale = scale
         self.bias = bias
 
     def predict(self, X):
@@ -158,9 +157,10 @@ class TreeEnsembleRegressor(TreeEnsemble):
     """
     Model that parses each model.
     """
-    def __init__(self, trees, scale, bias):
-        super().__init__(trees, scale, bias)
+    def __init__(self, trees, bias):
+        super().__init__(trees, bias)
         assert self.trees.ndim == 1
+        assert isinstance(bias, float)
 
     def predict(self, X):
         """
@@ -169,8 +169,7 @@ class TreeEnsembleRegressor(TreeEnsemble):
 
         Returns 1d array of shape(X.shape[0])
         """
-        pred = super().predict(X)
-        pred += self.bias
+        pred = super().predict(X) + self.bias
         return pred
 
 
@@ -178,16 +177,17 @@ class TreeEnsembleBinaryClassifier(TreeEnsemble):
     """
     Model that parses each model.
     """
-    def __init__(self, trees, scale, bias):
-        super().__init__(trees, scale, bias)
+    def __init__(self, trees, bias):
+        super().__init__(trees, bias)
         assert self.trees.ndim == 1
+        assert isinstance(bias, float)
 
     def predict(self, X):
         """
         Classify samples one by one and return the list of probabilities
         # TODO: take average if RF
         """
-        pred = super().predict(X)
+        pred = super().predict(X) + self.bias
         proba = util.sigmoid(pred).reshape(-1, 1)
         proba = np.hstack([1 - proba, proba])
         return proba
@@ -198,14 +198,15 @@ class TreeEnsembleMulticlassClassifier(TreeEnsemble):
     Model that parses each model.
     """
 
-    def __init__(self, trees, scale, bias):
+    def __init__(self, trees, bias):
         """
         Input should be an array of Tree objects of shape=(no. trees, no. classes)
         """
-    def __init__(self, trees, scale, bias):
-        super().__init__(trees, scale, bias)
+    def __init__(self, trees, bias):
+        super().__init__(trees, bias)
         assert self.trees.ndim == 2
         assert self.trees.shape[1] >= 3
+        assert len(bias) >= 3
 
     def predict(self, X):
         """
@@ -221,7 +222,7 @@ class TreeEnsembleMulticlassClassifier(TreeEnsemble):
             for j in range(self.trees.shape[0]):  # per tree
                 class_pred += self.trees[j, i].predict(X)
 
-            pred[:, i] = class_pred
+            pred[:, i] = class_pred + self.bias[i]
 
         # TODO: take average if RF
         proba = util.softmax(pred)

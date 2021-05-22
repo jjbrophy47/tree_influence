@@ -5,6 +5,8 @@ from catboost import CatBoostRegressor
 from catboost import CatBoostClassifier
 from lightgbm import LGBMRegressor
 from lightgbm import LGBMClassifier
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingClassifier
 
 from __init__ import parse_model
 
@@ -156,6 +158,61 @@ def test_lgb_multiclass_classifier(args):
     print(status)
 
 
+"""
+SKLearn GBM
+"""
+
+def test_skgbm_regressor(args):
+    print(f'\n***** test_skgbm_regressor *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
+
+    tree = GradientBoostingRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                     random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_skgbm_binary_classifier(args):
+    print(f'\n***** test_skgbm_binary_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
+
+    tree = GradientBoostingClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                      random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_skgbm_multiclass_classifier(args):
+    print(f'\n***** test_skgbm_multiclass_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=3)
+
+    tree = GradientBoostingClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                      random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_train', type=int, default=100)
@@ -174,3 +231,7 @@ if __name__ == '__main__':
     test_lgb_regressor(args)
     test_lgb_binary_classifier(args)
     test_lgb_multiclass_classifier(args)
+
+    test_skgbm_regressor(args)
+    test_skgbm_binary_classifier(args)
+    test_skgbm_multiclass_classifier(args)

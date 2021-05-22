@@ -31,7 +31,12 @@ def check_regression_targets(y):
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
+
 def softmax(z):
     assert z.ndim == 2
     assert z.shape[1] >= 2
     return np.exp(z) / (np.exp(z).sum(axis=1).reshape(-1, 1))
+
+
+def logit(z):
+    return np.log(z / (1 - z))
