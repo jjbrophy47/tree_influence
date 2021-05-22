@@ -7,6 +7,8 @@ from lightgbm import LGBMRegressor
 from lightgbm import LGBMClassifier
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 
 from __init__ import parse_model
 
@@ -51,6 +53,7 @@ def compare_predictions(a1, a2):
 """
 CatBoost
 """
+
 
 def test_cb_regressor(args):
     print(f'\n***** test_cb_regressor *****')
@@ -107,6 +110,7 @@ def test_cb_multiclass_classifier(args):
 LightGBM
 """
 
+
 def test_lgb_regressor(args):
     print(f'\n***** test_lgb_regressor *****')
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
@@ -129,7 +133,7 @@ def test_lgb_binary_classifier(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
 
     tree = LGBMClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                         random_state=args.rs)
+                          random_state=args.rs)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree)
@@ -146,7 +150,7 @@ def test_lgb_multiclass_classifier(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=3)
 
     tree = LGBMClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                         random_state=args.rs)
+                          random_state=args.rs)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree)
@@ -161,6 +165,7 @@ def test_lgb_multiclass_classifier(args):
 """
 SKLearn GBM
 """
+
 
 def test_skgbm_regressor(args):
     print(f'\n***** test_skgbm_regressor *****')
@@ -213,6 +218,62 @@ def test_skgbm_multiclass_classifier(args):
     print(status)
 
 
+"""
+SKLearn RF
+"""
+
+
+def test_skrf_regressor(args):
+    print(f'\n***** test_skrf_regressor *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
+
+    tree = RandomForestRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                 random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_skrf_binary_classifier(args):
+    print(f'\n***** test_skrf_binary_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
+
+    tree = RandomForestClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                  random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_skrf_multiclass_classifier(args):
+    print(f'\n***** test_skrf_multiclass_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=3)
+
+    tree = RandomForestClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                  random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_train', type=int, default=100)
@@ -235,3 +296,7 @@ if __name__ == '__main__':
     test_skgbm_regressor(args)
     test_skgbm_binary_classifier(args)
     test_skgbm_multiclass_classifier(args)
+
+    test_skrf_regressor(args)
+    test_skrf_binary_classifier(args)
+    test_skrf_multiclass_classifier(args)
