@@ -1,11 +1,6 @@
-import os
-import json
-import shutil
-
 import numpy as np
 
 from tree import Tree
-from tree import TreeEnsemble
 
 
 def parse_lgb_ensemble(model):
@@ -15,7 +10,7 @@ def parse_lgb_ensemble(model):
     json_data = _get_json_data_from_lgb_model(model)
     trees = np.array([_parse_lgb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))
 
-    bias  = 0.0
+    bias = 0.0
 
     # multiclass
     if hasattr(model, 'classes_'):

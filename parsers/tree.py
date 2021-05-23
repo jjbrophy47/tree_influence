@@ -20,17 +20,14 @@ class Node(object):
         self.is_leaf = is_leaf
 
 
-class AbstractTree(object):
-
-    @abstractmethod
-    def predict(X):
-        pass
-
-
-class Tree(AbstractTree):
+class Tree(object):
     """
-    The Tree object is a binary tree structure.
-    The tree structure is used for predictions.
+    Standardized tree structure object class.
+
+    Note:
+        - The Tree object is a binary tree structure.
+        - The tree structure is used for predictions and extracting
+          structure information.
 
     Reference:
     https://github.com/scikit-learn/scikit-learn/blob/
@@ -162,7 +159,7 @@ class TreeEnsemble(object):
 
 class TreeEnsembleRegressor(TreeEnsemble):
     """
-    Model that parses each model.
+    Extension of the TreeEnsemble class for regression.
     """
     def __init__(self, trees, bias, tree_type='gbdt'):
         super().__init__(trees, bias, tree_type)
@@ -172,7 +169,7 @@ class TreeEnsembleRegressor(TreeEnsemble):
 
 class TreeEnsembleBinaryClassifier(TreeEnsemble):
     """
-    Model that parses each model.
+    Extension of the TreeEnsemble class for binary classfication.
     """
     def __init__(self, trees, bias, tree_type='gbdt'):
         super().__init__(trees, bias, tree_type)
@@ -192,7 +189,7 @@ class TreeEnsembleBinaryClassifier(TreeEnsemble):
 
 class TreeEnsembleMulticlassClassifier(TreeEnsemble):
     """
-    Model that parses each model.
+    Extension of the TreeEnsemble class for multiclass classfication.
     """
 
     def __init__(self, trees, bias, tree_type='gbdt'):

@@ -9,6 +9,8 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBRegressor
+from xgboost import XGBClassifier
 
 from __init__ import parse_model
 
@@ -274,6 +276,64 @@ def test_skrf_multiclass_classifier(args):
     print(status)
 
 
+"""
+XGBoost
+"""
+
+
+def test_xgb_regressor(args):
+    print(f'\n***** test_xgb_regressor *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
+
+    tree = XGBRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
+                        random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_xgb_binary_classifier(args):
+    print(f'\n***** test_xgb_binary_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
+
+    tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                         random_state=args.rs, use_label_encoder=False,
+                         eval_metric='logloss')
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
+def test_xgb_multiclass_classifier(args):
+    print(f'\n***** test_xgb_multiclass_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=3)
+
+    tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
+                         random_state=args.rs, use_label_encoder=False,
+                         eval_metric='mlogloss')
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree)
+
+    tree_pred = tree.predict_proba(X_test)
+    model_pred = model.predict(X_test)
+
+    status = compare_predictions(tree_pred, model_pred)
+    print(status)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_train', type=int, default=100)
@@ -300,3 +360,7 @@ if __name__ == '__main__':
     test_skrf_regressor(args)
     test_skrf_binary_classifier(args)
     test_skrf_multiclass_classifier(args)
+
+    test_xgb_regressor(args)
+    test_xgb_binary_classifier(args)
+    test_xgb_multiclass_classifier(args)
