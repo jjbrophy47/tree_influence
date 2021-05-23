@@ -32,16 +32,25 @@ def check_regression_targets(y):
 
 
 def sigmoid(z):
+    """
+    Squashes elements in z to be between 0 and 1.
+    """
     assert z.ndim == 1
     return 1 / (1 + np.exp(-z))
 
 
 def softmax(z):
+    """
+    Differentiable argmax function.
+    """
     assert z.ndim == 2
     assert z.shape[1] >= 2
     return np.exp(z) / (np.exp(z).sum(axis=1).reshape(-1, 1))
 
 
 def logit(z):
+    """
+    Inverse of sigmoid.
+    """
     assert isinstance(z, float)
     return np.log(z / (1 - z))
