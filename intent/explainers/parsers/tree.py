@@ -1,7 +1,7 @@
 import numpy as np
 
-import util
-from _tree import _Tree
+from . import util
+from ._tree import _Tree
 
 
 class Tree(object):

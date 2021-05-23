@@ -1,6 +1,6 @@
 import numpy as np
 
-from tree import Tree
+from .tree import Tree
 
 
 def parse_lgb_ensemble(model):
@@ -68,9 +68,17 @@ def _parse_lgb_tree(tree_dict):
     node_dict = tree_dict['tree_structure']
 
     # add root node
-    leaf_vals.append(-1)
-    feature.append(node_dict['split_feature'])
-    threshold.append(node_dict['threshold'])
+    if 'leaf_value' in node_dict:  # leaf
+        leaf_vals.append(node_dict['leaf_value'])
+        feature.append(-1)
+        threshold.append(-1)
+        node_dict['left_child'] = None
+        node_dict['right_child'] = None
+
+    else:  # decision node
+        leaf_vals.append(-1)
+        feature.append(node_dict['split_feature'])
+        threshold.append(node_dict['threshold'])
 
     node_id = 1
     stack = [(node_dict['left_child'], 1), (node_dict['right_child'], 0)]

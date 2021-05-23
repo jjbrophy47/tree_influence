@@ -1,7 +1,7 @@
 import numpy as np
 
-import util
-from tree import Tree
+from . import util
+from .tree import Tree
 
 
 def parse_skgbm_ensemble(model):

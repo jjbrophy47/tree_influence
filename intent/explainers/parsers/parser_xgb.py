@@ -1,6 +1,6 @@
 import numpy as np
 
-from tree import Tree
+from .tree import Tree
 
 
 def parse_xgb_ensemble(model):
@@ -58,7 +58,7 @@ def _parse_xgb_tree(tree_str):
     node_dict['right_child'] = _add_node(lines, depth=1)
 
     # add root node
-    if node_dict['is_leaf']:
+    if node_dict['is_leaf']:  # leaf
         leaf_vals.append(node_dict['leaf_val'])
         feature.append(-1)
         threshold.append(-1)
@@ -165,7 +165,7 @@ def _parse_decision_node_line(line, tol=1e-8):
     Return feature index and threshold given the string representation of a decision node.
 
     Note:
-        - Border is substracted by `tol` to convert XGB's < operator to a <=.
+        - Border is subtracted by `tol` to convert XGB's < operator to a <=.
     """
     substr = line[line.find('[') + 1: line.find(']')]
     feature_str, border_str = substr.split('<')
