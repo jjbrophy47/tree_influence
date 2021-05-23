@@ -5,7 +5,7 @@ from tree import Tree
 
 def parse_lgb_ensemble(model):
     """
-    Parse CatBoost model based on its json representation.
+    Parse LightGBM model based on its json representation.
     """
     json_data = _get_json_data_from_lgb_model(model)
     trees = np.array([_parse_lgb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))

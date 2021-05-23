@@ -102,21 +102,4 @@ def parse_skrf_ensemble(model):
     if n_class >= 3:
         bias = [0.0] * n_class
 
-    # # regression
-    # if hasattr(model.init_, 'constant_'):
-    #     assert model.loss == 'ls'  # least squares
-    #     bias = model.init_.constant_.flatten()[0]
-
-    # # classification
-    # else:
-    #     class_prior = model.init_.class_prior_
-
-    #     # binary
-    #     if class_prior.shape[0] == 2:
-    #         bias = util.logit(class_prior[1])
-
-    #     # multiclass
-    #     else:
-    #         bias = list(np.log(class_prior))
-
     return trees, bias
