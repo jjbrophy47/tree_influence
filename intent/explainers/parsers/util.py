@@ -1,6 +1,27 @@
 import numpy as np
 
 
+def check_data(X, y=None, task='regression'):
+    """
+    Make sure the data is valid.
+    """
+    X = check_input_data(X)
+
+    if y is not None:
+        if task == 'regression':
+            y = check_regression_targets(y)
+        elif task in ['binary', 'multiclass']:
+            y = check_classification_labels(y)
+        else:
+            raise ValueError(f'Unknown task {task}')
+        result = (X, y)
+
+    else:
+        result = X
+
+    return result
+
+
 def check_input_data(X):
     """
     Makes sure data is of np.float32 type.

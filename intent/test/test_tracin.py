@@ -134,22 +134,105 @@ def test_tracin_self_influence_multiclass(args):
     explainer = TracIn().fit(tree, X_train, y_train)
     self_inf = explainer = explainer.get_self_influence()
 
-    print('self influence (head):', self_inf[:5])
+    print('self influence (head):\n', self_inf[:5])
     print('y_train        (head):', y_train[:5])
 
     status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
     print(status)
 
 
+def test_tracin_explain_regression(args):
+    print(f'\n***** test_tracin_explain_regression *****')
+    args.model_type = 'regressor'
+    X_train, X_test, y_train, y_test = get_test_data(args)
+
+    test_ndx = 0
+
+    tree = get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = TracIn().fit(tree, X_train, y_train)
+    influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+
+    test_pred = tree.predict(X_train[[test_ndx]])
+    test_label = y_train[test_ndx]
+
+    s_ids = np.argsort(np.abs(influence))[::-1]
+
+    print(f'explain y_train, index: 0, pred: {test_pred}, target: {test_label}\n')
+
+    print('sorted indices    (head):', s_ids[:5])
+    print('influence (head, sorted):', influence[s_ids][:5])
+    print('y_train   (head, sorted):', y_train[s_ids][:5])
+
+    status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
+
+
+def test_tracin_explain_binary(args):
+    print(f'\n***** test_tracin_explain_binary *****')
+    args.model_type = 'binary'
+    X_train, X_test, y_train, y_test = get_test_data(args)
+    test_ndx = 0
+
+    tree = get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = TracIn().fit(tree, X_train, y_train)
+    influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+
+    test_pred = tree.predict_proba(X_train[[test_ndx]])
+    test_label = y_train[test_ndx]
+
+    s_ids = np.argsort(np.abs(influence))[::-1]
+
+    print(f'explain y_train 0, pred: {test_pred}, target: {test_label}\n')
+
+    print('sorted indices    (head):', s_ids[:5])
+    print('influence (head, sorted):', influence[s_ids][:5])
+    print('y_train   (head, sorted):', y_train[s_ids][:5])
+
+    status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
+
+
+def test_tracin_explain_multiclass(args):
+    print(f'\n***** test_tracin_explain_multiclass *****')
+    args.model_type = 'multiclass'
+    X_train, X_test, y_train, y_test = get_test_data(args)
+    test_ndx = 0
+
+    tree = get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = TracIn().fit(tree, X_train, y_train)
+    influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+
+    influence_agg = np.abs(influence).sum(axis=1)
+    s_ids = np.argsort(np.abs(influence_agg))[::-1]
+
+    test_pred = tree.predict_proba(X_train[[test_ndx]])
+    test_label = y_train[test_ndx]
+
+    print(f'explain y_train 0, pred: {test_pred}, target: {test_label}\n')
+
+    print('sorted indices    (head):\n', s_ids[:5])
+    print('influence (head, sorted):\n', influence[s_ids][:5])
+    print('y_train   (head, sorted):\n', y_train[s_ids][:5])
+
+    status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_train', type=int, default=100)
-    parser.add_argument('--n_test', type=int, default=2)
-    parser.add_argument('--n_feat', type=int, default=5)
-    parser.add_argument('--n_tree', type=int, default=2)
+    parser.add_argument('--n_test', type=int, default=1)
+    parser.add_argument('--n_feat', type=int, default=10)
+    parser.add_argument('--n_tree', type=int, default=5)
     parser.add_argument('--max_depth', type=int, default=3)
     parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--model_type', type=str, default='regressor')
+    parser.add_argument('--model_type', type=str, default='dummy')
     parser.add_argument('--rs', type=int, default=1)
     args = parser.parse_args()
 
@@ -157,3 +240,7 @@ if __name__ == '__main__':
     test_tracin_self_influence_regression(args)
     test_tracin_self_influence_binary(args)
     test_tracin_self_influence_multiclass(args)
+
+    test_tracin_explain_regression(args)
+    test_tracin_explain_binary(args)
+    test_tracin_explain_multiclass(args)

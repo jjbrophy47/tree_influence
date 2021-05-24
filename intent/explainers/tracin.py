@@ -2,41 +2,39 @@ import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 
 from .base import Explainer
-from .parsers import parse_model
 from .parsers import util
 
 
 class TracIn(Explainer):
     """
     Abstract TracIn explainer that adapts the TracIn method to tree ensembles.
+
+    TODO
+        - Should we consider residuals from iteration 0 (initial guess)?
+          How would this work for RF?
+        - Currently, we are NOT skipping first residuals for self-influence,
+          but we ARE skipping first residuals for explain.
+        - Also RF is using first residuals for self-influence, should we
+          get rid of this since there is no initial guess for RF? Probably yes.
+
+        - RF: remove initial guess (iteraion 0) residuals.
+        - GBDT: Should we skip initial residuals for both self-influence and explain?
     """
     def fit(self, model, X, y):
         """
-        Convert model to internal standardized tree structures.
-        Perform any initialization necessary for the chosen method.
+        - Convert model to internal standardized tree structure.
+        - Precompute gradients and leaf indices for each x in X.
 
         Input
             model: tree ensemble.
             X: training data.
             y: training targets.
         """
-        self.model_ = parse_model(model)
-        X = X.astype(np.float32)
+        super().fit(model, X, y)
+        X, y = util.check_data(X, y, task=self.model_.task_)
 
-        assert self.model_.task_ in ['regression', 'binary', 'multiclass']
-
-        # convert y to the appropriate dtype
-        if self.model_.task_ == 'regression':
-            y = y.astype(np.float32)
-            self.init_raw_val_ = np.tile(self.model_.bias, y.shape[0])  # shape=(no. train,)
-
-        elif self.model_.task_ == 'binary':
-            y = y.astype(np.int32)
-            self.init_raw_val_ = np.tile(self.model_.bias, y.shape[0])  # shape=(no. train,)
-
-        elif self.model_.task_ == 'multiclass':
-            y = LabelBinarizer().fit_transform(y.astype(np.int32))  # shape=(no. train, no. class)
-            self.init_raw_val_ = np.tile(self.model_.bias, (y.shape[0], 1))  # shape=(no. train, no. class)
+        if self.model_.task_ == 'multiclass':
+            self.label_binarizer_ = LabelBinarizer().fit(y)  # shape=(no. train, no. class)
 
         self.gradients_ = self._compute_gradients(X, y)
         self.leaves_ = self.model_.apply(X)
@@ -63,7 +61,7 @@ class TracIn(Explainer):
 
         return self_influence
 
-    def explain(self, X, y=None):
+    def explain(self, X, y):
         """
         - Compute influence of each training instance on the test instance loss (or prediction?)
           by computing the dot prod. between each train gradient and the test gradient.
@@ -74,51 +72,72 @@ class TracIn(Explainer):
             - Multiclass: 2d array of shape=(no. train, no. classes).
             - Array is returned in the same order as the traing data.
         """
-        assert X.ndim == 2 and X.shape[0] == 1
-        test_gradient = self._compute_gradients(X, y)
+        X, y = util.check_data(X, y, task=self.model_.task_)
+        assert X.shape[0] == 1 and y.shape[0] == 1
+
+        test_grad = self._compute_gradients(X, y)
         test_leaves = self.model_.apply(X)
 
         # only add influence if train and test end in the same leaf per tree
         mask = np.where(self.leaves_ == test_leaves, 1, 0)
-        train_gradients = mask * self.gradients_
 
-        # train_gradients=(no. train, no. trees), test_gradient=(no. trees,)
-        # train_leaf_indices=(no. train, no. trees), test_leaf_indices=(no. trees,)
+        # train_gradients=(no. train, no. trees), test_gradient=(1, no. trees,)
+        # train_leaf_indices=(no. train, no. trees), test_leaf_indices=(1, no. trees,)
         if self.model_.task_ in ['regression', 'binary']:
-            influence = np.dot(train_gradients, test_gradient)
+            train_grad = mask * self.gradients_[:, 1:]  # skip first residuals
+            influence = np.dot(train_grad, test_grad[:, 1:].flatten())  # skip first residuals
 
         # train_gradients=(no. trees, no. train, no. class), test_gradient=(no. trees, 1, no. class)
         # train_leaf_indices=(no. trees, no. train, no. class), test_leaf_indices=(no. trees, 1, no. class)
-        elif self.model_.task == 'multiclass':
-            g1 = train_gradients.transpose(1, 0, 2)  # shape=(no. train, no. trees, no. class)
-            g1 = g1.reshape(g1.shape[0], g1.shape[1] * g1.shape[2])  # shape=(no. train, no. trees * no. class)
-            g2 = test_gradient.transpose(1, 0, 2).flatten()  # shape=(no. trees * no. class,)
-            influence = np.dot(g1, g2)
+        elif self.model_.task_ == 'multiclass':
+            train_grad = self.gradients_[1:].copy()  # skip first residuals
+            train_grad = mask * train_grad
+            test_grad = test_grad[1:].copy()  # skip first residuals
+
+            train_grad = train_grad.transpose(2, 1, 0)  # shape=(no. class, no. train, no. trees)
+            test_grad = test_grad.transpose(2, 1, 0)  # shape=(no. class, 1, no. trees)
+
+            influence = np.zeros((train_grad.shape[1], train_grad.shape[0]), dtype=np.float32)
+            for j in range(influence.shape[1]):  # per class
+                influence[:, j] = np.dot(train_grad[j], test_grad[j].flatten())
 
         return influence
 
     # private
     def _compute_gradients(self, X, y):
         """
-        - Compute gradients for all train instances across all trees (boosting iterations).
+        Compute gradients for all train instances across all trees (boosting iterations).
 
         Return
-            - Regression and binary: 2d array of shape=(no. train, no. trees).
-            - Multiclass: 2d array of shape=(no. trees, no. train, no. classes).
+            - Regression and binary: 2d array of shape=(X.shape[0], no. trees).
+            - Multiclass: 2d array of shape=(no. trees, X.shape[0], no. classes).
         """
         n_train = y.shape[0]
-        raw_val = self.init_raw_val_
 
-        yhat = self._raw_val_to_prediction(raw_val)
+        # get initial raw value biased guess
+        if self.model_.task_ == 'regression':
+            raw_val = np.tile(self.model_.bias, y.shape[0])  # shape=(no. train,)
+
+        elif self.model_.task_ == 'binary':
+            raw_val = np.tile(self.model_.bias, y.shape[0])  # shape=(no. train,)
+
+        elif self.model_.task_ == 'multiclass':
+            y = self.label_binarizer_.transform(y)  # shape=(no. train, no. class)
+            raw_val = np.tile(self.model_.bias, (y.shape[0], 1))  # shape=(no. train, no. class)
+
+        # compute residuals for initial guess
+        yhat = self._raw_val_to_prediction(raw_val, iteration=0)
         e = self._negative_gradient(y, yhat) / n_train  # marginal contribution
 
+        # compute residuals for all subsequent trees
         residuals = [e]
         for i in range(self.model_.trees.shape[0]):
-            raw_val += self._predict_iteration(X, i)
-            yhat = self._raw_val_to_prediction(raw_val)
+            raw_val += self._predict_iteration(X, iteration=i)
+            yhat = self._raw_val_to_prediction(raw_val, iteration=i)
             e = self._negative_gradient(y, yhat) / n_train
             residuals.append(e)
 
+        # shape output
         if self.model_.task_ in ['regression', 'binary']:
             gradients = np.hstack([e.reshape(-1, 1) for e in residuals])  # shape=(X.shape[0], no. trees)
 
@@ -137,36 +156,42 @@ class TracIn(Explainer):
         """
         return y - yhat
 
-    def _predict_iteration(self, X, i):
+    def _predict_iteration(self, X, iteration):
         """
-        Override to handle multiclass predictions.
+        Get raw leaf values for the specified iteration.
 
         Output
             regression and binary: shape=(X.shape[0])
             multiclass: shape=(X.shape[0], no. class)
         """
         if self.model_.task_ in ['regression', 'binary']:
-            pred = self.model_.trees[i].predict(X)
+            pred = self.model_.trees[iteration].predict(X)
 
         elif self.model_.task_ == 'multiclass':
             pred = np.zeros((X.shape[0], self.model_.trees.shape[1]), dtype=np.float32)
 
             for j in range(self.model_.trees.shape[1]):  # per class
-                pred[:, j] = self.model_.trees[i, j].predict(X)
+                pred[:, j] = self.model_.trees[iteration, j].predict(X)
 
         return pred
 
-    def _raw_val_to_prediction(self, raw_val):
+    def _raw_val_to_prediction(self, raw_val, iteration):
         """
         Convert raw leaf values to predictions of the appropriate type.
         """
-        if self.model_.task_ == 'regression':
-            yhat = raw_val  # shape=(raw_val.shape[0])
+        if self.model_.tree_type == 'rf':
+            yhat = raw_val / (iteration + 1)
 
-        elif self.model_.task_ == 'binary':
-            yhat = util.sigmoid(raw_val)  # shape=(raw_val.shape[0])
+        else:
+            assert self.model_.tree_type == 'gbdt'
 
-        elif self.model_.task_ == 'multiclass':
-            yhat = util.softmax(raw_val)  # softmax along axis=1, shape=(raw_val.shape[0], no. class)
+            if self.model_.task_ == 'regression':
+                yhat = raw_val  # shape=(raw_val.shape[0],)
+
+            elif self.model_.task_ == 'binary':
+                yhat = util.sigmoid(raw_val)  # shape=(raw_val.shape[0],)
+
+            elif self.model_.task_ == 'multiclass':
+                yhat = util.softmax(raw_val)  # softmax along axis=1, shape=(raw_val.shape[0], no. class)
 
         return yhat
