@@ -44,6 +44,7 @@ cdef class _Tree:
 
     # Python API
     cpdef np.ndarray predict(self, float[:, :] X)
+    cpdef np.ndarray apply(self, float[:, :] X)
     cpdef SIZE_t get_node_count(self)
 
     # C API

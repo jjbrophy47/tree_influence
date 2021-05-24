@@ -26,12 +26,19 @@ class Tree(object):
         leaf_vals = np.array(leaf_vals, dtype=np.float32)
         self.tree_ = _Tree(children_left, children_right, feature, threshold, leaf_vals)
 
-    def __str__(self):
-        return self._get_str(node=self.root_, depth=0)
-
     def predict(self, X):
+        """
+        Return 1d array of leaf values, shape=(X.shape[0]).
+        """
         assert X.ndim == 2
         return self.tree_.predict(X)
+
+    def apply(self, X):
+        """
+        Return 1d array of leaf indices, shape=(X.shape[0],).
+        """
+        assert X.ndim == 2
+        return self.tree_.apply(X)
 
 
 class TreeEnsemble(object):
@@ -54,7 +61,7 @@ class TreeEnsemble(object):
         """
         Sums leaf values from all trees for each x in X.
 
-        Returns 1d array of predictions
+        Returns 1d array of leaf values.
 
         NOTE: Only works for binary classification and regression.
               Multiclass classification must override this method.
@@ -73,6 +80,15 @@ class TreeEnsemble(object):
 
         return pred
 
+    def apply(self, X):
+        """
+        Returns 2d array of leaf indices of shape=(X.shape[0], no. trees).
+
+        NOTE: Only works for binary classification and regression.
+              Multiclass classification must override this method.
+        """
+        return np.hstack([tree.apply(X).reshape(-1, 1) for tree in self.trees]).astype(np.int32)
+
 
 class TreeEnsembleRegressor(TreeEnsemble):
     """
@@ -82,6 +98,7 @@ class TreeEnsembleRegressor(TreeEnsemble):
         super().__init__(trees, bias, tree_type)
         assert self.trees.ndim == 1
         assert isinstance(bias, float)
+        self.task_ = 'regression'
 
 
 class TreeEnsembleBinaryClassifier(TreeEnsemble):
@@ -92,6 +109,7 @@ class TreeEnsembleBinaryClassifier(TreeEnsemble):
         super().__init__(trees, bias, tree_type)
         assert self.trees.ndim == 1
         assert isinstance(bias, float)
+        self.task_ = 'binary'
 
     def predict(self, X):
         """
@@ -117,6 +135,7 @@ class TreeEnsembleMulticlassClassifier(TreeEnsemble):
         assert self.trees.ndim == 2
         assert self.trees.shape[1] >= 3
         assert len(bias) >= 3
+        self.task_ = 'multiclass'
 
     def predict(self, X):
         """
@@ -142,3 +161,15 @@ class TreeEnsembleMulticlassClassifier(TreeEnsemble):
             proba = util.softmax(pred)
 
         return proba
+
+    def apply(self, X):
+        """
+        Returns a 2d array of leaf indices of shape=(no. trees, X.shape[0], no. class).
+        """
+        leaves = np.zeros((self.trees.shape[0], X.shape[0], self.trees.shape[1]), dtype=np.int32)
+
+        for i in range(self.trees.shape[0]):  # per tree
+            for j in range(self.trees.shape[1]):  # per class
+                leaves[i, :, j] = self.trees[i][j].apply(X)
+
+        return leaves

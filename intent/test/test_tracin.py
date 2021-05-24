@@ -17,7 +17,7 @@ from xgboost import XGBClassifier
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from explainers.parsers import parse_model
-from explainers import ExplainerTracIn
+from explainers import TracIn
 
 
 def get_test_data(args):
@@ -86,16 +86,59 @@ def get_model(args):
     return tree
 
 
-def test_tracin_self_influence_regressor(args):
-    print(f'\n***** test_tracin_self_influence_regressor *****')
+def test_tracin_self_influence_regression(args):
+    print(f'\n***** test_tracin_self_influence_regression *****')
+    args.model_type = 'regressor'
     X_train, X_test, y_train, y_test = get_test_data(args)
 
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = ExplainerTracIn().fit(tree, X_train, y_train)
-    self_inf = explainer = explainer.self_influence()
-    print(self_inf)
+    explainer = TracIn().fit(tree, X_train, y_train)
+    self_inf = explainer = explainer.get_self_influence()
+
+    print('self influence (head):', self_inf[:5])
+    print('y_train        (head):', y_train[:5])
+
+    status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
+
+
+def test_tracin_self_influence_binary(args):
+    print(f'\n***** test_tracin_self_influence_binary *****')
+    args.model_type = 'binary'
+    X_train, X_test, y_train, y_test = get_test_data(args)
+
+    tree = get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = TracIn().fit(tree, X_train, y_train)
+    self_inf = explainer = explainer.get_self_influence()
+
+    print('self influence (head):', self_inf[:5])
+    print('y_train        (head):', y_train[:5])
+
+    status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
+
+
+def test_tracin_self_influence_multiclass(args):
+    print(f'\n***** test_tracin_self_influence_multiclass *****')
+    args.model_type = 'multiclass'
+    X_train, X_test, y_train, y_test = get_test_data(args)
+    n_class = len(np.unique(y_train))
+
+    tree = get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = TracIn().fit(tree, X_train, y_train)
+    self_inf = explainer = explainer.get_self_influence()
+
+    print('self influence (head):', self_inf[:5])
+    print('y_train        (head):', y_train[:5])
+
+    status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
+    print(status)
 
 
 if __name__ == '__main__':
@@ -111,4 +154,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # tests
-    test_tracin_self_influence_regressor(args)
+    test_tracin_self_influence_regression(args)
+    test_tracin_self_influence_binary(args)
+    test_tracin_self_influence_multiclass(args)

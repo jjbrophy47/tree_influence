@@ -74,6 +74,34 @@ cdef class _Tree:
 
         return out
 
+    cpdef np.ndarray apply(self, float[:, :] X):
+        """
+        Predict leaf index for x in X.
+        """
+
+        # In / out
+        cdef SIZE_t n_samples = X.shape[0]
+        cdef np.ndarray[int] out = np.zeros((n_samples,), dtype=np.int32)
+
+        # Incrementers
+        cdef SIZE_t i = 0
+        cdef Node*  node = NULL
+
+        with nogil:
+
+            for i in range(n_samples):
+                node = self.root_
+
+                while not node.is_leaf:
+                    if X[i, node.feature] <= node.threshold:
+                        node = node.left_child
+                    else:
+                        node = node.right_child
+
+                out[i] = node.node_id
+
+        return out
+
     cpdef SIZE_t get_node_count(self):
         """
         Get total no. nodes.

@@ -35,7 +35,6 @@ def sigmoid(z):
     """
     Squashes elements in z to be between 0 and 1.
     """
-    assert z.ndim == 1
     return 1 / (1 + np.exp(-z))
 
 
@@ -43,9 +42,16 @@ def softmax(z):
     """
     Differentiable argmax function.
     """
-    assert z.ndim == 2
-    assert z.shape[1] >= 2
-    return np.exp(z) / (np.exp(z).sum(axis=1).reshape(-1, 1))
+    if type(z) == list:
+        z = np.array(z, dtype=np.float32)
+
+    if z.ndim == 1:
+        result = np.exp(z) / np.exp(z).sum()
+    else:  # take softmax along axis 1
+        assert z.ndim == 2
+        result = np.exp(z) / (np.exp(z).sum(axis=1).reshape(-1, 1))
+
+    return result
 
 
 def logit(z):

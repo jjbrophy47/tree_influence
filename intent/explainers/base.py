@@ -1,4 +1,3 @@
-import numpy as np
 from abc import abstractmethod
 
 
@@ -23,15 +22,28 @@ class Explainer(object):
         pass
 
     @abstractmethod
-    def self_influence(self):
+    def get_self_influence(self):
         """
         - Compute influence of each training instance on itself.
         - Provides a global perspective of which training intances
           are most important.
 
         Return
-            - 1d array of shape=(no. train) (regression and binary classification).
-            - 2d array of shape=(no. train, no. classes) (multiclass).
-            - Arrays are returned in the same order as the traing data.
+            - Regression and binary: 1d array of shape=(no. train).
+            - Multiclass: 2d array of shape=(no. train, no. classes).
+            - Array is returned in the same order as the traing data.
+        """
+        pass
+
+    @abstractmethod
+    def explain(self, X):
+        """
+        - Compute influence of each training instance on the test instance loss (or prediction?)
+        - Provides a local explanation of the test instance loss (or prediction?).
+
+        Return
+            - Regression and binary: 1d array of shape=(no. train).
+            - Multiclass: 2d array of shape=(no. train, no. classes).
+            - Array is returned in the same order as the traing data.
         """
         pass

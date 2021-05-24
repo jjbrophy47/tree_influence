@@ -1,1 +1,1 @@
-from .tracin import ExplainerTracIn
+from .tracin import TracIn
