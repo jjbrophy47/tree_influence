@@ -1,4 +1,4 @@
-import numpy as np
+from .explainers import TracIn
 
 
 class TreeExplainer(object):
@@ -13,7 +13,8 @@ class TreeExplainer(object):
         - XGBRegressor, XGBClassifier
     """
     def __init__(self, method='tracin'):
-        self.method = method
+        if method == 'tracin':
+            self.explainer = TracIn()
 
     def fit(self, model, X, y):
         """
@@ -25,7 +26,7 @@ class TreeExplainer(object):
             X: training data.
             y: training targets.
         """
-        pass
+        return self.explainer.fit(model, X, y)
 
     def self_influence(self):
         """
@@ -38,11 +39,11 @@ class TreeExplainer(object):
             - 2d array of shape=(no. train, no. classes) (multiclass).
             - Arrays are returned in the same order as the traing data.
         """
-        pass
+        return self.explainer.get_self_influence()
 
-    def explain(self, X):
+    def explain(self, X, y):
         """
         - Compute most influential training instances on the prediction of the
           given test instance.
         """
-        assert X.shape == (1, 1)
+        return self.explainer.explain(X, y)
