@@ -11,6 +11,7 @@ Node
 """
 cdef struct Node:
     SIZE_t  node_id                  # Node identifier
+    SIZE_t  leaf_id                  # Leaf identifier
     SIZE_t  count                    # Number of samples in the node
     SIZE_t  depth                    # Depth of node
     bint    is_left                  # Whether this node is a left child
@@ -40,12 +41,16 @@ cdef class _Tree:
     cdef SIZE_t[:]  feature
     cdef DTYPE_t[:] threshold
     cdef DTYPE_t[:] leaf_vals
-    cdef Node*    root_
+    cdef Node*      root_
+    cdef SIZE_t     node_count_
+    cdef SIZE_t     leaf_count_
 
     # Python API
     cpdef np.ndarray predict(self, float[:, :] X)
     cpdef np.ndarray apply(self, float[:, :] X)
-    cpdef SIZE_t get_node_count(self)
+    cpdef void       update_node_count(self, float[:, :] X)
+    cpdef np.ndarray leaf_path(self, float[:, :] X, bint output, bint weighted):
+    cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted):
 
     # C API
     cdef Node*  _add_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil

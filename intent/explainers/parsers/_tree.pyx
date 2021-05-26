@@ -37,6 +37,8 @@ cdef class _Tree:
         self.leaf_vals = leaf_vals
 
         self.root_ = self._add_node(0, 0, 0)
+        self.node_count_ = 0
+        self.leaf_count_ = 0
 
     def __dealloc__(self):
         """
@@ -102,11 +104,119 @@ cdef class _Tree:
 
         return out
 
-    cpdef SIZE_t get_node_count(self):
+
+    cpdef void update_node_count(self, float[:, :] X):
         """
-        Get total no. nodes.
+        Increment each node count if x in X pass through it.
         """
-        return self._get_node_count(self.root_)
+
+        # In
+        cdef SIZE_t n_samples = X.shape[0]
+
+        # Incrementers
+        cdef SIZE_t i = 0
+        cdef Node*  node = NULL
+
+        with nogil:
+
+            for i in range(n_samples):
+                node = self.root_
+                node.count += 1
+
+                while not node.is_leaf:
+                    if X[i, node.feature] <= node.threshold:
+                        node = node.left_child
+                    else:
+                        node = node.right_child
+
+                node.count += 1
+
+
+    cpdef np.ndarray leaf_path(self, float[:, :] X, bint output, bint weighted):
+        """
+        Return 2d vector of leaf one-hot encodings, shape=(X.shape[0], no. leaves).
+        """
+
+        # In / out
+        cdef SIZE_t n_samples = X.shape[0]
+        cdef SIZE_t n_leaves = self.leaf_count_
+        cdef np.ndarray[float] out = np.zeros((n_samples, n_leaves), dtype=np.float32)
+        cdef DTYPE_t val = 1.0
+
+        # Incrementers
+        cdef SIZE_t i = 0
+        cdef Node*  node = NULL
+
+        with nogil:
+
+            for i in range(n_samples):
+                node = self.root_
+
+                while not node.is_leaf:
+                    if X[i, node.feature] <= node.threshold:
+                        node = node.left_child
+                    else:
+                        node = node.right_child
+
+                val = 1.0
+
+                if output:
+                    val = node.leaf_val
+
+                if weighted:
+                    val /= node.count
+
+                out[i][node.leaf_id] = val
+
+        return out
+
+
+    cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted):
+        """
+        Return 2d vector of feature one-hot encodings, shape=(X.shape[0], no. nodes).
+        """
+
+        # In / out
+        cdef SIZE_t n_samples = X.shape[0]
+        cdef SIZE_t n_nodes = self.node_count_
+        cdef np.ndarray[float] out = np.zeros((n_samples, n_nodes), dtype=np.float32)
+        cdef DTYPE_t val = 1.0
+
+        # Incrementers
+        cdef SIZE_t i = 0
+        cdef Node*  node = NULL
+
+        with nogil:
+
+            for i in range(n_samples):
+                node = self.root_
+
+                while not node.is_leaf:
+                    val = 1.0
+
+                    if weighted:
+                        val /= node.count
+
+                    out[i][node_id] = val
+
+                    # traverse
+                    if X[i, node.feature] <= node.threshold:
+                        node = node.left_child
+                    else:
+                        node = node.right_child
+
+                # leaf
+                val = 1.0
+
+                if output:
+                    val = node.leaf_val
+
+                if weighted:
+                    val /= node.count
+
+                out[i][node.node_id] = val
+
+        return out
 
     # private
     cdef Node* _add_node(self,
@@ -114,7 +224,7 @@ cdef class _Tree:
                          SIZE_t depth,
                          bint   is_left) nogil:
         """
-        Recursively create a subtree and return it.
+        Pre-order traversal: Recursively create a subtree and return it.
         """
         cdef Node* node = self._initialize_node(node_id, depth, is_left)
 
@@ -131,8 +241,12 @@ cdef class _Tree:
 
         # leaf node
         else:
+            node.leaf_id = self.leaf_count_
             node.leaf_val = self.leaf_vals[node_id]
             node.is_leaf = 1
+            self.leaf_count_ += 1
+
+        self.node_count_ += 1
 
         return node
 
@@ -145,6 +259,7 @@ cdef class _Tree:
         """
         cdef Node *node = <Node *>malloc(sizeof(Node))
         node.node_id = node_id
+        node.leaf_id = -1
         node.count = 0
         node.depth = depth
         node.is_left = is_left
@@ -155,15 +270,6 @@ cdef class _Tree:
         node.left_child = NULL
         node.right_child = NULL
         return node
-
-    cdef SIZE_t _get_node_count(self, Node* node) nogil:
-        """
-        Count total no. of nodes in the tree.
-        """
-        if not node:
-            return 0
-        else:
-            return 1 + self._get_node_count(node.left_child) + self._get_node_count(node.right_child)
 
 
     cdef void _dealloc(self, Node *node) nogil:
@@ -186,6 +292,7 @@ cdef class _Tree:
 
         # reset node properties just in case
         node.node_id = -1
+        node.leaf_id = -1
         node.count = -1
         node.depth = -1
         node.is_left = 0

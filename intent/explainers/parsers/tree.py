@@ -6,7 +6,7 @@ from ._tree import _Tree
 
 class Tree(object):
     """
-    Standardized tree structure object class.
+    Wrapper for the standardized tree structure object.
 
     Note:
         - The Tree object is a binary tree structure.
@@ -39,6 +39,13 @@ class Tree(object):
         """
         assert X.ndim == 2
         return self.tree_.apply(X)
+
+    def update_node_counts(self, X):
+        """
+        Update node counts based on the paths taken by x in X.
+        """
+        assert X.ndim == 2
+        self.tree_.update_node_count(X)
 
 
 class TreeEnsemble(object):
@@ -84,10 +91,21 @@ class TreeEnsemble(object):
         """
         Returns 2d array of leaf indices of shape=(X.shape[0], no. trees).
 
-        NOTE: Only works for binary classification and regression.
-              Multiclass classification must override this method.
+        Note:
+            - Only works for binary classification and regression.
+                Multiclass classification must override this method.
         """
         return np.hstack([tree.apply(X).reshape(-1, 1) for tree in self.trees]).astype(np.int32)
+
+    def update_node_count(self, X):
+        """
+        Increment node count for each x in X for all trees in the ensemble.
+
+        Note:
+            - Works for regression, binary, and multiclass.
+        """
+        for tree in self.trees.flatten():
+            tree.update_node_count(X)
 
 
 class TreeEnsembleRegressor(TreeEnsemble):
