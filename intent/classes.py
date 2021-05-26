@@ -12,9 +12,10 @@ class TreeExplainer(object):
         - RandomForestREgressor, RandomForestClassifier
         - XGBRegressor, XGBClassifier
     """
-    def __init__(self, method='tracin'):
+    def __init__(self, method='tracin', **kwargs):
+
         if method == 'tracin':
-            self.explainer = TracIn()
+            self.explainer = TracIn(**kwargs)
 
     def fit(self, model, X, y):
         """

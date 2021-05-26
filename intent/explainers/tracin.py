@@ -9,17 +9,36 @@ class TracIn(Explainer):
     """
     Abstract TracIn explainer that adapts the TracIn method to tree ensembles.
 
-    TODO
-        - Should we consider residuals from iteration 0 (initial guess)?
-          How would this work for RF?
-        - Currently, we are NOT skipping first residuals for self-influence,
-          but we ARE skipping first residuals for explain.
-        - Also RF is using first residuals for self-influence, should we
-          get rid of this since there is no initial guess for RF? Probably yes.
-
-        - RF: remove initial guess (iteraion 0) residuals.
-        - GBDT: Should we skip initial residuals for both self-influence and explain?
+    Notes
+        - For RFs, there is no initial guess, so each gradients layer is associated
+            with a tree (or boosting iteration).
+        - For GBDTs, there is an iniitial guess, so there is an extra gradient layer
+            at the beginning; this layer can be included or exlcuded in both the global
+            and local explanations by using the `initial_grad` argument.
+        - Currently, we use error residuals to compute marginal contributions; however,
+            we could also try using the tree output instead (approx. of the error residuals).
+            There would be no initial guess gradient though, so this would require
+            `initial_grad`='keep' for GBDTs.
+        - Local explanations for GBDT grad=approx with initial_grad=skip is essentially
+            the same as doing the dot product using the LeafOutput tree kernel.
     """
+    def __init__(self, grad='residual', initial_grad='keep'):
+        """
+        Input
+            grad
+                'residual': Use error residuals when computing marginals.
+                'approx': Use tree output (approx. of residuals) when computing marginals.
+            initial_grad
+                'keep': For GBDTs, include gradient from initial guess
+                    when computing local explanation; does not affect self-influence.
+                'skip': For GBDTs, exclude gradient from initial guess
+                    when computing local explanation; does not affect self-influence.
+        """
+        assert grad in ['residual', 'approx']
+        assert initial_grad in ['keep', 'skip']
+        self.grad = grad
+        self.initial_grad = initial_grad
+
     def fit(self, model, X, y):
         """
         - Convert model to internal standardized tree structure.
@@ -32,6 +51,7 @@ class TracIn(Explainer):
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, task=self.model_.task_)
+        self._validate_settings()
 
         if self.model_.task_ == 'multiclass':
             self.label_binarizer_ = LabelBinarizer().fit(y)  # shape=(no. train, no. class)
@@ -54,10 +74,16 @@ class TracIn(Explainer):
             - Arrays are returned in the same order as the traing data.
         """
         if self.model_.task_ in ['regression', 'binary']:
-            self_influence = self.gradients_.sum(axis=1)
+            if self.initial_grad == 'skip':
+                self_influence = self.gradients_[:, 1:].sum(axis=1)
+            else:
+                self_influence = self.gradients_.sum(axis=1)
 
         elif self.model_.task_ == 'multiclass':
-            self_influence = self.gradients_.sum(axis=0)
+            if self.initial_grad == 'skip':
+                self_influence = self.gradients_[1:].sum(axis=0)
+            else:
+                self_influence = self.gradients_.sum(axis=0)
 
         return self_influence
 
@@ -75,7 +101,7 @@ class TracIn(Explainer):
         X, y = util.check_data(X, y, task=self.model_.task_)
         assert X.shape[0] == 1 and y.shape[0] == 1
 
-        test_grad = self._compute_gradients(X, y)
+        test_gradients = self._compute_gradients(X, y)
         test_leaves = self.model_.apply(X)
 
         # only add influence if train and test end in the same leaf per tree
@@ -84,22 +110,39 @@ class TracIn(Explainer):
         # train_gradients=(no. train, no. trees), test_gradient=(1, no. trees,)
         # train_leaf_indices=(no. train, no. trees), test_leaf_indices=(1, no. trees,)
         if self.model_.task_ in ['regression', 'binary']:
-            train_grad = mask * self.gradients_[:, 1:]  # skip first residuals
-            influence = np.dot(train_grad, test_grad[:, 1:].flatten())  # skip first residuals
+            train_grad = self.gradients_[:, 1:] * mask
+
+            if self.initial_grad == 'skip':
+                test_grad = test_gradients[:, 1:].flatten()
+
+            else:  # keep first layer, mutiply mask by subsequent layers
+                initial_grad = self.gradients_[:, 0].reshape(-1, 1)
+                train_grad = np.hstack([initial_grad, train_grad])
+                test_grad = test_gradients.flatten()
+
+            influence = np.dot(train_grad, test_grad)
 
         # train_gradients=(no. trees, no. train, no. class), test_gradient=(no. trees, 1, no. class)
         # train_leaf_indices=(no. trees, no. train, no. class), test_leaf_indices=(no. trees, 1, no. class)
         elif self.model_.task_ == 'multiclass':
-            train_grad = self.gradients_[1:].copy()  # skip first residuals
-            train_grad = mask * train_grad
-            test_grad = test_grad[1:].copy()  # skip first residuals
+            train_gradients = self.gradients_.transpose(2, 1, 0)  # shape=(no. class, no. train, no. trees)
+            test_gradients = test_gradients.transpose(2, 1, 0)  # shape=(no. class, 1, no. trees)
+            mask = mask.transpose(2, 1, 0)  # shape=(no. class, no. train, no. trees)
 
-            train_grad = train_grad.transpose(2, 1, 0)  # shape=(no. class, no. train, no. trees)
-            test_grad = test_grad.transpose(2, 1, 0)  # shape=(no. class, 1, no. trees)
+            influence = np.zeros((train_gradients.shape[1], train_gradients.shape[0]), dtype=np.float32)
 
-            influence = np.zeros((train_grad.shape[1], train_grad.shape[0]), dtype=np.float32)
             for j in range(influence.shape[1]):  # per class
-                influence[:, j] = np.dot(train_grad[j], test_grad[j].flatten())
+                train_grad = train_gradients[j][:, 1:] * mask[j]
+
+                if self.initial_grad == 'skip':
+                    test_grad = test_gradients[j][:, 1:].flatten()
+
+                else:  # keep first layer, mutiply mask by subsequent layers
+                    initial_grad = train_gradients[j][:, 0].reshape(-1, 1)
+                    train_grad = np.hstack([initial_grad, train_grad])
+                    test_grad = test_gradients[j].flatten()
+
+                influence[:, j] = np.dot(train_grad, test_grad)
 
         return influence
 
@@ -125,26 +168,33 @@ class TracIn(Explainer):
             y = self.label_binarizer_.transform(y)  # shape=(no. train, no. class)
             raw_val = np.tile(self.model_.bias, (y.shape[0], 1))  # shape=(no. train, no. class)
 
-        # compute residuals for initial guess
+        # compute gradient for initial guess
         yhat = self._raw_val_to_prediction(raw_val, iteration=0)
-        e = self._negative_gradient(y, yhat) / n_train  # marginal contribution
+        residual = self._negative_gradient(y, yhat) / n_train  # marginal contribution
 
-        # compute residuals for all subsequent trees
-        residuals = [e]
+        # compute gradient for all subsequent trees
+        gradient = [residual]
+
         for i in range(self.model_.trees.shape[0]):
-            raw_val += self._predict_iteration(X, iteration=i)
-            yhat = self._raw_val_to_prediction(raw_val, iteration=i)
-            e = self._negative_gradient(y, yhat) / n_train
-            residuals.append(e)
+            residual_approx = self._predict_iteration(X, iteration=i)
+
+            if self.grad == 'residual':
+                raw_val += residual_approx
+                yhat = self._raw_val_to_prediction(raw_val, iteration=i)
+                residual = self._negative_gradient(y, yhat) / n_train
+                gradient.append(residual)
+
+            elif self.grad == 'approx':  # `self.initial_grad` must be 'skip'
+                gradient.append(residual_approx)
 
         # shape output
         if self.model_.task_ in ['regression', 'binary']:
-            gradients = np.hstack([e.reshape(-1, 1) for e in residuals])  # shape=(X.shape[0], no. trees)
+            gradient = np.hstack([e.reshape(-1, 1) for e in gradient])  # shape=(X.shape[0], no. trees)
 
         elif self.model_.task_ == 'multiclass':
-            gradients = np.dstack(residuals).transpose(2, 0, 1)  # shape=(no. trees, X.shape[0], no. classes)
+            gradient = np.dstack(gradient).transpose(2, 0, 1)  # shape=(no. trees, X.shape[0], no. classes)
 
-        return gradients
+        return gradient
 
     def _negative_gradient(self, y, yhat):
         """
@@ -195,3 +245,13 @@ class TracIn(Explainer):
                 yhat = util.softmax(raw_val)  # softmax along axis=1, shape=(raw_val.shape[0], no. class)
 
         return yhat
+
+    def _validate_settings(self):
+        """
+        Make sure the model matches the approriate settings of the explainer.
+        """
+        if self.model_.tree_type == 'rf':
+            assert self.grad == 'residual', 'RF only supports grad=residual'
+
+        elif self.model_.tree_type == 'gbdt' and self.grad == 'approx':
+            assert self.initial_grad == 'skip', 'GBDT grad=approx only supports initial_grad=skip'

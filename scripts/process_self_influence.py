@@ -176,28 +176,24 @@ def create_csv(args, out_dir, logger):
 
     logger.info('\nGathering results...')
 
-    experiment_settings = list(product(*[args.dataset, args.criterion, args.rs,
-                                         args.topd, args.k, args.subsample_size]))
-
-    # cedar_settings = list(product(*[args.epsilon, args.lmbda]))
+    experiment_settings = list(product(*[args.dataset, args.train_frac_to_remove, args.tree_type,
+                                         args.rs, args.method]))
 
     results = []
-    for dataset, criterion, rs, topd, k, sub_size in tqdm(experiment_settings):
+    for dataset, train_frac_to_remove, tree_type, rs, method in tqdm(experiment_settings):
 
         template = {'dataset': dataset,
-                    'criterion': criterion,
+                    'frac_remove': train_frac_to_remove,
+                    'tree_type': tree_type,
                     'rs': rs,
-                    'topd': topd,
-                    'k': k,
-                    'subsample_size': sub_size}
+                    'method': method}
 
         experiment_dir = os.path.join(args.in_dir,
                                       dataset,
-                                      criterion,
-                                      'rs_{}'.format(rs),
-                                      'topd_{}'.format(topd),
-                                      'k_{}'.format(k),
-                                      'sub_{}'.format(sub_size))
+                                      f'remove_{train_frac_to_remove:.2f}',
+                                      tree_type,
+                                      f'rs_{rs}',
+                                      args.method)
 
         # skip empty experiments
         if not os.path.exists(experiment_dir):
@@ -251,21 +247,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # I/O settings
-    parser.add_argument('--in_dir', type=str, default='output', help='input directory.')
-    parser.add_argument('--out_dir', type=str, default='output/delete/csv/', help='output directory.')
+    parser.add_argument('--in_dir', type=str, default='output/self_influence/', help='input directory.')
+    parser.add_argument('--out_dir', type=str, default='output/self_influence/', help='output directory.')
 
     # experiment settings
-    parser.add_argument('--dataset', type=str, nargs='+',
-                        default=['surgical', 'vaccine', 'adult', 'bank_marketing', 'flight_delays', 'diabetes',
-                                 'census', 'credit_card', 'no_show', 'olympics', 'twitter', 'synthetic',
-                                 'higgs', 'ctr'], help='dataset.')
-    parser.add_argument('--criterion', type=str, nargs='+', default=['gini', 'entropy'], help='criterion.')
-    parser.add_argument('--rs', type=int, nargs='+', default=[1, 2, 3, 4, 5], help='random state.')
-    parser.add_argument('--subsample_size', type=int, nargs='+', default=[1, 1000], help='subsampling size.')
-
-    # hyperparameter settings
-    parser.add_argument('--topd', type=int, nargs='+', default=list(range(21)), help='top d.')
-    parser.add_argument('--k', type=int, nargs='+', default=[1, 5, 10, 25, 50, 100], help='no. thresholds.')
+    parser.add_argument('--dataset', type=str, nargs='+', default=['digits'])
+    parser.add_argument('--train_frac_to_remove', type=str, nargs='+', default=[0.1, 0.5])
+    parser.add_argument('--tree_type', type=str, nargs='+', default=['cb', 'lgb', 'skgbm', 'skrf', 'xgb'])
+    parser.add_argument('--rs', type=int, nargs='+', default=[1, 2, 3, 4, 5])
+    parser.add_argument('--method', type=str, nargs='+', default=['random', 'tracin'])
 
     args = parser.parse_args()
     main(args)

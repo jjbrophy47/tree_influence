@@ -94,11 +94,12 @@ def test_tracin_self_influence_regression(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = TracIn().fit(tree, X_train, y_train)
+    kwargs = {'grad': args.grad, 'initial_grad': args.initial_grad}
+    explainer = TracIn(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer = explainer.get_self_influence()
 
-    print('self influence (head):', self_inf[:5])
     print('y_train        (head):', y_train[:5])
+    print('self influence (head):', self_inf[:5])
 
     status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
     print(status)
@@ -112,11 +113,12 @@ def test_tracin_self_influence_binary(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = TracIn().fit(tree, X_train, y_train)
+    kwargs = {'grad': args.grad, 'initial_grad': args.initial_grad}
+    explainer = TracIn(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer = explainer.get_self_influence()
 
-    print('self influence (head):', self_inf[:5])
     print('y_train        (head):', y_train[:5])
+    print('self influence (head):', self_inf[:5])
 
     status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
     print(status)
@@ -131,11 +133,12 @@ def test_tracin_self_influence_multiclass(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = TracIn().fit(tree, X_train, y_train)
+    kwargs = {'grad': args.grad, 'initial_grad': args.initial_grad}
+    explainer = TracIn(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer = explainer.get_self_influence()
 
-    print('self influence (head):\n', self_inf[:5])
     print('y_train        (head):', y_train[:5])
+    print('self influence (head):\n', self_inf[:5])
 
     status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
     print(status)
@@ -151,7 +154,8 @@ def test_tracin_explain_regression(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = TracIn().fit(tree, X_train, y_train)
+    kwargs = {'grad': args.grad, 'initial_grad': args.initial_grad}
+    explainer = TracIn(**kwargs).fit(tree, X_train, y_train)
     influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
 
     test_pred = tree.predict(X_train[[test_ndx]])
@@ -162,8 +166,8 @@ def test_tracin_explain_regression(args):
     print(f'explain y_train, index: 0, pred: {test_pred}, target: {test_label}\n')
 
     print('sorted indices    (head):', s_ids[:5])
-    print('influence (head, sorted):', influence[s_ids][:5])
     print('y_train   (head, sorted):', y_train[s_ids][:5])
+    print('influence (head, sorted):', influence[s_ids][:5])
 
     status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
     print(status)
@@ -178,7 +182,8 @@ def test_tracin_explain_binary(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = TracIn().fit(tree, X_train, y_train)
+    kwargs = {'grad': args.grad, 'initial_grad': args.initial_grad}
+    explainer = TracIn(**kwargs).fit(tree, X_train, y_train)
     influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
 
     test_pred = tree.predict_proba(X_train[[test_ndx]])
@@ -189,8 +194,8 @@ def test_tracin_explain_binary(args):
     print(f'explain y_train 0, pred: {test_pred}, target: {test_label}\n')
 
     print('sorted indices    (head):', s_ids[:5])
-    print('influence (head, sorted):', influence[s_ids][:5])
     print('y_train   (head, sorted):', y_train[s_ids][:5])
+    print('influence (head, sorted):', influence[s_ids][:5])
 
     status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
     print(status)
@@ -205,7 +210,8 @@ def test_tracin_explain_multiclass(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = TracIn().fit(tree, X_train, y_train)
+    kwargs = {'grad': args.grad, 'initial_grad': args.initial_grad}
+    explainer = TracIn(**kwargs).fit(tree, X_train, y_train)
     influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
 
     influence_agg = np.abs(influence).sum(axis=1)
@@ -217,8 +223,8 @@ def test_tracin_explain_multiclass(args):
     print(f'explain y_train 0, pred: {test_pred}, target: {test_label}\n')
 
     print('sorted indices    (head):\n', s_ids[:5])
+    print('y_train   (head, sorted):', y_train[s_ids][:5])
     print('influence (head, sorted):\n', influence[s_ids][:5])
-    print('y_train   (head, sorted):\n', y_train[s_ids][:5])
 
     status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
     print(status)
@@ -234,6 +240,8 @@ if __name__ == '__main__':
     parser.add_argument('--tree_type', type=str, default='lgb')
     parser.add_argument('--model_type', type=str, default='dummy')
     parser.add_argument('--rs', type=int, default=1)
+    parser.add_argument('--grad', type=str, default='residual', help='residual or approx')
+    parser.add_argument('--initial_grad', type=str, default='keep', help='keep or skip')
     args = parser.parse_args()
 
     # tests
