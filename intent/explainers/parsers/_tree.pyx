@@ -21,6 +21,14 @@ np.import_array()
 
 cdef class _Tree:
 
+    property node_count_:
+        def __get__(self):
+            return self.node_count_
+
+    property leaf_count_:
+        def __get__(self):
+            return self.leaf_count_
+
     def __cinit__(self,
                   SIZE_t[:]  children_left,
                   SIZE_t[:]  children_right,
@@ -36,9 +44,9 @@ cdef class _Tree:
         self.threshold = threshold
         self.leaf_vals = leaf_vals
 
-        self.root_ = self._add_node(0, 0, 0)
         self.node_count_ = 0
         self.leaf_count_ = 0
+        self.root_ = self._add_node(0, 0, 0)
 
     def __dealloc__(self):
         """
@@ -121,9 +129,10 @@ cdef class _Tree:
 
             for i in range(n_samples):
                 node = self.root_
-                node.count += 1
 
                 while not node.is_leaf:
+                    node.count += 1
+
                     if X[i, node.feature] <= node.threshold:
                         node = node.left_child
                     else:
@@ -140,7 +149,7 @@ cdef class _Tree:
         # In / out
         cdef SIZE_t n_samples = X.shape[0]
         cdef SIZE_t n_leaves = self.leaf_count_
-        cdef np.ndarray[float] out = np.zeros((n_samples, n_leaves), dtype=np.float32)
+        cdef DTYPE_t[:, :] out = np.zeros((n_samples, n_leaves), dtype=np.float32)
         cdef DTYPE_t val = 1.0
 
         # Incrementers
@@ -168,7 +177,7 @@ cdef class _Tree:
 
                 out[i][node.leaf_id] = val
 
-        return out
+        return np.asarray(out)
 
 
     cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted):
@@ -179,7 +188,7 @@ cdef class _Tree:
         # In / out
         cdef SIZE_t n_samples = X.shape[0]
         cdef SIZE_t n_nodes = self.node_count_
-        cdef np.ndarray[float] out = np.zeros((n_samples, n_nodes), dtype=np.float32)
+        cdef DTYPE_t[:, :] out = np.zeros((n_samples, n_nodes), dtype=np.float32)
         cdef DTYPE_t val = 1.0
 
         # Incrementers
@@ -197,7 +206,7 @@ cdef class _Tree:
                     if weighted:
                         val /= node.count
 
-                    out[i][node_id] = val
+                    out[i][node.node_id] = val
 
                     # traverse
                     if X[i, node.feature] <= node.threshold:
@@ -216,7 +225,7 @@ cdef class _Tree:
 
                 out[i][node.node_id] = val
 
-        return out
+        return np.asarray(out)
 
     # private
     cdef Node* _add_node(self,

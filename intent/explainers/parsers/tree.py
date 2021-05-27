@@ -40,12 +40,32 @@ class Tree(object):
         assert X.ndim == 2
         return self.tree_.apply(X)
 
-    def update_node_counts(self, X):
+    def update_node_count(self, X):
         """
         Update node counts based on the paths taken by x in X.
         """
         assert X.ndim == 2
         self.tree_.update_node_count(X)
+
+    def leaf_path(self, X, output=False, weighted=False):
+        """
+        Return 2d vector of leaf one-hot encodings, shape=(X.shape[0], no. leaves).
+        """
+        return self.tree_.leaf_path(X, output=output, weighted=weighted)
+
+    def feature_path(self, X, output=False, weighted=False):
+        """
+        Return 2d vector of feature one-hot encodings, shape=(X.shape[0], no. nodes).
+        """
+        return self.tree_.feature_path(X, output=output, weighted=weighted)
+
+    @property
+    def node_count_(self):
+        return self.tree_.node_count_
+
+    @property
+    def leaf_count_(self):
+        return self.tree_.leaf_count_
 
 
 class TreeEnsemble(object):

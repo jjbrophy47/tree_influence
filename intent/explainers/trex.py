@@ -5,12 +5,13 @@ from .base import Explainer
 from .parsers import util
 
 
-class TREX(Explainer):
+class Trex(Explainer):
     """
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
 
     Notes
+        - 'to_' or 'lpw' seem to make the most sense for a tree kernel.
     """
     def __init__(self, kernel='wlp', target='actual', lmbd=0.03):
         """
@@ -18,19 +19,19 @@ class TREX(Explainer):
             kernel: Transformation of the input using the tree-ensemble structure.
                 'to_': Tree output; output of each tree in the ensemble.
                 'lp_': Leaf path; one-hot encoding of leaf indices across all trees.
-                'lo_': Leaf output; like 'lp' but replaces 1s with leaf values.
                 'lpw': Weighted leaf path; like 'lp' but replaces 1s with 1 / leaf count.
+                'lo_': Leaf output; like 'lp' but replaces 1s with leaf values.
                 'low': Weighted leaf otput; like 'lo' but replace leaf value with 1 / leaf value.
-                'fp': Feature path; one-hot encoding of node indices across all trees.
-                'fo': Feature output; like 'fp' but replaces leaf 1s with leaf values.
+                'fp_': Feature path; one-hot encoding of node indices across all trees.
                 'fpw': Weighted feature path; like 'fp' but replaces 1s with 1 / node count.
-                'fow': Weighted feature path; like 'fo' but replaces leaf 1s with 1 / leaf values.
+                'fo_': Feature output; like 'fp' but replaces leaf 1s with leaf values.
+                'fow': Weighted feature output; like 'fo' but replaces leaf 1s with 1 / leaf values.
             target: Targets for the linear model to train on.
                 'actual': Ground-truth targets.
                 'predicted': Predicted targets from the tree-ensemble.
             lmbd: Regularizer for the linear model; necessary for the Representer decomposition.
         """
-        assert kernel in ['to_', 'lp_', 'lo_', 'lpw', 'low', 'fp', 'fo', 'fpw', 'fow']
+        assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
         assert target in ['actual', 'predicted']
         assert isinstance(lmbd, float)
         self.kernel = kernel
@@ -51,10 +52,29 @@ class TREX(Explainer):
         super().fit(model, X, y)
         X, y = util.check_data(X, y, task=self.model_.task_)
 
-        self.model_.update_node_counts(X)
+        self.model_.update_node_count(X)
 
         self.X_train_ = self._kernel_transform(X)
-        self.y_train_ = LabelBinarizer().fit_transform(y) if self.model_.task_ == 'multiclass' else y
+
+        # select target
+        if self.target == 'actual':
+
+            if self.model_.task_ == 'multiclass':
+                self.y_train_ = LabelBinarizer().fit_transform(y)
+
+            else:
+                self.y_train_ = y
+
+        elif self.target == 'predicted':
+
+            if self.model_.task_ == 'regression':
+                self.y_train_ = model.predict(X)
+
+            elif self.model_.task_ == 'binary':
+                self.y_train_ = model.predict_proba(X)[:, 1]
+
+            elif self.model_.task_ == 'multiclass':
+                self.y_train_ = model.predict_proba(X)
 
         self.alpha_ = self._compute_train_weights(self.X_train_, self.y_train_)
 
