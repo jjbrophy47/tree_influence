@@ -14,14 +14,14 @@ from .parsers import util
 
 class Trex(Explainer):
     """
-    TODO
-        - Cite github of representer point method.
-
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
 
     Notes
         - 'lpw' seems to work best across all tasks.
+
+    Reference
+         - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
     """
     def __init__(self, kernel='wlp', target='actual', lmbd=0.0003, n_epoch=3000,
                  random_state=1):
