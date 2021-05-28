@@ -245,8 +245,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # tests
-    test_trex_self_influence_regression(args)
-    test_trex_self_influence_binary(args)
+    # test_trex_self_influence_regression(args)
+    # test_trex_self_influence_binary(args)
     test_trex_self_influence_multiclass(args)
 
     # test_trex_explain_regression(args)

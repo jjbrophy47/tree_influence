@@ -81,3 +81,10 @@ def logit(z):
     """
     assert isinstance(z, float)
     return np.log(z / (1 - z))
+
+
+def to_np(x):
+    """
+    Convert torch tensor to numpy array.
+    """
+    return x.data.cpu().numpy()
