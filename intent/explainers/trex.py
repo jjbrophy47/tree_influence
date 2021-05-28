@@ -15,16 +15,16 @@ from .parsers import util
 class Trex(Explainer):
     """
     TODO
-        - Add random state.
         - Cite github of representer point method.
 
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
 
     Notes
-        - 'to_' or 'lpw' seem to make the most sense for a tree kernel.
+        - 'lpw' seems to work best across all tasks.
     """
-    def __init__(self, kernel='wlp', target='actual', lmbd=0.0003, n_epoch=3000):
+    def __init__(self, kernel='wlp', target='actual', lmbd=0.0003, n_epoch=3000,
+                 random_state=1):
         """
         Input
             kernel: Transformation of the input using the tree-ensemble structure.
@@ -42,6 +42,7 @@ class Trex(Explainer):
                 'predicted': Predicted targets from the tree-ensemble.
             lmbd: Regularizer for the linear model; necessary for the Representer decomposition.
             n_epoch: Max. no. epochs to train the linear model.
+            random_state: Random state seed to generate reproducible results.
         """
         assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
         assert target in ['actual', 'predicted']
@@ -50,6 +51,7 @@ class Trex(Explainer):
         self.target = target
         self.lmbd = lmbd
         self.n_epoch = n_epoch
+        self.random_state = random_state
 
     def fit(self, model, X, y):
         """
@@ -78,7 +80,7 @@ class Trex(Explainer):
             elif self.model_.task_ == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = LabelBinarizer().fit_transform(y)
 
-            elif self.model_.task_ == 'binary': # shape=(no. train, 2)
+            elif self.model_.task_ == 'binary':  # shape=(no. train, 2)
                 self.y_train_ = OneHotEncoder().fit_transform(y.reshape(-1, 1)).todense()
 
         elif self.target == 'predicted':
@@ -236,21 +238,25 @@ class Trex(Explainer):
         Fit a linear model to X and y, then extract weights for all
         train instances.
         """
-        print(y.shape)
-
         X = Variable(torch.FloatTensor(X))
         y = Variable(torch.FloatTensor(y))
         N = len(y)
 
-        print(y[:5])
+        # randomly initialize weights
+        rng = np.random.default_rng(self.random_state)
 
-        rng = np.random.default_rng(1)
-        W = rng.uniform(-1, 1, size=(X.shape[1], y.shape[1]))
-        model = SoftmaxModel(W)
+        if y.ndim == 1:
+            W = rng.uniform(-1, 1, size=X.shape[1])
+            model = MSEModel(W)
+        else:
+            W = rng.uniform(-1, 1, size=(X.shape[1], y.shape[1]))
+            model = SoftmaxModel(W)
 
+        # optimization settings
         min_loss = 10000.0
         optimizer = optim.SGD([model.W], lr=1.0)
 
+        # train
         for epoch in range(self.n_epoch):
             phi_loss = 0
 
@@ -285,40 +291,61 @@ class Trex(Explainer):
 
         # compute alpha based on the representer theorem's decomposition
         temp = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)
-        softmax_value = torch.softmax(temp, axis=1)
 
-        # derivative of softmax cross entropy
-        alpha = softmax_value - y
-        alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
-        print(alpha[:5])
-        print(y[:5])
+        if y.ndim == 1:
+            alpha = temp - y  # half the derivative of mse
+            alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
 
-        # sanity check
-        W = torch.matmul(torch.t(X), alpha)  # shape=(no. features, no. class)
-        print(W[:5])
+            # compute W based on the Representer Theorem decomposition
+            W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,)
 
-        # calculate y_p, which is the prediction based on decomposition of w by representer theorem
-        temp = torch.matmul(X, W)  # shape=(no. train, no. class)
-        print(temp[:5])
+            # compute closeness
+            y = util.to_np(y).flatten()
+            y_p = util.to_np(torch.matmul(X, W)).flatten()
 
-        softmax_value = torch.softmax(temp, axis=1)
-        # softmax_value = softmax_torch(temp, N)
-        y_p = util.to_np(softmax_value)
-        print(y_p[:5, :])
+            l1_diff = np.mean(np.abs(util.to_np(y) - y_p))
+            pcorr, _ = pearsonr(y.flatten(), y_p.flatten())
+            s_corr, _ = spearmanr(y.flatten(), y_p.flatten())
+            print(f'L1 diff.: {l1_diff:.5f}, pearsonr: {p_corr:.5f}, spearmanr: {s_corr:.5f}')
 
-        print('L1 difference between ground truth prediction and prediction by representer theorem decomposition')
-        print(np.mean(np.abs(util.to_np(y) - y_p)))
+            # plt.scatter(y_p.flatten(), y.flatten())
+            # plt.show()
 
-        print('pearson correlation between ground truth prediction and prediction by representer theorem')
-        y = util.to_np(y)
-        corr, _ = (pearsonr(y.flatten(), (y_p).flatten()))
-        print('pearson:', corr)
+        else:
 
-        plt.scatter(y_p.flatten(), y.flatten())
-        plt.show()
+            softmax_value = torch.softmax(temp, axis=1)
 
-        s_corr, _ = (spearmanr(y.flatten(), (y_p).flatten()))
-        print('spearman:', s_corr)
+            alpha = softmax_value - y  # derivative of softmax cross entropy
+            alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
+            print(alpha[:5])
+            print(y[:5])
+
+            # sanity check
+            W = torch.matmul(torch.t(X), alpha)  # shape=(no. features, no. class)
+            print(W[:5])
+
+            # calculate y_p, which is the prediction based on decomposition of w by representer theorem
+            temp = torch.matmul(X, W)  # shape=(no. train, no. class)
+            print(temp[:5])
+
+            softmax_value = torch.softmax(temp, axis=1)
+            # softmax_value = softmax_torch(temp, N)
+            y_p = util.to_np(softmax_value)
+            print(y_p[:5, :])
+
+            print('L1 difference between ground truth prediction and prediction by representer theorem decomposition')
+            print(np.mean(np.abs(util.to_np(y) - y_p)))
+
+            print('pearson correlation between ground truth prediction and prediction by representer theorem')
+            y = util.to_np(y)
+            corr, _ = (pearsonr(y.flatten(), (y_p).flatten()))
+            print('pearson:', corr)
+
+            plt.scatter(y_p.flatten(), y.flatten())
+            plt.show()
+
+            s_corr, _ = (spearmanr(y.flatten(), (y_p).flatten()))
+            print('spearman:', s_corr)
 
         self.alpha_ = alpha
 
@@ -350,6 +377,9 @@ class Trex(Explainer):
 
 
 class SoftmaxModel(nn.Module):
+    """
+    Model that computes the binary or multiclass cross-entropy loss.
+    """
 
     def __init__(self, W):
         super(SoftmaxModel, self).__init__()
@@ -365,6 +395,35 @@ class SoftmaxModel(nn.Module):
         D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0], no. class)
         D = D - torch.logsumexp(D, axis=1).reshape(-1, 1)  # normalize log probs.
         Phi = torch.sum(-torch.sum(D * y, axis=1))  # cross-entropy loss
+
+        # L2 norm.
+        W1 = torch.squeeze(self.W)
+        L2 = torch.sum(torch.mul(W1, W1))
+
+        return (Phi, L2)
+
+
+class MSEModel(nn.Module):
+    """
+    Model that computes the mean sqaured error loss.
+
+        Note
+            - This loss function represents "closeness" if y is predicted probabilities.
+    """
+
+    def __init__(self, W):
+        super(MSEModel, self).__init__()
+        self.W = Variable(torch.from_numpy(W).type(torch.float32), requires_grad=True)
+
+    def forward(self, X, y):
+        """
+        Calculate loss for the loss function and L2 regularizer.
+
+        Note
+            - This loss function represents "closeness" if y is predicted values.
+        """
+        D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
+        Phi = torch.sum(torch.square(D - y))  # MSE loss
 
         # L2 norm.
         W1 = torch.squeeze(self.W)
