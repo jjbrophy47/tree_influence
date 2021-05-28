@@ -72,21 +72,24 @@ class Trex(Explainer):
         # select target
         if self.target == 'actual':
 
-            if self.model_.task_ == 'multiclass':
+            if self.model_task_ == 'regresssion':  # shape=(no. train,)
+                self.y_train_ = y
+
+            elif self.model_.task_ == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = LabelBinarizer().fit_transform(y)
 
-            else:
-                self.y_train_ = y
+            elif self.model_.task_ == 'binary': # shape=(no. train, 2)
+                self.y_train_ = OneHotEncoder().fit_transform(y.reshape(-1, 1)).todense()
 
         elif self.target == 'predicted':
 
-            if self.model_.task_ == 'regression':
+            if self.model_.task_ == 'regression':  # shape=(no. train,)
                 self.y_train_ = model.predict(X)
 
-            elif self.model_.task_ == 'binary':
-                self.y_train_ = model.predict_proba(X)[:, 1]
+            elif self.model_.task_ == 'binary':  # shape=(no. train, 2)
+                self.y_train_ = model.predict_proba(X)
 
-            elif self.model_.task_ == 'multiclass':
+            elif self.model_.task_ == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = model.predict_proba(X)
 
         self.alpha_ = self._compute_train_weights(self.X_train_, self.y_train_)
