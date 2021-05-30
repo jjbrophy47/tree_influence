@@ -1,0 +1,13 @@
+# C extensions
+cython
+
+# data processors
+numpy
+scikit-learn
+catboost
+lightgbm
+xgboost
+torch
+
+# visualizers
+matplotlib

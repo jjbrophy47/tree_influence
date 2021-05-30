@@ -4,6 +4,7 @@ import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import OneHotEncoder
 from torch.autograd import Variable
 from scipy.stats import pearsonr
 from scipy.stats import spearmanr
@@ -14,17 +15,17 @@ from .parsers import util
 
 class Trex(Explainer):
     """
-    TODO
-        - Cite github of representer point method.
-
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
 
     Notes
-        - 'lpw' seems to work best across all tasks.
+        - 'kernel', 'lmbd', and 'target' have a significant effect on approximation accuracy.
+
+    Reference
+         - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
     """
-    def __init__(self, kernel='wlp', target='actual', lmbd=0.0003, n_epoch=3000,
-                 random_state=1):
+    def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
+                 random_state=1, verbose=0):
         """
         Input
             kernel: Transformation of the input using the tree-ensemble structure.
@@ -43,6 +44,7 @@ class Trex(Explainer):
             lmbd: Regularizer for the linear model; necessary for the Representer decomposition.
             n_epoch: Max. no. epochs to train the linear model.
             random_state: Random state seed to generate reproducible results.
+            verbose: Output verbosity.
         """
         assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
         assert target in ['actual', 'predicted']
@@ -52,6 +54,7 @@ class Trex(Explainer):
         self.lmbd = lmbd
         self.n_epoch = n_epoch
         self.random_state = random_state
+        self.verbose = verbose
 
     def fit(self, model, X, y):
         """
@@ -74,7 +77,7 @@ class Trex(Explainer):
         # select target
         if self.target == 'actual':
 
-            if self.model_task_ == 'regresssion':  # shape=(no. train,)
+            if self.model_.task_ == 'regression':  # shape=(no. train,)
                 self.y_train_ = y
 
             elif self.model_.task_ == 'multiclass':  # shape=(no. train, no. class)
@@ -245,10 +248,14 @@ class Trex(Explainer):
         # randomly initialize weights
         rng = np.random.default_rng(self.random_state)
 
-        if y.ndim == 1:
+        # MSE model for regression, Softmax model for classification
+        if self.model_.task_ == 'regression':
+            assert y.ndim == 1
             W = rng.uniform(-1, 1, size=X.shape[1])
             model = MSEModel(W)
-        else:
+
+        elif self.model_.task_ in ['binary', 'multiclass']:
+            assert y.ndim == 2
             W = rng.uniform(-1, 1, size=(X.shape[1], y.shape[1]))
             model = SoftmaxModel(W)
 
@@ -285,69 +292,42 @@ class Trex(Explainer):
 
             self._backtracking_line_search(model, model.W.grad, X, y, loss)
 
-            if epoch % 1 == 0:
+            if epoch % 100 == 0 and self.verbose > 0:
                 print(f'Epoch:{epoch:4d}, loss:{util.to_np(loss):.7f}'
                       f', phi_loss:{phi_loss:.7f}, grad:{grad_loss:.7f}')
 
         # compute alpha based on the representer theorem's decomposition
-        temp = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)
+        output = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)
+        if self.model_.task_ in ['binary', 'multiclass']:
+            output = torch.softmax(output, axis=1)
 
-        if y.ndim == 1:
-            alpha = temp - y  # half the derivative of mse
-            alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
+        alpha = output - y  # half the derivative of mse; derivative of softmax cross-entropy
+        alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
 
-            # compute W based on the Representer Theorem decomposition
-            W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,)
+        # compute W based on the Representer Theorem decomposition
+        W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,)
 
-            # compute closeness
-            y = util.to_np(y).flatten()
-            y_p = util.to_np(torch.matmul(X, W)).flatten()
+        output_approx = torch.matmul(X, W)
+        if self.model_.task_ in ['binary', 'multiclass']:
+            output_approx = torch.softmax(output_approx, axis=1)
 
-            l1_diff = np.mean(np.abs(util.to_np(y) - y_p))
-            pcorr, _ = pearsonr(y.flatten(), y_p.flatten())
-            s_corr, _ = spearmanr(y.flatten(), y_p.flatten())
+        # compute closeness
+        y = util.to_np(y).flatten()
+        yp = util.to_np(output_approx).flatten()
+
+        l1_diff = np.mean(np.abs(y - yp))
+        p_corr, _ = pearsonr(y, yp)
+        s_corr, _ = spearmanr(y, yp)
+
+        if self.verbose > 0:
             print(f'L1 diff.: {l1_diff:.5f}, pearsonr: {p_corr:.5f}, spearmanr: {s_corr:.5f}')
-
-            # plt.scatter(y_p.flatten(), y.flatten())
-            # plt.show()
-
-        else:
-
-            softmax_value = torch.softmax(temp, axis=1)
-
-            alpha = softmax_value - y  # derivative of softmax cross entropy
-            alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
-            print(alpha[:5])
-            print(y[:5])
-
-            # sanity check
-            W = torch.matmul(torch.t(X), alpha)  # shape=(no. features, no. class)
-            print(W[:5])
-
-            # calculate y_p, which is the prediction based on decomposition of w by representer theorem
-            temp = torch.matmul(X, W)  # shape=(no. train, no. class)
-            print(temp[:5])
-
-            softmax_value = torch.softmax(temp, axis=1)
-            # softmax_value = softmax_torch(temp, N)
-            y_p = util.to_np(softmax_value)
-            print(y_p[:5, :])
-
-            print('L1 difference between ground truth prediction and prediction by representer theorem decomposition')
-            print(np.mean(np.abs(util.to_np(y) - y_p)))
-
-            print('pearson correlation between ground truth prediction and prediction by representer theorem')
-            y = util.to_np(y)
-            corr, _ = (pearsonr(y.flatten(), (y_p).flatten()))
-            print('pearson:', corr)
-
-            plt.scatter(y_p.flatten(), y.flatten())
+            plt.scatter(yp, y)
             plt.show()
 
-            s_corr, _ = (spearmanr(y.flatten(), (y_p).flatten()))
-            print('spearman:', s_corr)
-
-        self.alpha_ = alpha
+        self.alpha_ = util.to_np(alpha)
+        self.l1_diff_ = l1_diff
+        self.p_corr_ = p_corr
+        self.s_corr_ = s_corr
 
     def _backtracking_line_search(self, model, grad, X, y, val, beta=0.5):
         """
