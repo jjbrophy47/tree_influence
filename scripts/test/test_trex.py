@@ -96,13 +96,13 @@ def test_trex_self_influence_regression(args):
 
     kwargs = {'kernel': args.kernel, 'target': args.target, 'lmbd': args.lmbd}
     explainer = Trex(**kwargs).fit(tree, X_train, y_train)
-    # self_inf = explainer = explainer.get_self_influence()
+    self_inf = explainer.get_self_influence()
 
-    # print('y_train        (head):', y_train[:5])
-    # print('self influence (head):', self_inf[:5])
+    print('y_train        (head):', y_train[:5])
+    print('self influence (head):', self_inf[:5])
 
-    # status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
-    # print(status)
+    status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
 
 
 def test_trex_self_influence_binary(args):
@@ -113,15 +113,15 @@ def test_trex_self_influence_binary(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    kwargs = {'kernel': args.kernel, 'target': args.target}
+    kwargs = {'kernel': args.kernel, 'target': args.target, 'lmbd': args.lmbd}
     explainer = Trex(**kwargs).fit(tree, X_train, y_train)
-    # self_inf = explainer = explainer.get_self_influence()
+    self_inf = explainer.get_self_influence()
 
-    # print('y_train        (head):', y_train[:5])
-    # print('self influence (head):', self_inf[:5])
+    print('y_train        (head):', y_train[:5])
+    print('self influence (head):\n', self_inf[:5])
 
-    # status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
-    # print(status)
+    status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
+    print(status)
 
 
 def test_trex_self_influence_multiclass(args):
@@ -133,19 +133,19 @@ def test_trex_self_influence_multiclass(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    kwargs = {'kernel': args.kernel, 'target': args.target}
+    kwargs = {'kernel': args.kernel, 'target': args.target, 'lmbd': args.lmbd}
     explainer = Trex(**kwargs).fit(tree, X_train, y_train)
-    # self_inf = explainer = explainer.get_self_influence()
+    self_inf = explainer.get_self_influence()
 
-    # print('y_train        (head):', y_train[:5])
-    # print('self influence (head):\n', self_inf[:5])
+    print('y_train        (head):', y_train[:5])
+    print('self influence (head):\n', self_inf[:5])
 
-    # status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
-    # print(status)
+    status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
+    print(status)
 
 
-def test_tracin_explain_regression(args):
-    print(f'\n***** test_tracin_explain_regression *****')
+def test_trex_explain_regression(args):
+    print(f'\n***** test_trex_explain_regression *****')
     args.model_type = 'regressor'
     X_train, X_test, y_train, y_test = get_test_data(args)
 
@@ -154,9 +154,9 @@ def test_tracin_explain_regression(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    kwargs = {'kernel': args.kernel, 'target': args.target}
+    kwargs = {'kernel': args.kernel, 'target': args.target, 'lmbd': args.lmbd}
     explainer = Trex(**kwargs).fit(tree, X_train, y_train)
-    influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+    influence = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
 
     test_pred = tree.predict(X_train[[test_ndx]])
     test_label = y_train[test_ndx]
@@ -173,8 +173,8 @@ def test_tracin_explain_regression(args):
     print(status)
 
 
-def test_tracin_explain_binary(args):
-    print(f'\n***** test_tracin_explain_binary *****')
+def test_trex_explain_binary(args):
+    print(f'\n***** test_trex_explain_binary *****')
     args.model_type = 'binary'
     X_train, X_test, y_train, y_test = get_test_data(args)
     test_ndx = 0
@@ -182,9 +182,9 @@ def test_tracin_explain_binary(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    kwargs = {'kernel': args.kernel, 'target': args.target}
+    kwargs = {'kernel': args.kernel, 'target': args.target, 'lmbd': args.lmbd}
     explainer = Trex(**kwargs).fit(tree, X_train, y_train)
-    influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+    influence = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
 
     test_pred = tree.predict_proba(X_train[[test_ndx]])
     test_label = y_train[test_ndx]
@@ -201,8 +201,8 @@ def test_tracin_explain_binary(args):
     print(status)
 
 
-def test_tracin_explain_multiclass(args):
-    print(f'\n***** test_tracin_explain_multiclass *****')
+def test_trex_explain_multiclass(args):
+    print(f'\n***** test_trex_explain_multiclass *****')
     args.model_type = 'multiclass'
     X_train, X_test, y_train, y_test = get_test_data(args)
     test_ndx = 0
@@ -210,9 +210,9 @@ def test_tracin_explain_multiclass(args):
     tree = get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    kwargs = {'kernel': args.kernel, 'target': args.target}
+    kwargs = {'kernel': args.kernel, 'target': args.target, 'lmbd': args.lmbd}
     explainer = Trex(**kwargs).fit(tree, X_train, y_train)
-    influence = explainer = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+    influence = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
 
     influence_agg = np.abs(influence).sum(axis=1)
     s_ids = np.argsort(np.abs(influence_agg))[::-1]
@@ -235,21 +235,23 @@ if __name__ == '__main__':
     parser.add_argument('--n_train', type=int, default=100)
     parser.add_argument('--n_test', type=int, default=1)
     parser.add_argument('--n_feat', type=int, default=10)
-    parser.add_argument('--n_tree', type=int, default=5)
-    parser.add_argument('--max_depth', type=int, default=3)
+    parser.add_argument('--n_tree', type=int, default=100)
+    parser.add_argument('--max_depth', type=int, default=7)
     parser.add_argument('--tree_type', type=str, default='lgb')
     parser.add_argument('--model_type', type=str, default='dummy')
     parser.add_argument('--rs', type=int, default=1)
+
+    # explainer settings
     parser.add_argument('--kernel', type=str, default='lpw')
-    parser.add_argument('--target', type=str, default='actual', help='actual or predicted.')
-    parser.add_argument('--lmbd', type=float, default=0.03, help='l2 regularizer coefficient.')
+    parser.add_argument('--target', type=str, default='predicted', help='actual or predicted.')
+    parser.add_argument('--lmbd', type=float, default=0.003, help='l2 regularizer coefficient.')
     args = parser.parse_args()
 
     # tests
-    # test_trex_self_influence_regression(args)
+    test_trex_self_influence_regression(args)
     test_trex_self_influence_binary(args)
-    # test_trex_self_influence_multiclass(args)
+    test_trex_self_influence_multiclass(args)
 
-    # test_trex_explain_regression(args)
-    # test_trex_explain_binary(args)
-    # test_trex_explain_multiclass(args)
+    test_trex_explain_regression(args)
+    test_trex_explain_binary(args)
+    test_trex_explain_multiclass(args)

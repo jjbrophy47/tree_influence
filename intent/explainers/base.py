@@ -1,3 +1,8 @@
+"""
+TODO
+    - How do we pick a comparable way to choose train instances for explaining a single test instance.
+        * e.g. TracIn measures the test loss; Trex measures which instances have the biggest imapce on the prediction.
+"""
 from abc import abstractmethod
 
 from .parsers import parse_model

@@ -111,14 +111,18 @@ class Trex(Explainer):
             - 2d array of shape=(no. train, no. classes) (multiclass).
             - Arrays are returned in the same order as the traing data.
         """
-        return self.alpha_
+        if self.model_.task_ == 'binary':
+            result = self.alpha_[:, 1].copy()
+        else:
+            result = self.alpha_.copy()
+        return result
 
     def explain(self, X, y):
         """
         - Compute attribution of each training instance on the test instance prediction.
             Transform the test instance using the specified tree kernel.
             Compute dot prod. between transformed train and test, weighted by alpha.
-        - Provides a local explanation of the test instance prediction.
+        - Provides a local explanation of the test instance PREDICTION not LOSS.
 
         Return
             - Regression and binary: 1d array of shape=(no. train).
@@ -131,14 +135,17 @@ class Trex(Explainer):
         X_test_ = self._kernel_transform(X).flatten()
         sim = np.dot(self.X_train_, X_test_)
 
-        if self.model_.task_ in ['regression', 'binary']:
+        if self.model_.task_ == 'regression':
             influence = sim * self.alpha_  # representer values
+
+        elif self.model_.task_ == 'binary':
+            influence = sim * self.alpha_[:, 1]
 
         elif self.model_.task_ == 'multiclass':
             influence = np.zeros(self.alpha_.shape, dtype=np.float32)
 
             for j in range(influence.shape[1]):  # per class
-                influence[:, j] = sim * self.alpha_[j]  # representer values
+                influence[:, j] = sim * self.alpha_[:, j]
 
         return influence
 
@@ -324,10 +331,11 @@ class Trex(Explainer):
             plt.scatter(yp, y)
             plt.show()
 
-        self.alpha_ = util.to_np(alpha)
         self.l1_diff_ = l1_diff
         self.p_corr_ = p_corr
         self.s_corr_ = s_corr
+
+        return util.to_np(alpha)
 
     def _backtracking_line_search(self, model, grad, X, y, val, beta=0.5):
         """
