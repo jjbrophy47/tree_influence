@@ -11,7 +11,7 @@ class TreeExplainer(object):
         - CatBoostRegressor, CatBoostClassifier
         - LGBMRegressor, LGBMClassifier
         - GradientBoostingRegressor, GradientBoostingClassifier
-        - RandomForestREgressor, RandomForestClassifier
+        - RandomForestRegressor, RandomForestClassifier
         - XGBRegressor, XGBClassifier
 
     Currently supported explainers:

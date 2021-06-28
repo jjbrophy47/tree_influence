@@ -26,9 +26,9 @@ class Explainer(object):
             X: training data.
             y: training targets.
         """
-        self.model_ = parse_model(model)
+        self.model_ = parse_model(model, X, y)
         assert self.model_.tree_type in ['rf', 'gbdt']
-        assert self.model_.task_ in ['regression', 'binary', 'multiclass']
+        assert self.model_.objective in ['regression', 'binary', 'multiclass']
 
     @abstractmethod
     def get_self_influence(self):

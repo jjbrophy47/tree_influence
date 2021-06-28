@@ -12,9 +12,16 @@ from .tree import TreeEnsembleBinaryClassifier
 from .tree import TreeEnsembleMulticlassClassifier
 
 
-def parse_model(model):
+def parse_model(model, X, y):
     """
     Parse underlying structure based on the model type.
+
+    Input
+        model: Tree-ensemble object.
+        X: 2d array of training data.
+        y: 1d array of targets.
+
+    Returns a standardized tree-ensemble representation.
     """
 
     # extract underlying tree-ensemble model representation
@@ -22,7 +29,7 @@ def parse_model(model):
         trees, params = parse_cb_ensemble(model)
 
     elif 'LGBM' in str(model):
-        trees, params = parse_lgb_ensemble(model)
+        trees, params = parse_lgb_ensemble(model, X, y)
 
     elif 'GradientBoosting' in str(model):
         trees, params = parse_skgbm_ensemble(model)

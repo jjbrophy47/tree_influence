@@ -67,12 +67,15 @@ def get_model(args):
         tree = class_fn(n_estimators=args.n_tree, max_depth=args.max_depth, random_state=args.rs)
 
     elif args.tree_type == 'xgb':
+
         if args.model_type == 'regressor':
             tree = XGBRegressor(n_estimators=args.n_tree, max_depth=args.max_depth, random_state=args.rs)
+
         elif args.model_type == 'binary':
             tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
                                  random_state=args.rs, use_label_encoder=False,
                                  eval_metric='logloss')
+
         elif args.model_type == 'multiclass':
             tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
                                  random_state=args.rs, use_label_encoder=False,
