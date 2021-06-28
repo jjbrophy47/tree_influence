@@ -1,4 +1,6 @@
 from .explainers import TracIn
+from .explainers import Trex
+from .explainers import LeafInfluence
 
 
 class TreeExplainer(object):
@@ -11,11 +13,29 @@ class TreeExplainer(object):
         - GradientBoostingRegressor, GradientBoostingClassifier
         - RandomForestREgressor, RandomForestClassifier
         - XGBRegressor, XGBClassifier
+
+    Currently supported explainers:
+        - TracIn
+        - Representer-point (Trex)
+        - Influence Function (LeafInfluence)
+        - HYDRA
     """
     def __init__(self, method='tracin', **kwargs):
 
         if method == 'tracin':
             self.explainer = TracIn(**kwargs)
+
+        elif method == 'trex':
+            self.explainer = Trex(**kwargs)
+
+        elif method == 'leaf_influence':
+            self.explainer = LeafInfluence(**kwargs)
+
+        elif method == 'hydra':
+            self.explainer = Hydra(**kwargs)
+
+        else:
+            raise ValueError(f'Unknown method {method}')
 
     def fit(self, model, X, y):
         """

@@ -7,22 +7,48 @@ def parse_xgb_ensemble(model):
     """
     Parse XGBoost model based on its string representation.
     """
+
+    # validation
+    model_params = model.get_params()
+    assert model_params['reg_alpha'] == 0
+    assert model_params['scale_pos_weight'] == 1
+
     string_data = _get_string_data_from_xgb_model(model)
     trees = np.array([_parse_xgb_tree(tree_str) for tree_str in string_data], dtype=np.dtype(object))
 
+    # classification
     if hasattr(model, 'n_classes_'):
-        if model.n_classes_ == 2:
-            bias = 0.0
 
-        elif model.n_classes_ > 2:
+        if model.n_classes_ == 2:  # binary
+            assert model_params['objective'] == 'binary:logistic'
+            bias = 0.0  # log space
+            objective = 'binary'
+            factor = 0.0
+
+        else:
+            assert model.n_classes_ > 2
+            assert model_params['objective'] == 'multi:softprob'
             n_trees = int(trees.shape[0] / model.n_classes_)
             trees = trees.reshape((n_trees, model.n_classes_))
-            bias = [0.0] * model.n_classes_
+            bias = [0.0] * model.n_classes_  # log space
+            objective = 'multiclass'
+            factor = 2.0
 
-    else:
-        bias = model.get_params()['base_score']
+    else:  # regression
+        assert model_params['objective'] == 'reg:squared_error'
+        bias = model.get_params()['base_score']  # 0.5 for some reason
+        objective = 'regression'
+        factor = 0.0
 
-    return trees, bias
+    params = {}
+    params['bias'] = bias
+    params['learning_rate'] = model_params['learning_rate']
+    params['l2_leaf_reg'] = model_params['reg_lambda']
+    params['objective'] = objective
+    params['tree_type'] = 'gbdt'
+    params['factor'] = factor
+
+    return trees, params
 
 
 # private

@@ -12,6 +12,11 @@ def parse_skgbm_ensemble(model):
         - RandomForestRegressor and RandomForestClassifier, `estimators_`.shape=(no. estimators, no .classes).
         - Each tree's `value`.shape=(no. nodes, 1, 1).
     """
+
+    # validation
+    model_params = model.get_params()
+    assert model_params['criterion'] == 'friedman_mse'
+
     estimators = model.estimators_
     trees = np.zeros(estimators.shape, dtype=np.dtype(object))
 
@@ -35,22 +40,39 @@ def parse_skgbm_ensemble(model):
 
     # regression
     if hasattr(model.init_, 'constant_'):
-        assert model.loss == 'ls'  # least squares
-        bias = model.init_.constant_.flatten()[0]
+        assert model_params['loss'] == 'ls'  # least squares
+        bias = model.init_.constant_.flatten()[0]  # log space
+        objective = 'regression'
+        factor = 0
 
     # classification
     else:
+        assert model_params['loss'] == 'deviance'
         class_prior = model.init_.class_prior_
+        n_class = class_prior.shape[0]
 
         # binary
-        if class_prior.shape[0] == 2:
-            bias = util.logit(class_prior[1])
+        if n_class == 2:
+            bias = util.logit(class_prior[1])  # inverse of sigmoid -> log space
+            objective = 'binary'
+            factor = 0
 
         # multiclass
         else:
-            bias = list(np.log(class_prior))
+            assert n_class > 2
+            bias = list(np.log(class_prior))  # log space
+            objective = 'multiclass'
+            factor = (n_class) / (n_class - 1)
 
-    return trees, bias
+    params = {}
+    params['bias'] = bias
+    params['learning_rate'] = model_params['learning_rate']
+    params['l2_leaf_reg'] = 0.0
+    params['objective'] = objective
+    params['tree_type'] = 'gbdt'
+    params['factor'] = factor
+
+    return trees, params
 
 
 def parse_skrf_ensemble(model):
@@ -81,20 +103,30 @@ def parse_skrf_ensemble(model):
         if n_class == 0:
             leaf_vals = list(t.value.flatten())
             trees[i] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            bias = 0.0
+            objective = 'regression'
+            factor = 0.0
 
         # binary classification
         elif n_class == 2:
             value = t.value.squeeze()  # value.shape=(no. nodes, 2)
             leaf_vals = (value / value.sum(axis=1).reshape(-1, 1))[:, 1].tolist()
             trees[i] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            bias = 0.0
+            objective = 'binary'
+            factor = 0.0
 
         # multiclass classification
         else:
+            assert n_class > 2
             value = t.value.squeeze()  # value.shape=(no. nodes, no. classes)
             value /= value.sum(axis=1).reshape(-1, 1)  # normalize
             for j in range(value.shape[1]):  # per class
                 leaf_vals = list(value[:, j])
                 trees[i][j] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            bias = [0.0] * n_class
+            objective = 'multiclass'
+            factor = (n_class) / (n_class - 1)
 
     # set bias
     bias = 0.0
@@ -102,4 +134,12 @@ def parse_skrf_ensemble(model):
     if n_class >= 3:
         bias = [0.0] * n_class
 
-    return trees, bias
+    params = {}
+    params['bias'] = bias
+    params['learning_rate'] = 0.0
+    params['l2_leaf_reg'] = 0.0
+    params['objective'] = objective
+    params['tree_type'] = 'rf'
+    params['factor'] = factor
+
+    return trees, params

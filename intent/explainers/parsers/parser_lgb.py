@@ -1,3 +1,8 @@
+"""
+TODO: Subtract initial guess (log space for classification) from
+    first tree (first k trees for multiclass) to be consistent with
+    other GBDT implementatons.
+"""
 import numpy as np
 
 from .tree import Tree
@@ -7,21 +12,50 @@ def parse_lgb_ensemble(model):
     """
     Parse LightGBM model based on its json representation.
     """
+
+    # validate
+    model_params = model.get_params()
+    assert model_params['reg_alpha'] == 0
+    assert model_params['class_weight'] is None
+    assert model_params['boosting_type'] == 'gbdt'
+
     json_data = _get_json_data_from_lgb_model(model)
     trees = np.array([_parse_lgb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))
 
-    bias = 0.0
-
-    # multiclass
+    # classification
     if hasattr(model, 'classes_'):
         n_class = model.classes_.shape[0]
 
-        if n_class > 2:
+        if n_class == 2:  # binary
+            assert model.objective_ == 'binary'
+            bias = 0.0
+            objective = 'binary'
+            factor = 0.0
+
+        else:  # multiclass
+            assert n_class > 2
+            assert model.objective_ == 'multiclass'
             n_trees = int(trees.shape[0] / n_class)
             trees = trees.reshape((n_trees, n_class))
             bias = [0.0] * n_class
+            objective = 'multiclass'
+            factor = (n_class) / (n_class - 1)
 
-    return trees, bias
+    else:  # regression
+        assert model.objective_ == 'regression'
+        bias = 0.0
+        objective = 'regression'
+        factor = 0.0
+
+    params = {}
+    params['bias'] = bias
+    params['learning_rate'] = model_params['learning_rate']
+    params['l2_leaf_reg'] = model_params['reg_lambda']
+    params['objective'] = objective
+    params['tree_type'] = 'gbdt'
+    params['factor'] = factor
+
+    return trees, params
 
 
 # private

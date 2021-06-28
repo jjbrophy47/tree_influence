@@ -11,10 +11,44 @@ def parse_cb_ensemble(model):
     """
     Parse CatBoost model based on its json representation.
     """
+
+    # validation
+    model_params = model.get_all_params()
+    assert model_params['leaf_estimation_iterations'] == 1
+    assert model_params['leaf_estimation_method'] == 'Newton'
+
+    # parsing
     json_data = _get_json_data_from_cb_model(model)
     trees = np.array([_parse_cb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))
-    _, bias = model.get_scale_and_bias()
-    return trees, bias
+
+    n_class = model.classes_.shape[0]
+
+    # regression
+    if n_class == 0:
+        assert model_params['loss_function'] == 'RMSE'
+        objective = 'regression'
+        factor = 0.0
+
+    elif n_class == 2:
+        assert model_params['loss_function'] == 'Logloss'
+        objective = 'binary'
+        factor = 0.0
+
+    else:
+        assert n_class > 2
+        assert model_params['loss_function'] == 'MultiClass'
+        objective = 'multiclass'
+        factor = (n_class) / (n_class - 1)
+
+    params = {}
+    params['bias'] = model.get_scale_and_bias()[1]  # for classification: bias is in log space
+    params['learning_rate'] = model_params['learning_rate']
+    params['l2_leaf_reg'] = model_params['l2_leaf_reg']
+    params['objective'] = objective
+    params['tree_type'] = 'gbdt'
+    params['factor'] = factor
+
+    return trees, params
 
 
 # private

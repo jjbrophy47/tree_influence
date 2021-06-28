@@ -72,17 +72,45 @@ class TreeEnsemble(object):
     """
     Abstract class for TreeEnsemble classes.
     """
-    def __init__(self, trees, bias, tree_type='gbdt'):
+    def __init__(self, trees, objective, tree_type, bias,
+                 learning_rate, l2_leaf_reg, factor):
         """
         Input
             trees: A 1d (or 2d for multiclass) array of Tree objects.
+            objective: str, task ("regression", "binary", or "multiclass").
             bias: A single or 1d list (for multiclass) of floats.
-
+                If classification, numbers are in log space.
+            tree_type: str, "gbdt" or "rf".
+            learning_rate: float, learning rate (GBDT models only).
+            l2_leaf_reg: float, leaf regularizer (GBDT models only).
         """
         assert trees.dtype == np.dtype(object)
         self.trees = trees
-        self.bias = bias
+        self.objective = objective
         self.tree_type = tree_type
+        self.bias = bias
+        self.learning_rate = learning_rate
+        self.l2_leaf_reg = l2_leaf_reg
+        self.factor = factor
+
+    def __str__(self):
+        """
+        Return string representation of model.
+        """
+        params = self.get_params()
+        return str(params)
+
+    def get_params(self):
+        """
+        Return dict. of object parameters.
+        """
+        params = {}
+        params['objective'] = self.objective
+        params['tree_type'] = self.tree_type
+        params['bias'] = self.bias
+        params['learning_rate'] = self.learning_rate
+        params['l2_leaf_reg'] = self.l2_leaf_reg
+        params['factor'] = self.factor
 
     def predict(self, X):
         """
@@ -132,22 +160,20 @@ class TreeEnsembleRegressor(TreeEnsemble):
     """
     Extension of the TreeEnsemble class for regression.
     """
-    def __init__(self, trees, bias, tree_type='gbdt'):
-        super().__init__(trees, bias, tree_type)
+    def __init__(self, trees, params):
+        super().__init__(trees, **params)
         assert self.trees.ndim == 1
-        assert isinstance(bias, float)
-        self.task_ = 'regression'
+        assert isinstance(self.bias, float)
 
 
 class TreeEnsembleBinaryClassifier(TreeEnsemble):
     """
     Extension of the TreeEnsemble class for binary classfication.
     """
-    def __init__(self, trees, bias, tree_type='gbdt'):
-        super().__init__(trees, bias, tree_type)
+    def __init__(self, trees, params):
+        super().__init__(trees, **params)
         assert self.trees.ndim == 1
-        assert isinstance(bias, float)
-        self.task_ = 'binary'
+        assert isinstance(self.bias, float)
 
     def predict(self, X):
         """
@@ -165,15 +191,14 @@ class TreeEnsembleMulticlassClassifier(TreeEnsemble):
     Extension of the TreeEnsemble class for multiclass classfication.
     """
 
-    def __init__(self, trees, bias, tree_type='gbdt'):
+    def __init__(self, trees, params):
         """
         Input should be an array of Tree objects of shape=(no. trees, no. classes)
         """
-        super().__init__(trees, bias, tree_type)
+        super().__init__(trees, **params)
         assert self.trees.ndim == 2
         assert self.trees.shape[1] >= 3
-        assert len(bias) >= 3
-        self.task_ = 'multiclass'
+        assert len(self.bias) >= 3
 
     def predict(self, X):
         """

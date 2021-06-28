@@ -7,19 +7,19 @@ from .parsers import util
 
 class TracIn(Explainer):
     """
-    Abstract TracIn explainer that adapts the TracIn method to tree ensembles.
+    Explainer that adapts the TracIn method to tree ensembles.
 
     Notes
-        - For RFs, there is no initial guess, so each gradients layer is associated
+        - For RFs, there is no initial guess, so each gradient layer is associated
             with a tree (or boosting iteration).
         - For GBDTs, there is an iniitial guess, so there is an extra gradient layer
             at the beginning; this layer can be included or exlcuded in both the global
             and local explanations by using the `initial_grad` argument.
         - Currently, we use error residuals to compute marginal contributions; however,
-            we could also try using the tree output instead (approx. of the error residuals).
+            one could also use the tree output instead (approx. of the error residuals).
             There would be no initial guess gradient though, so this would require
             `initial_grad`='keep' for GBDTs.
-        - Local explanations for GBDT grad=approx with initial_grad=skip is essentially
+        - Local explanations for GBDT `grad`='approx' with `initial_grad`='skip' is essentially
             the same as doing the dot product using the LeafOutput tree kernel.
     """
     def __init__(self, grad='residual', initial_grad='keep'):
@@ -29,10 +29,8 @@ class TracIn(Explainer):
                 'residual': Use error residuals when computing marginals.
                 'approx': Use tree output (approx. of residuals) when computing marginals.
             initial_grad
-                'keep': For GBDTs, include gradient from initial guess
-                    when computing local explanation; does not affect self-influence.
-                'skip': For GBDTs, exclude gradient from initial guess
-                    when computing local explanation; does not affect self-influence.
+                'keep': For GBDTs, include gradient from initial guess.
+                'skip': For GBDTs, exclude gradient from initial guess.
         """
         assert grad in ['residual', 'approx']
         assert initial_grad in ['keep', 'skip']

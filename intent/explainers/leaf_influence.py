@@ -13,46 +13,29 @@ from .base import Explainer
 from .parsers import util
 
 
-class Trex(Explainer):
+class LeafInfluence(Explainer):
     """
-    Tree-Ensemble Representer Examples: Explainer that adapts the
-    Representer point method to tree ensembles.
-
-    Notes
-        - 'kernel', 'lmbd', and 'target' have a significant effect on approximation accuracy.
+    LeafInfluence: Explainer that adapts the
+    influence functions method to tree ensembles.
 
     Reference
          - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
     """
-    def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
-                 random_state=1, verbose=0):
+    def __init__(self, update_set=0, l2_reg_coef=0, random_state=1, verbose=0):
         """
         Input
-            kernel: Transformation of the input using the tree-ensemble structure.
-                'to_': Tree output; output of each tree in the ensemble.
-                'lp_': Leaf path; one-hot encoding of leaf indices across all trees.
-                'lpw': Weighted leaf path; like 'lp' but replaces 1s with 1 / leaf count.
-                'lo_': Leaf output; like 'lp' but replaces 1s with leaf values.
-                'low': Weighted leaf otput; like 'lo' but replace leaf value with 1 / leaf value.
-                'fp_': Feature path; one-hot encoding of node indices across all trees.
-                'fpw': Weighted feature path; like 'fp' but replaces 1s with 1 / node count.
-                'fo_': Feature output; like 'fp' but replaces leaf 1s with leaf values.
-                'fow': Weighted feature output; like 'fo' but replaces leaf 1s with 1 / leaf values.
-            target: Targets for the linear model to train on.
-                'actual': Ground-truth targets.
-                'predicted': Predicted targets from the tree-ensemble.
-            lmbd: Regularizer for the linear model; necessary for the Representer decomposition.
-            n_epoch: Max. no. epochs to train the linear model.
+            update_set: No. neighboring leaf values to use for approximating leaf influence.
+                0: Use no other leaves, influence is computed independent of other trees.
+                -1: Use all other trees, most accurate but also most computationally expensive.
+                1+: Trade-off between accuracy and computational resources.
+            l2_reg_coef: Regularization coefficient to prevent leaf values from overfitting.
+                First used in XGBoost paper. If set to 0, then learning reverts to traditiional
+                gradient tree boosting.
             random_state: Random state seed to generate reproducible results.
             verbose: Output verbosity.
         """
-        assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
-        assert target in ['actual', 'predicted']
-        assert isinstance(lmbd, float)
-        self.kernel = kernel
-        self.target = target
-        self.lmbd = lmbd
-        self.n_epoch = n_epoch
+        assert update_set >= -1
+        self.update_set = update_set
         self.random_state = random_state
         self.verbose = verbose
 
@@ -362,60 +345,3 @@ class Trex(Explainer):
                 t = beta * t
             else:
                 break
-
-
-class SoftmaxModel(nn.Module):
-    """
-    Model that computes the binary or multiclass cross-entropy loss
-    after normalization using the softmax.
-    """
-
-    def __init__(self, W):
-        super(SoftmaxModel, self).__init__()
-        self.W = Variable(torch.from_numpy(W).type(torch.float32), requires_grad=True)
-
-    def forward(self, X, y):
-        """
-        Calculate loss for the loss function and L2 regularizer.
-
-        Note
-            - This loss function represents "closeness" if y is predicted probabilities.
-        """
-        D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0], no. class)
-        D = D - torch.logsumexp(D, axis=1).reshape(-1, 1)  # softmax: normalize log probs.
-        Phi = torch.sum(-torch.sum(D * y, axis=1))  # cross-entropy loss
-
-        # L2 norm.
-        W1 = torch.squeeze(self.W)
-        L2 = torch.sum(torch.mul(W1, W1))
-
-        return (Phi, L2)
-
-
-class LSModel(nn.Module):
-    """
-    Model that computes the least squares loss.
-
-    Note
-        - This loss function represents "closeness" if y is predicted probabilities.
-    """
-
-    def __init__(self, W):
-        super(LSModel, self).__init__()
-        self.W = Variable(torch.from_numpy(W).type(torch.float32), requires_grad=True)
-
-    def forward(self, X, y):
-        """
-        Calculate loss for the loss function and L2 regularizer.
-
-        Note
-            - This loss function represents "closeness" if y is predicted values.
-        """
-        D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
-        Phi = torch.sum(torch.square(D - y))  # LS loss
-
-        # L2 norm.
-        W1 = torch.squeeze(self.W)
-        L2 = torch.sum(torch.mul(W1, W1))
-
-        return (Phi, L2)
