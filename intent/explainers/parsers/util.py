@@ -74,7 +74,7 @@ def softmax(z):
     if z.ndim == 1:
         z = z.reshape(1, -1)  # shape=(1, len(z))
 
-    centered_exponent = np.exp(y - np.max(y, axis=1, keepdims=True))
+    centered_exponent = np.exp(z - np.max(z, axis=1, keepdims=True))
     return centered_exponent / np.sum(centered_exponent, axis=1, keepdims=True)
 
 

@@ -11,7 +11,6 @@ def parse_xgb_ensemble(model):
     # validation
     model_params = model.get_params()
     assert model_params['reg_alpha'] == 0
-    assert model_params['scale_pos_weight'] == 1
 
     string_data = _get_string_data_from_xgb_model(model)
     trees = np.array([_parse_xgb_tree(tree_str) for tree_str in string_data], dtype=np.dtype(object))
@@ -21,6 +20,7 @@ def parse_xgb_ensemble(model):
 
         if model.n_classes_ == 2:  # binary
             assert model_params['objective'] == 'binary:logistic'
+            assert model_params['scale_pos_weight'] == 1
             bias = 0.0  # log space
             objective = 'binary'
             factor = 0.0
@@ -28,6 +28,7 @@ def parse_xgb_ensemble(model):
         else:
             assert model.n_classes_ > 2
             assert model_params['objective'] == 'multi:softprob'
+            assert model_params['scale_pos_weight'] is None
             n_trees = int(trees.shape[0] / model.n_classes_)
             trees = trees.reshape((n_trees, model.n_classes_))
             bias = [0.0] * model.n_classes_  # log space
@@ -35,7 +36,8 @@ def parse_xgb_ensemble(model):
             factor = 2.0
 
     else:  # regression
-        assert model_params['objective'] == 'reg:squared_error'
+        assert model_params['objective'] == 'reg:squarederror'
+        assert model_params['scale_pos_weight'] == 1
         bias = model.get_params()['base_score']  # 0.5 for some reason
         objective = 'regression'
         factor = 0.0
