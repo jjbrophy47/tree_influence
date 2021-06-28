@@ -91,6 +91,8 @@ def _parse_lgb_tree(tree_dict):
         https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py
 
     Returns one or a list of Trees (one for each class).
+
+    TODO: somehow subtract initial guess from the leaves of the first tree.
     """
 
     children_left = []
