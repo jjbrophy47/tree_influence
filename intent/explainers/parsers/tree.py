@@ -181,13 +181,18 @@ class TreeEnsemble(object):
 
     @property
     def n_class_(self):
+        """
+        Returns no. "sets of trees". E.g. 1 for regression and binary
+            since they both only need 1 set of trees for their objective.
+            Multiclass needs k >= 3 sets of trees.
+        """
         result = 0
 
         if self.objective == 'regression':
-            result = 0
+            result = 1
 
         elif self.objective == 'binary':
-            result = 2
+            result = 1
 
         else:
             assert self.objective == 'multiclass'
@@ -247,7 +252,8 @@ class TreeEnsembleMulticlassClassifier(TreeEnsemble):
         X = util.check_input_data(X)
 
         # sum all predictions instead of storing them
-        pred = np.zeros((X.shape[0], self.trees.shape[1]), dtype=np.float32)  # shape=(no. instances, no. classes)
+        pred = np.zeros((X.shape[0], self.trees.shape[1]), dtype=np.float32)  # shape=(X.shape[0], no. class)
+
         for i in range(self.trees.shape[1]):  # per class
             class_pred = np.zeros(X.shape[0])
 

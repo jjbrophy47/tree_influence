@@ -22,6 +22,8 @@ class LeafInfluence(Explainer):
 
     Paper
         TODO
+
+    TODO: add RF support?
     """
     def __init__(self, update_set=0, random_state=1, verbose=0):
         """
@@ -120,7 +122,7 @@ class LeafInfluence(Explainer):
                 leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
 
                 # compare leaf values to actual leaf values
-                assert np.isclose(leaf_prediction, leaf_vals[leaf_idx])
+                assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=1e-5)
 
                 # store statistics
                 denominator[n_prev_leaves + leaf_idx] = leaf_denominator
