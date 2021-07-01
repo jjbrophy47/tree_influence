@@ -21,6 +21,7 @@ def parse_xgb_ensemble(model):
         if model.n_classes_ == 2:  # binary
             assert model_params['objective'] == 'binary:logistic'
             assert model_params['scale_pos_weight'] == 1
+            trees = trees.reshape(-1, 1)  # shape=(no. trees, 1)
             bias = 0.0  # log space
             objective = 'binary'
             factor = 0.0
@@ -38,6 +39,7 @@ def parse_xgb_ensemble(model):
     else:  # regression
         assert model_params['objective'] == 'reg:squarederror'
         assert model_params['scale_pos_weight'] == 1
+        trees = trees.reshape(-1, 1)  # shape=(no. trees, 1)
         bias = model.get_params()['base_score']  # 0.5 for some reason
         objective = 'regression'
         factor = 0.0

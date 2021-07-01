@@ -27,21 +27,26 @@ def parse_cb_ensemble(model):
     if n_class == 0:
         assert model_params['loss_function'] == 'RMSE'
         objective = 'regression'
+        bias = model.get_scale_and_bias()[1]  # log space
         factor = 0.0
+        trees = trees.reshape(-1, 1)  # shape=(no. tree, 1)
 
     elif n_class == 2:
         assert model_params['loss_function'] == 'Logloss'
         objective = 'binary'
+        bias = model.get_scale_and_bias()[1]  # log space
         factor = 0.0
+        trees = trees.reshape(-1, 1)  # shape=(no. tree, 1)
 
     else:
         assert n_class > 2
         assert model_params['loss_function'] == 'MultiClass'
         objective = 'multiclass'
+        bias = model.get_scale_and_bias()[1]
         factor = (n_class) / (n_class - 1)
 
     params = {}
-    params['bias'] = model.get_scale_and_bias()[1]  # for classification: bias is in log space
+    params['bias'] = bias
     params['learning_rate'] = model_params['learning_rate']
     params['l2_leaf_reg'] = model_params['l2_leaf_reg']
     params['objective'] = objective

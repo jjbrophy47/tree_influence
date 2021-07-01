@@ -6,16 +6,16 @@ from ._tree import _Tree
 
 class Tree(object):
     """
-    Wrapper for the standardized tree object.
+    Wrapper for the standardized tree structure object.
 
     Note:
         - The Tree object is a binary tree structure.
         - The tree structure is used for predictions and extracting
           structure information.
 
-    Reference
-        - https://github.com/scikit-learn/scikit-learn/blob/
-            15a949460dbf19e5e196b8ef48f9712b72a3b3c3/sklearn/tree/_tree.pyx
+    Reference:
+    https://github.com/scikit-learn/scikit-learn/blob/
+        15a949460dbf19e5e196b8ef48f9712b72a3b3c3/sklearn/tree/_tree.pyx
     """
 
     def __init__(self, children_left, children_right, feature, threshold, leaf_vals):
@@ -76,7 +76,7 @@ class Tree(object):
 
 class TreeEnsemble(object):
     """
-    Standardized tree-ensemble model.
+    Abstract class for TreeEnsemble classes.
     """
     def __init__(self, trees, objective, tree_type, bias,
                  learning_rate, l2_leaf_reg, factor):
@@ -89,7 +89,6 @@ class TreeEnsemble(object):
             tree_type: str, "gbdt" or "rf".
             learning_rate: float, learning rate (GBDT models only).
             l2_leaf_reg: float, leaf regularizer (GBDT models only).
-            factor: float, scaler for the redundant class (GBDT multiclass models only)
         """
         assert trees.dtype == np.dtype(object)
         self.trees = trees
@@ -99,15 +98,6 @@ class TreeEnsemble(object):
         self.learning_rate = learning_rate
         self.l2_leaf_reg = l2_leaf_reg
         self.factor = factor
-
-        # validate
-        if self.objective in ['regression', 'binary']:
-            assert self.trees.shape[1] == 1
-            assert isinstance(self.bias, float)
-
-        elif self.objective == 'multiclass':
-            assert self.trees.shape[1] > 2
-            assert len(self.bias) == self.trees.shape[1]
 
     def __str__(self):
         """
@@ -130,77 +120,64 @@ class TreeEnsemble(object):
 
     def predict(self, X):
         """
-        Sums leaf over all trees for each x in X, then apply activation.
+        Sums leaf values from all trees for each x in X.
 
-        Returns 2d array of leaf values; shape=(X.shape[0], no. class)
+        Returns 1d array of leaf values.
+
+        NOTE: Only works for binary classification and regression.
+              Multiclass classification must override this method.
         """
         X = util.check_input_data(X)
 
-        # shape=(X.shape[0], no. class)
-        pred = np.tile(self.bias, (X.shape[0], 1)).astype(np.float32)
+        # sum predictions over all trees
+        pred = np.zeros(X.shape[0])
+        for i, tree in enumerate(self.trees):
+            pred += tree.predict(X)
 
-        for tree_idx in range(self.n_tree_):  # per tree
-            for class_idx in range(self.n_class_):  # per class
-                pred[:, class_idx] += self.trees[tree_idx, class_idx].predict(X)
+        pred += self.bias
 
-        # transform predictions based on the tree type and objective
         if self.tree_type == 'rf':
-            pred /= self.n_tree_
-
-        else:  # gbdt
-
-            if self.objective == 'binary':
-                pred = util.sigmoid(pred)
-
-            elif self.objective == 'multiclass':
-                pred = util.softmax(pred)
+            pred /= self.trees.shape[0]
 
         return pred
 
     def apply(self, X):
         """
-        Returns 3d array of leaf indices; shape=(X.shape[0], no. tree, no. class).
+        Returns 2d array of leaf indices of shape=(X.shape[0], no. trees).
+
+        Note:
+            - Only works for regression and binary, multiclass must override.
         """
-        leaves = np.zeros((X.shape[0], self.n_tree_, self.n_class_), dtype=np.int32)
-        for tree_idx in range(self.n_tree_):
-            for class_idx in range(self.n_class_):
-                leaves[:, tree_idx, class_idx] = self.trees[tree_idx][class_idx].apply(X)
-        return leaves
+        return np.hstack([tree.apply(X).reshape(-1, 1) for tree in self.trees]).astype(np.int32)
 
     def get_leaf_values(self):
         """
         Returns 1d array of leaf values of shape=(no. leaves across all trees,).
 
-        Note
-            - Multiclass trees are flattened s.t. trees from all classes in one boosting
-                iteration come before those in the subsequent boosting iteration.
+        Note:
+            - Only works for regression and binary, multiclass must override.
         """
-        return np.concatenate([tree.get_leaf_values() for tree in self.trees.flatten()]).astype(np.float32)
+        return np.concatenate([tree.get_leaf_values() for tree in self.trees]).astype(np.float32)
 
     def get_leaf_counts(self):
         """
-        Returns 1d array of leaf counts, one per tree; shape=(total no. trees,).
+        Returns 1d array of leaf counts, one per tree; shape=(no. trees,).
 
-        Note
-            - Multiclass trees are flattened s.t. trees from all classes in one boosting
-                iteration come before those in the subsequent boosting iteration.
+        Note:
+            - Only works for regression and binary, multiclass must override.
         """
-        return np.array([tree.leaf_count_ for tree in self.trees.flatten()]).astype(np.int32)
+        return np.array([tree.leaf_count_ for tree in self.trees]).astype(np.int32)
 
     def update_node_count(self, X):
         """
         Increment each node's count for each x in X that passes through each node
             for all trees in the ensemble.
+
+        Note:
+            - Works for regression, binary, and multiclass.
         """
         for tree in self.trees.flatten():
             tree.update_node_count(X)
-
-    @property
-    def n_tree_(self):
-        """
-        Returns no. trees (or boosting iterations for gbdt) in the ensemble.
-        """
-        return self.trees.shape[0]
 
     @property
     def n_class_(self):
@@ -209,4 +186,99 @@ class TreeEnsemble(object):
             since they both only need 1 set of trees for their objective.
             Multiclass needs k >= 3 sets of trees.
         """
-        return self.trees.shape[1]
+        result = 0
+
+        if self.objective == 'regression':
+            result = 1
+
+        elif self.objective == 'binary':
+            result = 1
+
+        else:
+            assert self.objective == 'multiclass'
+            result = self.trees.shape[1]
+
+        return result
+
+
+class TreeEnsembleRegressor(TreeEnsemble):
+    """
+    Extension of the TreeEnsemble class for regression.
+    """
+    def __init__(self, trees, params):
+        super().__init__(trees, **params)
+        assert self.trees.ndim == 1
+        assert isinstance(self.bias, float)
+
+
+class TreeEnsembleBinaryClassifier(TreeEnsemble):
+    """
+    Extension of the TreeEnsemble class for binary classfication.
+    """
+    def __init__(self, trees, params):
+        super().__init__(trees, **params)
+        assert self.trees.ndim == 1
+        assert isinstance(self.bias, float)
+
+    def predict(self, X):
+        """
+        Classify samples one by one and return the list of probabilities
+        """
+        pred = super().predict(X)
+        proba = pred.reshape(-1, 1) if self.tree_type == 'rf' else util.sigmoid(pred).reshape(-1, 1)
+        proba = np.hstack([1 - proba, proba])
+
+        return proba
+
+
+class TreeEnsembleMulticlassClassifier(TreeEnsemble):
+    """
+    Extension of the TreeEnsemble class for multiclass classfication.
+    """
+
+    def __init__(self, trees, params):
+        """
+        Input should be an array of Tree objects of shape=(no. trees, no. classes)
+        """
+        super().__init__(trees, **params)
+        assert self.trees.ndim == 2
+        assert self.trees.shape[1] >= 3
+        assert len(self.bias) >= 3
+
+    def predict(self, X):
+        """
+        Classify samples one by one and return the list of probabilities
+        """
+        X = util.check_input_data(X)
+
+        # sum all predictions instead of storing them
+        pred = np.zeros((X.shape[0], self.trees.shape[1]), dtype=np.float32)  # shape=(X.shape[0], no. class)
+
+        for i in range(self.trees.shape[1]):  # per class
+            class_pred = np.zeros(X.shape[0])
+
+            for j in range(self.trees.shape[0]):  # per tree
+                class_pred += self.trees[j, i].predict(X)
+
+            pred[:, i] = class_pred + self.bias[i]
+
+        # if RF, average
+        if self.tree_type == 'rf':
+            proba = pred / self.trees.shape[0]
+
+        else:
+            proba = util.softmax(pred)
+
+        return proba
+
+    def apply(self, X):
+        """
+        Returns a 2d array of leaf indices of shape=(no. trees, X.shape[0], no. class).
+        """
+        leaves = np.zeros((self.trees.shape[0], X.shape[0], self.trees.shape[1]), dtype=np.int32)
+
+        for i in range(self.trees.shape[0]):  # per tree
+            for j in range(self.trees.shape[1]):  # per class
+                leaves[i, :, j] = self.trees[i][j].apply(X)
+
+        return leaves

@@ -32,9 +32,6 @@ def parse_skgbm_ensemble(model):
             leaf_vals = list(t.value.flatten() * scale)
             trees[i][j] = Tree(children_left, children_right, feature, threshold, leaf_vals)
 
-    if trees.shape[1] == 1:
-        trees = trees.flatten()
-
     # set bias
     bias = 0.0
 
@@ -87,12 +84,12 @@ def parse_skrf_ensemble(model):
     n_class = model.n_classes_ if hasattr(model, 'n_classes_') else 0
 
     if n_class <= 2:  # regression, binary classification
-        trees = np.zeros(len(estimators), dtype=np.dtype(object))
+        trees = np.zeros((len(estimators), 1), dtype=np.dtype(object))
 
     else:  # multiclass
         trees = np.zeros((len(estimators), n_class), dtype=np.dtype(object))
 
-    for i in range(len(estimators)):  # per tree
+    for i in range(len(estimators)):  # per boosting
         t = estimators[i].tree_
         children_left = list(t.children_left)
         children_right = list(t.children_right)
@@ -102,7 +99,7 @@ def parse_skrf_ensemble(model):
         # regression
         if n_class == 0:
             leaf_vals = list(t.value.flatten())
-            trees[i] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            trees[i][0] = Tree(children_left, children_right, feature, threshold, leaf_vals)
             bias = 0.0
             objective = 'regression'
             factor = 0.0
@@ -111,7 +108,7 @@ def parse_skrf_ensemble(model):
         elif n_class == 2:
             value = t.value.squeeze()  # value.shape=(no. nodes, 2)
             leaf_vals = (value / value.sum(axis=1).reshape(-1, 1))[:, 1].tolist()
-            trees[i] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            trees[i][0] = Tree(children_left, children_right, feature, threshold, leaf_vals)
             bias = 0.0
             objective = 'binary'
             factor = 0.0

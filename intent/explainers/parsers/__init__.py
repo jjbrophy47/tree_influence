@@ -7,9 +7,7 @@ from .parser_lgb import parse_lgb_ensemble
 from .parser_sk import parse_skgbm_ensemble
 from .parser_sk import parse_skrf_ensemble
 from .parser_xgb import parse_xgb_ensemble
-from .tree import TreeEnsembleRegressor
-from .tree import TreeEnsembleBinaryClassifier
-from .tree import TreeEnsembleMulticlassClassifier
+from .tree import TreeEnsemble
 
 
 def parse_model(model, X, y):
@@ -44,16 +42,6 @@ def parse_model(model, X, y):
         raise ValueError(f'Could not parse {str(model)}')
 
     # create a standardized ensemble of the original model type
-    if params['objective'] == 'regression':
-        ensemble = TreeEnsembleRegressor(trees, params)
-
-    elif params['objective'] == 'binary':
-        ensemble = TreeEnsembleBinaryClassifier(trees, params)
-
-    elif params['objective'] == 'multiclass':
-        ensemble = TreeEnsembleMulticlassClassifier(trees, params)
-
-    else:
-        raise ValueError(f'Unknown objective {params["objective"]}')
+    ensemble = TreeEnsemble(trees, **params)
 
     return ensemble

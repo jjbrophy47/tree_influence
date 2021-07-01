@@ -58,6 +58,9 @@ def parse_lgb_ensemble(model, X, y):
         n_trees = int(trees.shape[0] / n_class)
         trees = trees.reshape((n_trees, n_class))
 
+    else:  # reshape regression and binary trees
+        trees = trees.reshape(-1, 1)  # shape=(no. tree, 1)
+
     params = {}
     params['bias'] = bias
     params['learning_rate'] = model_params['learning_rate']
@@ -196,6 +199,6 @@ def _update_leaf_value(leaf_val, tree_index, n_class, initial_guess):
         leaf_val -= initial_guess
 
     elif n_class > 2 and tree_index < n_class:  # multiclass
-        leaf_val += initial_guess[tree_index]
+        leaf_val -= initial_guess[tree_index]
 
     return leaf_val

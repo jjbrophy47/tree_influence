@@ -88,7 +88,7 @@ def test_cb_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
+    tree_pred = tree.predict_proba(X_test)[:, 1]
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
@@ -144,7 +144,7 @@ def test_lgb_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
+    tree_pred = tree.predict_proba(X_test)[:, 1]
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
@@ -163,9 +163,6 @@ def test_lgb_multiclass_classifier(args):
 
     tree_pred = tree.predict_proba(X_test)
     model_pred = model.predict(X_test)
-
-    print(tree_pred[:2])
-    print(model_pred[:2])
 
     status = compare_predictions(tree_pred, model_pred)
     print(status)
@@ -203,7 +200,7 @@ def test_skgbm_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
+    tree_pred = tree.predict_proba(X_test)[:, 1]
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
@@ -259,7 +256,7 @@ def test_skrf_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
+    tree_pred = tree.predict_proba(X_test)[:, 1]
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
@@ -316,7 +313,7 @@ def test_xgb_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
+    tree_pred = tree.predict_proba(X_test)[:, 1]
     model_pred = model.predict(X_test)
 
     status = compare_predictions(tree_pred, model_pred)
@@ -353,22 +350,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # tests
-    # test_cb_regressor(args)
-    # test_cb_binary_classifier(args)
-    # test_cb_multiclass_classifier(args)
+    test_cb_regressor(args)
+    test_cb_binary_classifier(args)
+    test_cb_multiclass_classifier(args)
 
     test_lgb_regressor(args)
     test_lgb_binary_classifier(args)
     test_lgb_multiclass_classifier(args)
 
-    # test_skgbm_regressor(args)
-    # test_skgbm_binary_classifier(args)
-    # test_skgbm_multiclass_classifier(args)
+    test_skgbm_regressor(args)
+    test_skgbm_binary_classifier(args)
+    test_skgbm_multiclass_classifier(args)
 
-    # test_skrf_regressor(args)
-    # test_skrf_binary_classifier(args)
-    # test_skrf_multiclass_classifier(args)
+    test_skrf_regressor(args)
+    test_skrf_binary_classifier(args)
+    test_skrf_multiclass_classifier(args)
 
-    # test_xgb_regressor(args)
-    # test_xgb_binary_classifier(args)
-    # test_xgb_multiclass_classifier(args)
+    test_xgb_regressor(args)
+    test_xgb_binary_classifier(args)
+    test_xgb_multiclass_classifier(args)

@@ -69,67 +69,71 @@ class LeafInfluence(Explainer):
         self.loss_fn_ = self._get_loss_function()
 
         # extract tree-ensemble metadata
+        n_tree = self.model_.n_tree_
+        n_class = self.model_.n_class_
         learning_rate = self.model_.learning_rate
         l2_leaf_reg = self.model_.l2_leaf_reg
         bias = self.model_.bias
 
         # get no. leaves for each tree
-        leaf_counts = self.model_.get_leaf_counts()
-        n_trees = self.model_.trees.shape[0]
+        leaf_counts = self.model_.get_leaf_counts()  # shape=(no. tree * no. class)
 
         # intermediate containers
-        current_approx = np.full(y.shape[0], bias, dtype=np.float32)
+        current_approx = np.tile(bias, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
         leaf2docs = []  # list of leaf_idx -> doc_ids dicts
         n_prev_leaves = 0
 
         # result containers
-        naive_gradient_addendum = np.zeros((X.shape[0], n_trees), dtype=np.float32)  # shape=(no. train, no. trees)
-        da_vector_multiplier = np.zeros((X.shape[0], n_trees), dtype=np.float32)  # shape=(no. train, no. trees)
+        naive_gradient_addendum = np.zeros((X.shape[0], n_tree, n_class), dtype=np.float32)
+        da_vector_multiplier = np.zeros((X.shape[0], n_tree, n_class), dtype=np.float32)
         denominator = np.zeros(np.sum(leaf_counts), dtype=np.float32)  # shape=(total no. leaves,)
         leaf_values = np.zeros(np.sum(leaf_counts), dtype=np.float32)  # shape=(total no. leaves,)
 
         # save gradient information of leaf values for each tree
-        for tree_idx, tree in enumerate(self.model_.trees):
-
-            # get leaf values
-            leaf_count = leaf_counts[tree_idx]
-            leaf_vals = tree.get_leaf_values()
-            doc2leaf = tree.apply(X)
-            doc_preds = leaf_vals[doc2leaf]
-            leaf2doc = {}
+        for tree_idx, tree in enumerate(n_tree):
+            doc_preds = np.zeros((X.shape[0], n_class), dtype=np.float32)
 
             # precompute gradient statistics
-            gradient = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train,)
-            hessian = self.loss_fn_.hessian(y, current_approx)  # shape=(no. train,)
-            third = self.loss_fn_.third(y, current_approx)  # shape=(no. train,)
+            gradient = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
+            hessian = self.loss_fn_.hessian(y, current_approx)  # shape=(X.shape[0], no. class)
+            third = self.loss_fn_.third(y, current_approx)  # shape=(X.shape[0], no. class)
 
-            # precompute statistics
-            naive_gradient_addendum[:, tree_idx] = hessian * doc_preds / learning_rate + gradient
-            da_vector_multiplier[:, tree_idx] = doc_preds / learning_rate * third + hessian
+            naive_gradient_addendum[:, tree_idx, :] = hessian * doc_preds / learning_rate + gradient
+            da_vector_multiplier[:, tree_idx, :] = doc_preds / learning_rate * third + hessian
 
-            # update approximation
-            current_approx += doc_preds
+            for class_idx in range(n_class):
 
-            # sanity check to make sure leaf values are correctly computed
-            # also need to save some statistics to update leaf values later
-            for leaf_idx in range(leaf_count):
-                doc_ids = np.where(doc2leaf == leaf_idx)[0]
-                leaf2doc[leaf_idx] = set(doc_ids)
+                # get leaf values
+                leaf_count = leaf_counts[tree_idx + class_idx]
+                leaf_vals = tree.get_leaf_values()
+                doc2leaf = tree.apply(X)
+                leaf2doc = {}
 
-                # compute leaf values using gradients and hessians
-                leaf_enumerator = np.sum(gradient[doc_ids])
-                leaf_denominator = np.sum(hessian[doc_ids]) + l2_leaf_reg
-                leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
+                # update predictions for this class
+                doc_preds[:, class_idx] = leaf_vals[doc2leaf]
 
-                # compare leaf values to actual leaf values
-                assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=1e-5)
+                # sanity check to make sure leaf values are correctly computed
+                # also need to save some statistics to update leaf values later
+                for leaf_idx in range(leaf_count):
+                    doc_ids = np.where(doc2leaf == leaf_idx)[0]
+                    leaf2doc[leaf_idx] = set(doc_ids)
 
-                # store statistics
-                denominator[n_prev_leaves + leaf_idx] = leaf_denominator
-                leaf_values[n_prev_leaves + leaf_idx] = leaf_prediction
+                    # compute leaf values using gradients and hessians
+                    leaf_enumerator = np.sum(gradient[doc_ids][class_idx])
+                    leaf_denominator = np.sum(hessian[doc_ids][class_idx]) + l2_leaf_reg
+                    leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
 
-            leaf2docs.append(leaf2doc)  # list of dicts, one per tree
-            n_prev_leaves += leaf_count  # move to next set of tree leaves
+                    # compare leaf values to actual leaf values
+                    assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=1e-5)
+
+                    # store statistics
+                    denominator[n_prev_leaves + leaf_idx] = leaf_denominator
+                    leaf_values[n_prev_leaves + leaf_idx] = leaf_prediction
+
+                n_prev_leaves += leaf_count  # move to next set of tree leaves
+                leaf2docs.append(leaf2doc)  # list of dicts, one per tree
+
+            current_approx += doc_preds  # update approximation
 
         # result container
         leaf_derivatives = np.zeros((X.shape[0], np.sum(leaf_counts)), dtype=np.float32)
@@ -138,117 +142,118 @@ class LeafInfluence(Explainer):
         for remove_idx in range(X.shape[0]):
 
             # intermediate containers
-            da = np.zeros(X.shape[0], dtype=np.float32)
+            da = np.zeros((X.shape[0], n_class), dtype=np.float32)
             n_prev_leaves = 0
 
-            for tree_idx in range(n_trees):
-                update_docs = self._get_docs_to_update(tree_idx, leaf_counts, leaf2docs, remove_idx, da)
+            for tree_idx in range(n_tree):
 
-                for leaf_idx in range(leaf_counts[tree_idx]):
+                for class_idx in range(n_class):
+                    update_docs = self._get_docs_to_update(tree_idx, class_idx, leaf_counts, leaf2docs, remove_idx, da)
 
-                    # get intersection of leaf documents and update documents
-                    leaf_docs = leaf2docs[tree_idx][leaf_idx]
-                    update_leaf_docs = sorted(update_docs.intersection(leaf_docs))
+                    for leaf_idx in range(leaf_counts[tree_idx + class_idx]):
 
-                    # compute and save leaf derivative
-                    grad_enumerator = np.dot(da[update_leaf_docs], da_vector_multiplier[:, tree_idx][update_leaf_docs])
-                    if remove_idx in update_leaf_docs:
-                        grad_enumerator += naive_gradient_addendum[:, tree_idx][remove_idx]
-                    leaf_derivative = -grad_enumerator / denominator[n_prev_leaves + leaf_idx] * learning_rate
+                        # get intersection of leaf documents and update documents
+                        leaf_docs = leaf2docs[tree_idx + class_idx][leaf_idx]
+                        update_leaf_docs = sorted(update_docs.intersection(leaf_docs))
 
-                    # update da
-                    da[update_leaf_docs] += leaf_derivative
+                        # compute and save leaf derivative
+                        grad_enumerator = np.dot(da[update_leaf_docs][class_idx],
+                                                 da_vector_multiplier[:, tree_idx, class_idx][update_leaf_docs])
 
-                    # save
-                    leaf_derivatives[remove_idx][n_prev_leaves + leaf_idx] = leaf_derivative
+                        if remove_idx in update_leaf_docs:
+                            grad_enumerator += naive_gradient_addendum[:, tree_idx, class_idx][remove_idx]
 
-                n_prev_leaves += leaf_counts[tree_idx]
+                        leaf_derivative = -grad_enumerator / denominator[n_prev_leaves + leaf_idx] * learning_rate
+
+                        # update da
+                        da[update_leaf_docs][class_idx] += leaf_derivative
+
+                        # save
+                        leaf_derivatives[remove_idx][n_prev_leaves + leaf_idx] = leaf_derivative
+
+                    n_prev_leaves += leaf_counts[tree_idx + class_idx]
 
         # save results of this method
-        self.leaf_values_ = leaf_values
+        self.leaf_values_ = leaf_values  # shape=(total no. leaves across ALL trees)
         self.leaf_derivatives_ = leaf_derivatives  # shape=(no. train, total no. leaves)
-        self.leaf_counts_ = leaf_counts  # shape=(no. trees,)
+        self.leaf_counts_ = leaf_counts  # shape=(no. trees * no. class,)
         self.bias_ = bias
+        self.n_tree_ = n_tree
+        self.n_class_ = n_class
 
         return self
 
     def get_self_influence(self):
         """
         - Compute influence of each training instance on itself.
-        - Provides a global importance to all training intances.
+        - Provides a global importance to all training examples.
 
         Return
-            - 1d array of shape=(no. train) (regression and binary classification).
-            - 2d array of shape=(no. train, no. classes) (multiclass).
-            - Arrays are returned in the same order as the traing data.
+            - 2d array of shape=(no. train, no. class).
+            - Array is returned in the same order as the traing data.
         """
-        n_train = self.leaf_derivatives_.shape[0]
-        self_influence = np.zeros(n_train, dtype=np.float32)
+        self_influence = np.zeros((self.X_train_.shape[0], 1, self.n_class_), dtype=np.float32)
 
         # compute influence of each training example on itself
-        for remove_idx in range(n_train):
+        for remove_idx in range(self.X_train_.shape[0]):
             X = self.X_train_[[remove_idx]]
             y = self.y_train_[[remove_idx]]
             self_influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
 
-        return self_influence
+        return self_influence.squeeze()  # remove axis=1
 
     def explain(self, X, y):
         """
-        - Compute attribution of each training instance on the test instance prediction.
-            Transform the test instance using the specified tree kernel.
-            Compute dot prod. between transformed train and test, weighted by alpha.
+        - Compute influence of each training example on the loss of the test examples.
 
         Return
-            - Regression and binary: 2d array of shape=(no. train, X.shape[0]).
+            - 3d array of shape=(X.shape[0], no. train, no. class).
             - Multiclass: 3d array of shape=(no. train, X.shape[0], no. classes).
-            - Array is returned in the same order as the traing data.
+            - Each 2d array for each test example is in the same order as the traing data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        n_train = self.X_train_.shape[0]
-        influence = np.zeros((n_train, X.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=np.float32)
 
         # compute influence of each training example on the test example
-        for remove_idx in range(n_train):
+        for remove_idx in range(self.X_train_.shape[0]):
             influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
 
-        return influence
+        return influence.transpose(1, 0, 2)  # shape=(no. test, no. train, no. class)
 
     # private
     def _loss_derivative(self, X, y, remove_idx):
         """
-        Compute the influence of each training example on the set of examples (X, y)
-            using the updated set of leaf values from removing `remove_idx`.
+        Compute the influence on the set of examples (X, y) using the updated
+            set of leaf values from removing `remove_idx`.
 
         Input
             X: 2d array of test examples
             y: 1d array of test targets.
             remove_idx: index of removed train instance
 
-        Returns array of train influences; shape=(X.shape[0],)
+        Return
+            - Array of test influences of shape=(X.shape[0], no. class).
         """
-        doc2leaf = self.model_.apply(X)  # shape=(X.shape[0], no. trees)
+        doc2leaf = self.model_.apply(X)  # shape=(X.shape[0], no. tree, no. class)
 
-        # shape=(no. test,)
-        og_pred = np.full(y.shape[0], self.bias_, dtype=np.float32)
-        new_pred = np.zeros_like(y, dtype=np.float32)
+        og_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
+        new_pred = np.zeros((X.shape[0], self.n_class_), dtype=np.float32)  # shape=(X.shape[0], no. class)
 
         # get prediction of each test example using the original and new leaf values
         n_prev_leaves = 0
-        for tree_idx in range(self.leaf_counts_.shape[0]):  # per tree
+        for tree_idx in range(self.n_tree_):  # per boosting
+            for class_idx in range(self.n_class_):  # per class
+                for test_idx in range(X.shape[0]):  # per test example
+                    leaf_idx = doc2leaf[test_idx][tree_idx][class_idx]
+                    og_pred[test_idx][class_idx] += self.leaf_values_[n_prev_leaves + leaf_idx]
+                    new_pred[test_idx][class_idx] += self.leaf_derivatives_[remove_idx][n_prev_leaves + leaf_idx]
 
-            for test_idx in range(doc2leaf.shape[0]):  # per test example
-                leaf_idx = doc2leaf[test_idx][tree_idx]
-                og_pred[test_idx] += self.leaf_values_[n_prev_leaves + leaf_idx]
-                new_pred[test_idx] += self.leaf_derivatives_[remove_idx][n_prev_leaves + leaf_idx]
+                n_prev_leaves += self.leaf_counts_[tree_idx + class_idx]
 
-            n_prev_leaves += self.leaf_counts_[tree_idx]
+        return self.loss_fn_.gradient(y, og_pred) * new_pred
 
-        result = self.loss_fn_.gradient(y, og_pred) * new_pred
-        return result
-
-    def _get_docs_to_update(self, tree_idx, leaf_counts, leaf_docs, remove_idx, da):
+    def _get_docs_to_update(self, tree_idx, class_idx, leaf_counts, leaf2docs, remove_idx, da):
         """
         Return a set of document indices to be udpated for this tree.
         """
@@ -263,11 +268,11 @@ class LeafInfluence(Explainer):
 
         # update examples for the top leaves
         else:
-            leaf_count = leaf_counts[tree_idx]
-            leaf_doc = leaf_docs[tree_idx]
+            leaf_count = leaf_counts[tree_idx + class_idx]
+            leaf_docs = leaf2docs[tree_idx + class_idx]
 
             # sort leaf indices based on largest abs. da sum
-            leaf_das = [np.sum(np.abs(da[list(leaf_doc[leaf_idx])])) for leaf_idx in range(leaf_count)]
+            leaf_das = [np.sum(np.abs(da[list(leaf_docs[leaf_idx])])) for leaf_idx in range(leaf_count)]
             top_leaf_ids = np.argsort(leaf_das)[-self.update_set:]
             
             # return remove_idx + document indices for the top `k` leaves
