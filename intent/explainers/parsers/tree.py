@@ -159,7 +159,7 @@ class TreeEnsemble(object):
 
     def apply(self, X):
         """
-        Returns 3d array of leaf indices; shape=(X.shape[0], no. tree, no. class).
+        Returns 3d array of leaf indices; shape=(X.shape[0], no. boost, no. class).
         """
         leaves = np.zeros((X.shape[0], self.n_boost_, self.n_class_), dtype=np.int32)
         for boost_idx in range(self.n_boost_):
@@ -179,13 +179,17 @@ class TreeEnsemble(object):
 
     def get_leaf_counts(self):
         """
-        Returns 1d array of leaf counts, one per tree; shape=(total no. trees,).
+        Returns 2d array of leaf counts; shape=(no. boost, no. class).
 
         Note
             - Multiclass trees are flattened s.t. trees from all classes in one boosting
                 iteration come before those in the subsequent boosting iteration.
         """
-        return np.array([tree.leaf_count_ for tree in self.trees.flatten()]).astype(np.int32)
+        leaf_counts = np.zeros((self.n_boost_, self.n_class_), dtype=np.int32)
+        for boost_idx in range(self.n_boost_):
+            for class_idx in range(self.n_class_):
+                leaf_counts[boost_idx, class_idx] = self.trees[boost_idx, class_idx].leaf_count_
+        return leaf_counts
 
     def update_node_count(self, X):
         """
