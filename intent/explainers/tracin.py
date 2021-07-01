@@ -12,15 +12,21 @@ class TracIn(Explainer):
     Notes
         - For RFs, there is no initial guess, so each gradient layer is associated
             with a tree (or boosting iteration).
+
         - For GBDTs, there is an iniitial guess, so there is an extra gradient layer
             at the beginning; this layer can be included or exlcuded in both the global
             and local explanations by using the `initial_grad` argument.
+
         - Currently, we use error residuals to compute marginal contributions; however,
             one could also use the tree output instead (approx. of the error residuals).
             There would be no initial guess gradient though, so this would require
             `initial_grad`='keep' for GBDTs.
+
         - Local explanations for GBDT `grad`='approx' with `initial_grad`='skip' is essentially
             the same as doing the dot product using the LeafOutput tree kernel.
+
+    Paper
+        TODO
     """
     def __init__(self, grad='residual', initial_grad='keep'):
         """

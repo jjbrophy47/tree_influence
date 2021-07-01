@@ -23,6 +23,9 @@ class Trex(Explainer):
 
     Reference
          - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
+
+    Paper
+        TODO
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
                  random_state=1, verbose=0):
@@ -68,7 +71,7 @@ class Trex(Explainer):
             y: training targets.
         """
         super().fit(model, X, y)
-        X, y = util.check_data(X, y, task=self.model_.task_)
+        X, y = util.check_data(X, y, objective=self.model_.objective)
 
         self.model_.update_node_count(X)
 
@@ -77,24 +80,24 @@ class Trex(Explainer):
         # select target
         if self.target == 'actual':
 
-            if self.model_.task_ == 'regression':  # shape=(no. train,)
+            if self.model_.objective == 'regression':  # shape=(no. train,)
                 self.y_train_ = y
 
-            elif self.model_.task_ == 'multiclass':  # shape=(no. train, no. class)
+            elif self.model_.objective == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = LabelBinarizer().fit_transform(y)
 
-            elif self.model_.task_ == 'binary':  # shape=(no. train, 2)
+            elif self.model_.objective == 'binary':  # shape=(no. train, 2)
                 self.y_train_ = OneHotEncoder().fit_transform(y.reshape(-1, 1)).todense()
 
         elif self.target == 'predicted':
 
-            if self.model_.task_ == 'regression':  # shape=(no. train,)
+            if self.model_.objective == 'regression':  # shape=(no. train,)
                 self.y_train_ = model.predict(X)
 
-            elif self.model_.task_ == 'binary':  # shape=(no. train, 2)
+            elif self.model_.objective == 'binary':  # shape=(no. train, 2)
                 self.y_train_ = model.predict_proba(X)
 
-            elif self.model_.task_ == 'multiclass':  # shape=(no. train, no. class)
+            elif self.model_.objective == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = model.predict_proba(X)
 
         self.alpha_ = self._compute_train_weights(self.X_train_, self.y_train_)
@@ -111,7 +114,7 @@ class Trex(Explainer):
             - 2d array of shape=(no. train, no. classes) (multiclass).
             - Arrays are returned in the same order as the traing data.
         """
-        if self.model_.task_ == 'binary':
+        if self.model_.objetive == 'binary':
             result = self.alpha_[:, 1].copy()
         else:
             result = self.alpha_.copy()
@@ -129,19 +132,19 @@ class Trex(Explainer):
             - Multiclass: 2d array of shape=(no. train, no. classes).
             - Array is returned in the same order as the traing data.
         """
-        X, y = util.check_data(X, y, task=self.model_.task_)
+        X, y = util.check_data(X, y, objective=self.model_.objective)
         assert X.shape[0] == 1 and y.shape[0] == 1
 
         X_test_ = self._kernel_transform(X).flatten()
         sim = np.dot(self.X_train_, X_test_)
 
-        if self.model_.task_ == 'regression':
+        if self.model_.objective == 'regression':
             influence = sim * self.alpha_  # representer values
 
-        elif self.model_.task_ == 'binary':
+        elif self.model_.objective == 'binary':
             influence = sim * self.alpha_[:, 1]
 
-        elif self.model_.task_ == 'multiclass':
+        elif self.model_.objective == 'multiclass':
             influence = np.zeros(self.alpha_.shape, dtype=np.float32)
 
             for j in range(influence.shape[1]):  # per class
@@ -256,12 +259,12 @@ class Trex(Explainer):
         rng = np.random.default_rng(self.random_state)
 
         # MSE model for regression, Softmax model for classification
-        if self.model_.task_ == 'regression':
+        if self.model_.objective == 'regression':
             assert y.ndim == 1
             W = rng.uniform(-1, 1, size=X.shape[1])
             model = MSEModel(W)
 
-        elif self.model_.task_ in ['binary', 'multiclass']:
+        elif self.model_.objective in ['binary', 'multiclass']:
             assert y.ndim == 2
             W = rng.uniform(-1, 1, size=(X.shape[1], y.shape[1]))
             model = SoftmaxModel(W)
@@ -305,7 +308,7 @@ class Trex(Explainer):
 
         # compute alpha based on the representer theorem's decomposition
         output = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)
-        if self.model_.task_ in ['binary', 'multiclass']:
+        if self.model_.objective in ['binary', 'multiclass']:
             output = torch.softmax(output, axis=1)
 
         alpha = output - y  # half the derivative of mse; derivative of softmax cross-entropy
@@ -315,7 +318,7 @@ class Trex(Explainer):
         W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,)
 
         output_approx = torch.matmul(X, W)
-        if self.model_.task_ in ['binary', 'multiclass']:
+        if self.model_.objective in ['binary', 'multiclass']:
             output_approx = torch.softmax(output_approx, axis=1)
 
         # compute closeness
@@ -392,7 +395,7 @@ class SoftmaxModel(nn.Module):
         return (Phi, L2)
 
 
-class LSModel(nn.Module):
+class MSEModel(nn.Module):
     """
     Model that computes the least squares loss.
 
@@ -412,7 +415,7 @@ class LSModel(nn.Module):
             - This loss function represents "closeness" if y is predicted values.
         """
         D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
-        Phi = torch.sum(torch.square(D - y))  # LS loss
+        Phi = torch.sum(torch.square(D - y))  # MSE loss
 
         # L2 norm.
         W1 = torch.squeeze(self.W)

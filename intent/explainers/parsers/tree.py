@@ -40,6 +40,12 @@ class Tree(object):
         assert X.ndim == 2
         return self.tree_.apply(X)
 
+    def get_leaf_values(self):
+        """
+        Return 1d array of leaf values, shape=(no. leaves,).
+        """
+        return self.tree_.get_leaf_values()
+
     def update_node_count(self, X):
         """
         Update node counts based on the paths taken by x in X.
@@ -140,20 +146,54 @@ class TreeEnsemble(object):
         Returns 2d array of leaf indices of shape=(X.shape[0], no. trees).
 
         Note:
-            - Only works for binary classification and regression.
-                Multiclass classification must override this method.
+            - Only works for regression and binary, multiclass must override.
         """
         return np.hstack([tree.apply(X).reshape(-1, 1) for tree in self.trees]).astype(np.int32)
 
+    def get_leaf_values(self):
+        """
+        Returns 1d array of leaf values of shape=(no. leaves across all trees,).
+
+        Note:
+            - Only works for regression and binary, multiclass must override.
+        """
+        return np.concatenate([tree.get_leaf_values() for tree in self.trees]).astype(np.float32)
+
+    def get_leaf_counts(self):
+        """
+        Returns 1d array of leaf counts, one per tree; shape=(no. trees,).
+
+        Note:
+            - Only works for regression and binary, multiclass must override.
+        """
+        return np.array([tree.leaf_count_ for tree in self.trees]).astype(np.int32)
+
     def update_node_count(self, X):
         """
-        Increment node count for each x in X for all trees in the ensemble.
+        Increment each node's count for each x in X that passes through each node
+            for all trees in the ensemble.
 
         Note:
             - Works for regression, binary, and multiclass.
         """
         for tree in self.trees.flatten():
             tree.update_node_count(X)
+
+    @property
+    def n_class_(self):
+        result = 0
+
+        if self.objective == 'regression':
+            result = 0
+
+        elif self.objective == 'binary':
+            result = 2
+
+        else:
+            assert self.objective == 'multiclass'
+            result = self.trees.shape[1]
+
+        return result
 
 
 class TreeEnsembleRegressor(TreeEnsemble):

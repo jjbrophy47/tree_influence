@@ -1,7 +1,10 @@
 """
 TODO
     - How do we pick a comparable way to choose train instances for explaining a single test instance.
-        * e.g. TracIn measures the test loss; Trex measures which instances have the biggest imapce on the prediction.
+        * TracIn measures test LOSS with respect to bossting iterations.
+        * Trex decomposes the test PREDICTION into training example attributions.
+        * LeafInfluence measures test LOSS with respect to changing leaf values.
+        * HYDRA measures TODO...
 """
 from abc import abstractmethod
 

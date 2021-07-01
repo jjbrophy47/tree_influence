@@ -1,19 +1,23 @@
 import numpy as np
 
 
-def check_data(X, y=None, task='regression'):
+def check_data(X, y=None, objective='regression'):
     """
     Make sure the data is valid.
     """
     X = check_input_data(X)
 
     if y is not None:
-        if task == 'regression':
+
+        if objective == 'regression':
             y = check_regression_targets(y)
-        elif task in ['binary', 'multiclass']:
+
+        elif objective in ['binary', 'multiclass']:
             y = check_classification_labels(y)
+
         else:
-            raise ValueError(f'Unknown task {task}')
+            raise ValueError(f'Unknown objective {objective}')
+
         result = (X, y)
 
     else:
@@ -70,10 +74,8 @@ def softmax(z):
     """
     if type(z) == list:
         z = np.array(z, dtype=np.float32)
-
     if z.ndim == 1:
         z = z.reshape(1, -1)  # shape=(1, len(z))
-
     centered_exponent = np.exp(z - np.max(z, axis=1, keepdims=True))
     return centered_exponent / np.sum(centered_exponent, axis=1, keepdims=True)
 
@@ -239,6 +241,14 @@ class SoftmaxLoss(object):
     Modified from:
         - https://github.com/bsharchilev/influence_boosting/blob/master/influence_boosting/loss.py
     """
+    def __init__(self, factor, n_class):
+        """
+        Input
+            factor: float, number to multiply hessian and third to rescale
+                the redundant class; typically (no. class) / (no. class - 1).
+        """
+        self.factor = factor
+        self.n_class = n_class
 
     def __call__(self, y, y_raw):
         """
@@ -248,6 +258,7 @@ class SoftmaxLoss(object):
 
         Return losses of shape=y_raw.shape.
         """
+        y = self._check_y(y)
         y_raw_norm = y_raw - logsumexp(y_raw)  # normalize log probs in log space
         return -np.sum(y * y_raw_norm, axis=1)
 
@@ -259,6 +270,7 @@ class SoftmaxLoss(object):
 
         Returns 2d array of gradients w.r.t. the prediction; shape=(no. examples, no. classes).
         """
+        y = self._check_y(y)
         y_hat = softmax(y_raw)
         return y_hat - y
 
@@ -270,11 +282,9 @@ class SoftmaxLoss(object):
 
         Returns 1d array of second-order gradients w.r.t. the prediction; shape=(no. examples, no. classes).
         """
-        n_classes = y.shape[1]
-        factor = n_classes / (n_classes - 1)  # rescaling redundant class
-
+        y = self._check_y(y)
         y_hat = softmax(y_raw)
-        return y_hat * (1 - y_hat) * factor
+        return y_hat * (1 - y_hat) * self.factor
 
     def third(self, y, y_raw):
         """
@@ -284,8 +294,16 @@ class SoftmaxLoss(object):
 
         Returns 2d array of third-order gradients w.r.t. the prediction; shape=(no. examples, no. classses).
         """
-        n_classes = y.shape[1]
-        factor = n_classes / (n_classes - 1)  # rescaling redundant class
-
+        y = self._check_y(y)
         y_hat = softmax(y_raw)
-        return y_hat * (1 - y_hat) * (1 - 2 * y_hat) * factor
+        return y_hat * (1 - y_hat) * (1 - 2 * y_hat) * self.factor
+
+    # private
+    def _check_y(self, y):
+        """
+        Converts 1d array of multiclass labels to a 2d array of one-hot encoded labels.
+        """
+        if y.ndim == 1:
+            class_cat = np.arange(self.n_class).reshape(1, -1).tolist()
+            y = OneHotEncoder(categories=class_cat, sparse=False, dtype=np.float32).fit_transform(y)
+        return y

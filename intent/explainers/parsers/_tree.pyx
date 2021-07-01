@@ -108,10 +108,32 @@ cdef class _Tree:
                     else:
                         node = node.right_child
 
-                out[i] = node.node_id
+                out[i] = node.leaf_id
 
         return out
 
+    cpdef np.ndarray get_leaf_values(self):
+        """
+        Return 1d array of leaf values in order of their leaf IDs.
+        """
+
+        # result
+        cdef DTYPE_t* leaf_values = <DTYPE_t *>malloc(self.leaf_count_ * sizeof(DTYPE_t))
+        cdef DTYPE_t[:] out = np.zeros((self.leaf_count_,), dtype=np.float32)
+
+        # incrementer
+        cdef SIZE_t i = 0
+
+        self._get_leaf_values(self.root_, leaf_values)
+
+        # copy values to np.ndarray
+        for i in range(self.leaf_count_):
+            out[i] = leaf_values[i]
+
+        # clean up
+        free(leaf_values)
+
+        return np.asarray(out)
 
     cpdef void update_node_count(self, float[:, :] X):
         """
@@ -139,7 +161,6 @@ cdef class _Tree:
                         node = node.right_child
 
                 node.count += 1
-
 
     cpdef np.ndarray leaf_path(self, float[:, :] X, bint output, bint weighted):
         """
@@ -178,7 +199,6 @@ cdef class _Tree:
                 out[i][node.leaf_id] = val
 
         return np.asarray(out)
-
 
     cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted):
         """
@@ -280,6 +300,21 @@ cdef class _Tree:
         node.right_child = NULL
         return node
 
+    cdef void _get_leaf_values(self,
+                               Node* node,
+                               DTYPE_t* leaf_values) nogil:
+        """
+        Recursively fill 1d array of leaf values in order of their leaf IDs.
+        """
+
+        if node.is_leaf:
+            leaf_values[node.leaf_id] = node.leaf_val
+
+        else:
+            self._get_leaf_values(node.left_child, leaf_values)
+            self._get_leaf_values(node.right_child, leaf_values)
+
+        return
 
     cdef void _dealloc(self, Node *node) nogil:
         """
@@ -311,4 +346,3 @@ cdef class _Tree:
         node.leaf_val = -1
         node.left_child = NULL
         node.right_child = NULL
-

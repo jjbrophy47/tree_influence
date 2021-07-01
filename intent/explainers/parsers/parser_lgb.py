@@ -43,7 +43,7 @@ def parse_lgb_ensemble(model, X, y):
         objective = 'multiclass'
         factor = (n_class) / (n_class - 1)
         _, class_count = np.unique(y, return_counts=True)
-        bias = class_count / np.sum(class_count)
+        bias = np.log(class_count / np.sum(class_count))
         initial_guess = bias
 
     # parse trees
@@ -102,8 +102,6 @@ def _parse_lgb_tree(tree_dict, tree_index, n_class, initial_guess):
         https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py
 
     Returns one or a list of Trees (one for each class).
-
-    TODO: somehow subtract initial guess from the leaves of the first tree.
     """
 
     children_left = []
@@ -198,6 +196,6 @@ def _update_leaf_value(leaf_val, tree_index, n_class, initial_guess):
         leaf_val -= initial_guess
 
     elif n_class > 2 and tree_index < n_class:  # multiclass
-        leaf_val -= initial_guess[tree_index]
+        leaf_val += initial_guess[tree_index]
 
     return leaf_val

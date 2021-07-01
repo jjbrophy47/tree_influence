@@ -48,11 +48,13 @@ cdef class _Tree:
     # Python API
     cpdef np.ndarray predict(self, float[:, :] X)
     cpdef np.ndarray apply(self, float[:, :] X)
+    cpdef np.ndarray get_leaf_values(self)
     cpdef void       update_node_count(self, float[:, :] X)
     cpdef np.ndarray leaf_path(self, float[:, :] X, bint output, bint weighted)
     cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted)
 
     # C API
-    cdef Node*  _add_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
-    cdef Node*  _initialize_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
-    cdef void   _dealloc(self, Node *node) nogil
+    cdef Node* _add_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
+    cdef Node* _initialize_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
+    cdef void  _get_leaf_values(self, Node* node, DTYPE_t* leaf_values) nogil
+    cdef void  _dealloc(self, Node *node) nogil

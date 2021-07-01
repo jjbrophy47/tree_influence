@@ -152,7 +152,7 @@ def test_lgb_binary_classifier(args):
 
 
 def test_lgb_multiclass_classifier(args):
-    print(f'\n***** test_lgb_binary_classifier *****')
+    print(f'\n***** test_lgb_multiclass_classifier *****')
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=args.n_class)
 
     tree = LGBMClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
@@ -163,6 +163,9 @@ def test_lgb_multiclass_classifier(args):
 
     tree_pred = tree.predict_proba(X_test)
     model_pred = model.predict(X_test)
+
+    print(tree_pred[:2])
+    print(model_pred[:2])
 
     status = compare_predictions(tree_pred, model_pred)
     print(status)
@@ -350,22 +353,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # tests
-    test_cb_regressor(args)
-    test_cb_binary_classifier(args)
-    test_cb_multiclass_classifier(args)
+    # test_cb_regressor(args)
+    # test_cb_binary_classifier(args)
+    # test_cb_multiclass_classifier(args)
 
     test_lgb_regressor(args)
     test_lgb_binary_classifier(args)
     test_lgb_multiclass_classifier(args)
 
-    test_skgbm_regressor(args)
-    test_skgbm_binary_classifier(args)
-    test_skgbm_multiclass_classifier(args)
+    # test_skgbm_regressor(args)
+    # test_skgbm_binary_classifier(args)
+    # test_skgbm_multiclass_classifier(args)
 
-    test_skrf_regressor(args)
-    test_skrf_binary_classifier(args)
-    test_skrf_multiclass_classifier(args)
+    # test_skrf_regressor(args)
+    # test_skrf_binary_classifier(args)
+    # test_skrf_multiclass_classifier(args)
 
-    test_xgb_regressor(args)
-    test_xgb_binary_classifier(args)
-    test_xgb_multiclass_classifier(args)
+    # test_xgb_regressor(args)
+    # test_xgb_binary_classifier(args)
+    # test_xgb_multiclass_classifier(args)
