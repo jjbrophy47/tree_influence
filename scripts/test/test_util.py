@@ -22,7 +22,7 @@ from intent.explainers import LeafInfluence
 def test_self_influence_regression(args, explainer_cls, str_explainer, kwargs):
     print(f'\n***** test_{str_explainer}_self_influence_regression *****')
     args.model_type = 'regressor'
-    X_train, X_test, y_train, y_test = _get_test_data(args)
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
@@ -30,19 +30,19 @@ def test_self_influence_regression(args, explainer_cls, str_explainer, kwargs):
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer.get_self_influence()
 
-    print('y_mean:', y_train.mean())
-    print('\ny_pred         (head):', tree.predict(X_train)[:5])
+    print('\ny_mean:', y_train.mean())
+    print('y_pred         (head):', tree.predict(X_train)[:5])
     print('y_train        (head):', y_train[:5])
     print('self influence (head):', self_inf[:5])
 
     status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
-    print(status)
+    print(f'\n{status}')
 
 
 def test_self_influence_binary(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_self_influence_binary *****')
     args.model_type = 'binary'
-    X_train, X_test, y_train, y_test = _get_test_data(args)
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=2)
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
@@ -50,17 +50,17 @@ def test_self_influence_binary(args, explainer_cls, explainer_str, kwargs):
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer.get_self_influence()
 
-    print('y_train        (head):', y_train[:5])
+    print('\ny_train        (head):', y_train[:5])
     print('self influence (head):\n', self_inf[:5])
 
     status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
-    print(status)
+    print(f'\n{status}')
 
 
 def test_self_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_self_influence_multiclass *****')
     args.model_type = 'multiclass'
-    X_train, X_test, y_train, y_test = _get_test_data(args)
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=args.n_class)
     n_class = len(np.unique(y_train))
 
     tree = _get_model(args)
@@ -73,109 +73,105 @@ def test_self_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     print('self influence (head):\n', self_inf[:5])
 
     status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
-    print(status)
+    print(f'\n{status}')
 
 
 def test_explain_regression(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_explain_regression *****')
     args.model_type = 'regressor'
-    X_train, X_test, y_train, y_test = _get_test_data(args)
-    test_ndx = 0
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
+    test_ids = np.array([0, 1])
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    influence = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])[:, test_ndx]
+    influences = explainer.explain(X_train[test_ids], y_train[test_ids])  # shape=(no. train, no. test)
 
-    test_pred = tree.predict(X_train[[test_ndx]])
-    test_label = y_train[test_ndx]
+    for i, test_idx in enumerate(test_ids):
 
-    s_ids = np.argsort(np.abs(influence))[::-1]
+        influence = influences[:, i]
+        s_ids = np.argsort(np.abs(influence))[::-1]
 
-    print(f'explain y_train, index: 0, pred: {test_pred}, target: {test_label}\n')
+        test_pred = tree.predict(X_train[[test_idx]])[0]
+        test_label = y_train[test_idx]
 
-    print('sorted indices    (head):', s_ids[:5])
-    print('y_train   (head, sorted):', y_train[s_ids][:5])
-    print('influence (head, sorted):', influence[s_ids][:5])
+        print(f'\nexplain y_train, index: {test_idx}, pred: {test_pred}, target: {test_label}')
 
-    status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
-    print(status)
+        print('sorted indices    (head):', s_ids[:5])
+        print('y_train   (head, sorted):', y_train[s_ids][:5])
+        print('influence (head, sorted):', influence[s_ids][:5])
+
+    status = 'passed' if influences.shape == (X_train.shape[0], test_ids.shape[0]) else 'failed'
+    print(f'\n{status}')
 
 
 def test_explain_binary(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_explain_binary *****')
     args.model_type = 'binary'
-    X_train, X_test, y_train, y_test = _get_test_data(args)
-    test_ndx = 0
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=2)
+    test_ids = np.array([0, 1])
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    influence = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])[:, test_ndx]
+    influences = explainer.explain(X_train[test_ids], y_train[test_ids])   # shape=(no. train, no. test)
 
-    test_pred = tree.predict_proba(X_train[[test_ndx]])
-    test_label = y_train[test_ndx]
+    for i, test_idx in enumerate(test_ids):
 
-    s_ids = np.argsort(np.abs(influence))[::-1]
+        influence = influences[:, i]
+        s_ids = np.argsort(np.abs(influence))[::-1]
 
-    print(f'explain y_train 0, pred: {test_pred}, target: {test_label}\n')
+        test_pred = tree.predict_proba(X_train[[test_idx]])[0]
+        test_label = y_train[test_idx]
 
-    print('sorted indices    (head):', s_ids[:5])
-    print('y_train   (head, sorted):', y_train[s_ids][:5])
-    print('influence (head, sorted):', influence[s_ids][:5])
+        print(f'\nexplain y_train {test_idx}, pred: {test_pred}, target: {test_label}\n')
 
-    status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
-    print(status)
+        print('sorted indices    (head):', s_ids[:5])
+        print('y_train   (head, sorted):', y_train[s_ids][:5])
+        print('influence (head, sorted):', influence[s_ids][:5])
+
+    status = 'passed' if influences.shape == (X_train.shape[0], test_ids.shape[0]) else 'failed'
+    print(f'\n{status}')
 
 
 def test_explain_multiclass(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_explain_multiclass *****')
     args.model_type = 'multiclass'
-    X_train, X_test, y_train, y_test = _get_test_data(args)
-    test_ndx = 0
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=args.n_class)
+    test_ids = np.array([0, 1])
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    influence = explainer.explain(X_train[[test_ndx]], y_train[[test_ndx]])
+    influences = explainer.explain(X_train[test_ids], y_train[test_ids])   # shape=(no. test, no. train, no. class)
 
-    influence_agg = np.abs(influence).sum(axis=1)
-    s_ids = np.argsort(np.abs(influence_agg))[::-1]
+    for i, test_idx in enumerate(test_ids):
 
-    test_pred = tree.predict_proba(X_train[[test_ndx]])
-    test_label = y_train[test_ndx]
+        influence = influences[i]  # shape=(no. train, no. class)
+        influence_agg = np.abs(influence).sum(axis=1)
+        s_ids = np.argsort(np.abs(influence_agg))[::-1]
 
-    print(f'explain y_train 0, pred: {test_pred}, target: {test_label}\n')
+        test_pred = tree.predict_proba(X_train[[test_idx]])[0]
+        test_label = y_train[test_idx]
 
-    print('sorted indices    (head):\n', s_ids[:5])
-    print('y_train   (head, sorted):', y_train[s_ids][:5])
-    print('influence (head, sorted):\n', influence[s_ids][:5])
+        print(f'\nexplain y_train {test_idx}, pred: {test_pred}, target: {test_label}\n')
 
-    status = 'passed' if influence.shape[0] == y_train.shape[0] else 'failed'
-    print(status)
+        print('sorted indices    (head):\n', s_ids[:5])
+        print('y_train   (head, sorted):', y_train[s_ids][:5])
+        print('influence (head, sorted):\n', influence[s_ids][:5])
+
+    status = 'passed' if influences.shape == (test_ids.shape[0], X_train.shape[0], args.n_class) else 'failed'
+    print(f'\n{status}')
 
 
 # private
-def _get_test_data(args):
+def _get_test_data(args, n_class=2):
     """
     Return train and test data for the given objective.
     """
-
-    if args.model_type == 'regressor':
-        n_class = -1
-
-    elif args.model_type == 'binary':
-        n_class = 2
-
-    elif args.model_type == 'multiclass':
-        n_class = 3
-
-    else:
-        raise ValueError(f'Unknown model_type {args.model_type}')
-
     rng = np.random.default_rng(args.rs)
     X_train = rng.standard_normal((args.n_train, args.n_feat))
     X_test = rng.standard_normal((args.n_test, args.n_feat))

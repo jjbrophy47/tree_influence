@@ -139,13 +139,13 @@ class TreeEnsemble(object):
         # shape=(X.shape[0], no. class)
         pred = np.tile(self.bias, (X.shape[0], 1)).astype(np.float32)
 
-        for tree_idx in range(self.n_tree_):  # per tree
+        for boost_idx in range(self.n_boost_):  # per boosting round
             for class_idx in range(self.n_class_):  # per class
-                pred[:, class_idx] += self.trees[tree_idx, class_idx].predict(X)
+                pred[:, class_idx] += self.trees[boost_idx, class_idx].predict(X)
 
         # transform predictions based on the tree type and objective
         if self.tree_type == 'rf':
-            pred /= self.n_tree_
+            pred /= self.n_boost_
 
         else:  # gbdt
 
@@ -161,10 +161,10 @@ class TreeEnsemble(object):
         """
         Returns 3d array of leaf indices; shape=(X.shape[0], no. tree, no. class).
         """
-        leaves = np.zeros((X.shape[0], self.n_tree_, self.n_class_), dtype=np.int32)
-        for tree_idx in range(self.n_tree_):
+        leaves = np.zeros((X.shape[0], self.n_boost_, self.n_class_), dtype=np.int32)
+        for boost_idx in range(self.n_boost_):
             for class_idx in range(self.n_class_):
-                leaves[:, tree_idx, class_idx] = self.trees[tree_idx][class_idx].apply(X)
+                leaves[:, boost_idx, class_idx] = self.trees[boost_idx][class_idx].apply(X)
         return leaves
 
     def get_leaf_values(self):
@@ -196,9 +196,9 @@ class TreeEnsemble(object):
             tree.update_node_count(X)
 
     @property
-    def n_tree_(self):
+    def n_boost_(self):
         """
-        Returns no. trees (or boosting iterations for gbdt) in the ensemble.
+        Returns no. boosting iterations (no. weak learners per class) in the ensemble.
         """
         return self.trees.shape[0]
 

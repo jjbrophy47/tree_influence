@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.preprocessing import OneHotEncoder
 
 
 def check_data(X, y=None, objective='regression'):
@@ -114,51 +115,75 @@ class SquaredLoss(object):
 
     Modified from:
         - https://github.com/bsharchilev/influence_boosting/blob/master/influence_boosting/loss.py
+
+    Note
+        - y and yhat could be swapped and the gradient would still be the same.
+        - y_raw and y_hat are equivalent.
+        - Shape of y and y_raw are (no. examples, 1). This is to be
+            compatible with multiclass models.
     """
 
     def __call__(self, y, y_raw):
         """
         Input
-            y: 1d array of regression values.
-            y_raw: 1d array of predicted values.
+            y: 2d array of regression values.
+            y_raw: 2d array of predicted values.
 
-        Returns 1d array of mean-squared error losses.
-
-        Note:
-            - y and yhat could be swapped and the gradient would still be the same.
-            - y_raw and y_hat are equivalent.
+        Return
+            2d array of mean-squared error losses.
         """
+        y, y_raw = self._check_y(y, y_raw)
         return 0.5 * (y - y_raw) ** 2
 
     def gradient(self, y, y_raw):
         """
         Input
-            y: 1d array of regression values.
-            y_raw: 1d array of predicted values.
+            y: 2d array of regression values.
+            y_raw: 2d array of predicted values.
 
-        Returns 1d array of gradients w.r.t. the prediction.
+        Returns 2d array of gradients w.r.t. the prediction.
         """
+        y, y_raw = self._check_y(y, y_raw)
         return y_raw - y
 
-    def hessian(self, y, yhat):
+    def hessian(self, y, y_raw):
         """
         Input
-            y: 1d array of regression values.
-            y_raw: 1d array of predicted values.
+            y: 2d array of regression values.
+            y_raw: 2d array of predicted values.
 
-        Returns 1d array of second-order derivatives w.r.t. the prediction.
+        Returns 2d array of second-order derivatives w.r.t. the prediction.
         """
+        y, y_raw = self._check_y(y, y_raw)
         return np.ones_like(y)
 
-    def third(self, y, yhat):
+    def third(self, y, y_raw):
         """
         Input
-            y: 1d array of regression values.
-            y_raw: 1d array of predicted values.
+            y: 2d array of regression values.
+            y_raw: 2d array of predicted values.
 
-        Returns 1d array of third-order derivatives w.r.t. the prediction.
+        Returns 2d array of third-order derivatives w.r.t. the prediction.
         """
+        y, y_raw = self._check_y(y, y_raw)
         return np.zeros_like(y)
+
+    # private
+    def _check_y(self, y, y_raw):
+        """
+        Make sure y and y_raw are in shape=(no. examples, 1).
+        """
+        if y.ndim == 1:
+            y = y.reshape(-1, 1)
+
+        if y_raw.ndim == 1:
+            y_raw = y_raw.reshape(-1, 1)
+
+        assert y.ndim == 2
+        assert y.shape[1] == 1
+        assert y.shape == y_raw.shape
+
+        return y, y_raw
 
 
 class LogisticLoss(object):
@@ -173,6 +198,10 @@ class LogisticLoss(object):
         - https://github.com/bsharchilev/influence_boosting/blob/master/influence_boosting/loss.py
         - https://github.com/eriklindernoren/ML-From-Scratch/blob/
             a2806c6732eee8d27762edd6d864e0c179d8e9e8/mlfromscratch/supervised_learning/xgboost.py
+
+    Note
+        - Shape of y and y_raw are (no. examples, 1). This is to be
+            compatible with multiclass models.
     """
 
     def __call__(self, y, y_raw, eps=1e-15):
@@ -181,14 +210,14 @@ class LogisticLoss(object):
         since log is undefined for 0.
 
         Input
-            y: 1d array of 0 and 1 labels.
-            y_raw: 1d array of unnormalized log probs.
+            y: 2d array of 0 and 1 labels.
+            y_raw: 2d array of unnormalized log probs.
 
-        Return 1d array of neg. log losses.
+        Return 2d array of neg. log losses.
         """
         assert np.all(np.unique(y) == np.array([0, 1]))
-        assert y.ndim == 1
-        assert yhat.ndim == 1
+
+        y, y_raw = self._check_y(y, y_raw)
 
         y_hat = sigmoid(y_raw)
         y_hat = np.clip(y_hat, eps, 1 - eps)  # prevent log(0)
@@ -199,11 +228,12 @@ class LogisticLoss(object):
     def gradient(self, y, y_raw):
         """
         Input
-            y: 1d array of 0 and 1 labels.
-            yhat: 1d array of pre-activation values.
+            y: 2d array of 0 and 1 labels.
+            yhat: 2d array of pre-activation values.
 
-        Returns 1d array of gradients w.r.t. the prediction.
+        Returns 2d array of gradients w.r.t. the prediction.
         """
+        y, y_raw = self._check_y(y, y_raw)
         y_hat = sigmoid(y_raw)
         return y_hat - y
 
@@ -215,19 +245,38 @@ class LogisticLoss(object):
 
         Returns 1d array of second-order gradients w.r.t. the prediction.
         """
+        y, y_raw = self._check_y(y, y_raw)
         y_hat = sigmoid(y_raw)
         return y_hat * (1 - y_hat)
 
     def third(self, y, y_raw):
         """
         Input
-            y: 1d array of 0 and 1 labels.
-            yhat: 1d array of pre-activation values.
+            y: 2d array of 0 and 1 labels.
+            yhat: 2d array of pre-activation values.
 
-        Returns 1d array of third-order gradients w.r.t. the prediction.
+        Returns 2d array of third-order gradients w.r.t. the prediction.
         """
+        y, y_raw = self._check_y(y, y_raw)
         y_hat = sigmoid(y_raw)
         return y_hat * (1 - y_hat) * (1 - 2 * y_hat)
+
+    # private
+    def _check_y(self, y, y_raw):
+        """
+        Make sure y and y_raw are in shape=(no. examples, 1).
+        """
+        if y.ndim == 1:
+            y = y.reshape(-1, 1)
+
+        if y_raw.ndim == 1:
+            y_raw = y_raw.reshape(-1, 1)
+
+        assert y.ndim == 2
+        assert y.shape[1] == 1
+        assert y.shape == y_raw.shape
+
+        return y, y_raw
 
 
 class SoftmaxLoss(object):
@@ -304,6 +353,7 @@ class SoftmaxLoss(object):
         Converts 1d array of multiclass labels to a 2d array of one-hot encoded labels.
         """
         if y.ndim == 1:
-            class_cat = np.arange(self.n_class).reshape(1, -1).tolist()
+            class_cat = [np.arange(self.n_class).tolist()]
+            y = y.reshape(-1, 1)
             y = OneHotEncoder(categories=class_cat, sparse=False, dtype=np.float32).fit_transform(y)
         return y
