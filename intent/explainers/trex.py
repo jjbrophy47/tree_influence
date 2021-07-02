@@ -18,6 +18,18 @@ class Trex(Explainer):
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
 
+    Semantics
+        - phi(x_t) := sum_i dot(f_i * f_t) * alpha_i
+        - Regression:
+            * A neg. number means x_i DECREASES the x_t pre-activation prediction.
+            * A pos. number means x_i INCREASES the x_t pre-activation prediction.
+        - Binary:
+            * A neg. number means x_i DECREASES the x_t pre-activation prediction for the POSITIVE class.
+            * A pos. number means x_i INCREASES the x_t pre-activation prediction for the POSITIVE class.
+        - Multiclass:
+            * A neg. number means x_i DECREASES the x_t pre-activation prediction for the k class.
+            * A pos. number means x_i INCREASES the x_t pre-activation prediction for the k class.
+
     Notes
         - 'kernel', 'lmbd', and 'target' have a significant effect on approximation accuracy.
 
@@ -25,7 +37,7 @@ class Trex(Explainer):
          - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
 
     Paper
-        TODO
+        https://arxiv.org/abs/1811.09720
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
                  random_state=1, verbose=0):
@@ -83,19 +95,19 @@ class Trex(Explainer):
             if self.model_.objective == 'regression':  # shape=(no. train,)
                 self.y_train_ = y
 
+            elif self.model_.objective == 'binary':  # shape=(no. train,)
+                self.y_train_ = y
+
             elif self.model_.objective == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = LabelBinarizer().fit_transform(y)
-
-            elif self.model_.objective == 'binary':  # shape=(no. train, 2)
-                self.y_train_ = OneHotEncoder().fit_transform(y.reshape(-1, 1)).todense()
 
         elif self.target == 'predicted':
 
             if self.model_.objective == 'regression':  # shape=(no. train,)
                 self.y_train_ = model.predict(X)
 
-            elif self.model_.objective == 'binary':  # shape=(no. train, 2)
-                self.y_train_ = model.predict_proba(X)
+            elif self.model_.objective == 'binary':  # shape=(no. train,)
+                self.y_train_ = model.predict_proba(X)[:, 1]
 
             elif self.model_.objective == 'multiclass':  # shape=(no. train, no. class)
                 self.y_train_ = model.predict_proba(X)
@@ -110,45 +122,44 @@ class Trex(Explainer):
         - Provides a global importance to all training intances.
 
         Return
-            - 1d array of shape=(no. train) (regression and binary classification).
-            - 2d array of shape=(no. train, no. classes) (multiclass).
+            - Regression and binary: 1d array of shape=(no. train,).
+            - Multiclass: 2d array of shape=(no. train, no. class).
             - Arrays are returned in the same order as the traing data.
         """
-        if self.model_.objetive == 'binary':
-            result = self.alpha_[:, 1].copy()
-        else:
-            result = self.alpha_.copy()
-        return result
+        return self.alpha_.copy()
 
     def explain(self, X, y):
         """
         - Compute attribution of each training instance on the test instance prediction.
             Transform the test instance using the specified tree kernel.
             Compute dot prod. between transformed train and test, weighted by alpha.
+
         - Provides a local explanation of the test instance PREDICTION not LOSS.
 
         Return
-            - Regression and binary: 1d array of shape=(no. train).
-            - Multiclass: 2d array of shape=(no. train, no. classes).
-            - Array is returned in the same order as the traing data.
+            - Regression and binary: 2d array of shape=(no. train, X.shape[0]).
+            - Multiclass: 3d array of shape=(X.shape[0], no. train, no. class).
+            - Arrays are returned in the same order as the traing data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
-        assert X.shape[0] == 1 and y.shape[0] == 1
 
-        X_test_ = self._kernel_transform(X).flatten()
-        sim = np.dot(self.X_train_, X_test_)
+        X_test_ = self._kernel_transform(X)  # shape=(X.shape[0], no. kernel feature)
+        sim = np.matmul(self.X_train_, X_test_.T)  # shape=(no. train, X.shape[0])
 
-        if self.model_.objective == 'regression':
-            influence = sim * self.alpha_  # representer values
+        # compute representer values
+        if self.model_.objective in ['regression', 'binary']:
+            influence = sim * self.alpha_.reshape(-1, 1)
 
-        elif self.model_.objective == 'binary':
-            influence = sim * self.alpha_[:, 1]
+        else:  # multiclass
+            assert self.model_.objective == 'multiclass'
 
-        elif self.model_.objective == 'multiclass':
-            influence = np.zeros(self.alpha_.shape, dtype=np.float32)
+            # shape=(no. train, X.shape[0], no. class)
+            influence = np.zeros((sim.shape[0], X.shape[0], self.alpha_.shape[1]), dtype=np.float32)
 
-            for j in range(influence.shape[1]):  # per class
-                influence[:, j] = sim * self.alpha_[:, j]
+            for class_idx in range(influence.shape[2]):  # per class
+                influence[:, :, class_idx] = sim * self.alpha_[:, class_idx].reshape(-1, 1)
+
+            influence = influence.transpose(1, 0, 2)  # shape=(X.shape[0], no. train, no. class)
 
         return influence
 
@@ -156,6 +167,9 @@ class Trex(Explainer):
     def _kernel_transform(self, X):
         """
         Transforms each x in X using the specified tree kernel.
+
+        Return
+            - 2d array of shape=(X.shape[0], no. kernel features).
         """
         structure_dict = {'t': 'tree', 'l': 'leaf', 'f': 'feature'}
         output_dict = {'p': 'path', 'o': 'output'}
@@ -264,7 +278,13 @@ class Trex(Explainer):
             W = rng.uniform(-1, 1, size=X.shape[1])
             model = MSEModel(W)
 
-        elif self.model_.objective in ['binary', 'multiclass']:
+        elif self.model_.objective == 'binary':
+            assert y.ndim == 1
+            W = rng.uniform(-1, 1, size=X.shape[1])
+            model = LogisticModel(W)
+
+        else:
+            assert self.model_.objective == 'multiclass'
             assert y.ndim == 2
             W = rng.uniform(-1, 1, size=(X.shape[1], y.shape[1]))
             model = SoftmaxModel(W)
@@ -297,28 +317,37 @@ class Trex(Explainer):
                 best_W = temp_W
 
                 if min_loss < init_grad / 200:
-                    print(f'stopping criteria reached in epoch: {epoch}')
+                    if self.verbose > 0:
+                        print(f'stopping criteria reached in epoch: {epoch}')
                     break
 
             self._backtracking_line_search(model, model.W.grad, X, y, loss)
 
-            if epoch % 100 == 0 and self.verbose > 0:
+            if epoch % 100 == 0 and self.verbose > 1:
                 print(f'Epoch:{epoch:4d}, loss:{util.to_np(loss):.7f}'
                       f', phi_loss:{phi_loss:.7f}, grad:{grad_loss:.7f}')
 
         # compute alpha based on the representer theorem's decomposition
         output = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)
-        if self.model_.objective in ['binary', 'multiclass']:
+
+        if self.model_.objective == 'binary':
+            output = torch.sigmoid(output)
+
+        elif self.model_.objective in 'multiclass':
             output = torch.softmax(output, axis=1)
 
-        alpha = output - y  # half the derivative of mse; derivative of softmax cross-entropy
+        alpha = output - y  # 1/2 grad. of mse; grad. of logistic loss; grad. of softmax cross-entropy
         alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
 
         # compute W based on the Representer Theorem decomposition
         W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,)
 
         output_approx = torch.matmul(X, W)
-        if self.model_.objective in ['binary', 'multiclass']:
+
+        if self.model_.objective == 'binary':
+            output_approx = torch.sigmoid(output_approx)
+
+        elif self.model_.objective == 'multiclass':
             output_approx = torch.softmax(output_approx, axis=1)
 
         # compute closeness
@@ -331,8 +360,10 @@ class Trex(Explainer):
 
         if self.verbose > 0:
             print(f'L1 diff.: {l1_diff:.5f}, pearsonr: {p_corr:.5f}, spearmanr: {s_corr:.5f}')
-            plt.scatter(yp, y)
-            plt.show()
+
+            if self.verbose > 1:
+                plt.scatter(yp, y)
+                plt.show()
 
         self.l1_diff_ = l1_diff
         self.p_corr_ = p_corr
@@ -367,10 +398,71 @@ class Trex(Explainer):
                 break
 
 
+class MSEModel(nn.Module):
+    """
+    Mean squared error.
+
+    Note
+        - This loss function represents "closeness" if y is predicted probabilities.
+    """
+
+    def __init__(self, W):
+        super(MSEModel, self).__init__()
+        self.W = Variable(torch.from_numpy(W).type(torch.float32), requires_grad=True)
+
+    def forward(self, X, y):
+        """
+        Calculate loss for the loss function and L2 regularizer.
+
+        Note
+            - This loss function represents "closeness" if y is predicted values.
+        """
+        D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
+        Phi = torch.sum(torch.square(D - y))  # MSE loss
+
+        # L2 norm.
+        W1 = torch.squeeze(self.W)
+        L2 = torch.sum(torch.mul(W1, W1))
+
+        return (Phi, L2)
+
+
+class LogisticModel(nn.Module):
+    """
+    Simgoid + logistic loss.
+
+    Note
+        - This loss function represents "closeness" if y is predicted probabilities.
+    """
+
+    def __init__(self, W):
+        super(LogisticModel, self).__init__()
+        self.W = Variable(torch.from_numpy(W).type(torch.float32), requires_grad=True)
+
+    def forward(self, X, y):
+        """
+        Calculate loss for the loss function and L2 regularizer.
+
+        Note
+            - This loss function represents "closeness" if y is predicted values.
+        """
+        eps = 1e-15
+
+        D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
+        D = torch.sigmoid(D)  # normalized prob.
+        D = torch.clip(D, eps, 1 - eps)  # prevent log(0)
+        Phi = torch.sum(-(y * torch.log(D) + (1 - y) * torch.log(1 - D)))  # log loss
+
+        # L2 norm.
+        W1 = torch.squeeze(self.W)
+        L2 = torch.sum(torch.mul(W1, W1))
+
+        return (Phi, L2)
+
+
 class SoftmaxModel(nn.Module):
     """
-    Model that computes the binary or multiclass cross-entropy loss
-    after normalization using the softmax.
+    Softmax + categorical cross-entropy.
     """
 
     def __init__(self, W):
@@ -387,35 +479,6 @@ class SoftmaxModel(nn.Module):
         D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0], no. class)
         D = D - torch.logsumexp(D, axis=1).reshape(-1, 1)  # softmax: normalize log probs.
         Phi = torch.sum(-torch.sum(D * y, axis=1))  # cross-entropy loss
-
-        # L2 norm.
-        W1 = torch.squeeze(self.W)
-        L2 = torch.sum(torch.mul(W1, W1))
-
-        return (Phi, L2)
-
-
-class MSEModel(nn.Module):
-    """
-    Model that computes the least squares loss.
-
-    Note
-        - This loss function represents "closeness" if y is predicted probabilities.
-    """
-
-    def __init__(self, W):
-        super(LSModel, self).__init__()
-        self.W = Variable(torch.from_numpy(W).type(torch.float32), requires_grad=True)
-
-    def forward(self, X, y):
-        """
-        Calculate loss for the loss function and L2 regularizer.
-
-        Note
-            - This loss function represents "closeness" if y is predicted values.
-        """
-        D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
-        Phi = torch.sum(torch.square(D - y))  # MSE loss
 
         # L2 norm.
         W1 = torch.squeeze(self.W)

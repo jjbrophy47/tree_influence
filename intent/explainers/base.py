@@ -43,7 +43,7 @@ class Explainer(object):
         Return
             - Regression and binary: 1d array of shape=(no. train).
             - Multiclass: 2d array of shape=(no. train, no. classes).
-            - Array is returned in the same order as the traing data.
+            - Arrays are returned in the same order as the traing data.
         """
         pass
 
@@ -51,20 +51,15 @@ class Explainer(object):
     def explain(self, X, y):
         """
         - Compute influence of each training instance on the test instance loss.
-        - Provides a local explanation of the test instace prediction.
+        - Provides local explanations for the given test example losses or predictions.
 
         Input
             - X: 2d array of shape=(1, no. feature).
             - y: 1d array of shape=(target,). True or predicted label (see notes).
 
         Return
-            - Regression and binary: 1d array of shape=(no. train).
-            - Multiclass: 2d array of shape=(no. train, no. classes).
-            - Array is returned in the same order as the traing data.
-
-        Notes:
-            - To measure test loss, pass the true label of y.
-            - To measure test loss in terms of the predicted label,
-              pass the predicted label of y.
+            - Regression and binary: 2d array of shape=(no. train, X.shape[0]).
+            - Multiclass: 3d array of shape=(X.shape[0], no. train, no. class).
+            - Arrays are returned in the same order as the training data.
         """
         pass

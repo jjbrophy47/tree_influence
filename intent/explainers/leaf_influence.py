@@ -6,8 +6,7 @@ from .parsers import util
 
 class LeafInfluence(Explainer):
     """
-    LeafInfluence: Explainer that adapts the
-    influence functions method to tree ensembles.
+    LeafInfluence: Explainer that adapts the influence functions method to tree ensembles.
 
     Semantics
         - Inf.(x_i) := L(y, F(x_t)) - L(y, F_{w/o x_i}(x_t))
@@ -21,7 +20,7 @@ class LeafInfluence(Explainer):
          https://github.com/bsharchilev/influence_boosting/blob/master/influence_boosting/influence/leaf_influence.py
 
     Paper
-        TODO
+        https://arxiv.org/abs/1802.06640
 
     TODO: add RF support?
     """
@@ -116,9 +115,6 @@ class LeafInfluence(Explainer):
                 # sanity check to make sure leaf values are correctly computed
                 # also need to save some statistics to update leaf values later
                 for leaf_idx in range(leaf_count):
-                    # print('\n', tree_idx, class_idx)
-                    # print(leaf_idx, leaf_count)
-                    # print(leaf_vals)
                     doc_ids = np.where(doc2leaf == leaf_idx)[0]
                     leaf2doc[leaf_idx] = set(doc_ids)
 
