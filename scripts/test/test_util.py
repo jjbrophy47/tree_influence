@@ -19,8 +19,8 @@ sys.path.insert(0, here + '/../../')
 from intent.explainers import LeafInfluence
 
 
-def test_self_influence_regression(args, explainer_cls, str_explainer, kwargs):
-    print(f'\n***** test_{str_explainer}_self_influence_regression *****')
+def test_global_influence_regression(args, explainer_cls, str_explainer, kwargs):
+    print(f'\n***** test_{str_explainer}_global_influence_regression *****')
     args.model_type = 'regressor'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
 
@@ -28,7 +28,7 @@ def test_self_influence_regression(args, explainer_cls, str_explainer, kwargs):
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    self_inf = explainer.get_self_influence()
+    self_inf = explainer.get_global_influence()
 
     s_ids = np.argsort(np.abs(self_inf))[::-1]
 
@@ -42,8 +42,8 @@ def test_self_influence_regression(args, explainer_cls, str_explainer, kwargs):
     print(f'\n{status}')
 
 
-def test_self_influence_binary(args, explainer_cls, explainer_str, kwargs):
-    print(f'\n***** test_{explainer_str}_self_influence_binary *****')
+def test_global_influence_binary(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_global_influence_binary *****')
     args.model_type = 'binary'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=2)
 
@@ -51,7 +51,7 @@ def test_self_influence_binary(args, explainer_cls, explainer_str, kwargs):
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    self_inf = explainer.get_self_influence()
+    self_inf = explainer.get_global_influence()
 
     s_ids = np.argsort(np.abs(self_inf))[::-1]
 
@@ -65,8 +65,8 @@ def test_self_influence_binary(args, explainer_cls, explainer_str, kwargs):
     print(f'\n{status}')
 
 
-def test_self_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
-    print(f'\n***** test_{explainer_str}_self_influence_multiclass *****')
+def test_global_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_global_influence_multiclass *****')
     args.model_type = 'multiclass'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=args.n_class)
     n_class = len(np.unique(y_train))
@@ -75,7 +75,7 @@ def test_self_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    self_inf = explainer.get_self_influence()
+    self_inf = explainer.get_global_influence()
 
     s_ids = np.argsort(np.sum(np.abs(self_inf), axis=1))[::-1]
 
@@ -90,8 +90,8 @@ def test_self_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     print(f'\n{status}')
 
 
-def test_explain_regression(args, explainer_cls, explainer_str, kwargs):
-    print(f'\n***** test_{explainer_str}_explain_regression *****')
+def test_local_influence_regression(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_local_influence_regression *****')
     args.model_type = 'regressor'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
     test_ids = np.array([0, 1])
@@ -100,7 +100,7 @@ def test_explain_regression(args, explainer_cls, explainer_str, kwargs):
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    influences = explainer.explain(X_train[test_ids], y_train[test_ids])  # shape=(no. train, no. test)
+    influences = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])  # shape=(no. train, no. test)
 
     for i, test_idx in enumerate(test_ids):
 
@@ -120,8 +120,8 @@ def test_explain_regression(args, explainer_cls, explainer_str, kwargs):
     print(f'\n{status}')
 
 
-def test_explain_binary(args, explainer_cls, explainer_str, kwargs):
-    print(f'\n***** test_{explainer_str}_explain_binary *****')
+def test_local_influence_binary(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_local_influence_binary *****')
     args.model_type = 'binary'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=2)
     test_ids = np.array([0, 1])
@@ -130,7 +130,7 @@ def test_explain_binary(args, explainer_cls, explainer_str, kwargs):
     tree = tree.fit(X_train, y_train)
 
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    influences = explainer.explain(X_train[test_ids], y_train[test_ids])   # shape=(no. train, no. test)
+    influences = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])   # shape=(no. train, no. test)
 
     for i, test_idx in enumerate(test_ids):
 
@@ -150,8 +150,8 @@ def test_explain_binary(args, explainer_cls, explainer_str, kwargs):
     print(f'\n{status}')
 
 
-def test_explain_multiclass(args, explainer_cls, explainer_str, kwargs):
-    print(f'\n***** test_{explainer_str}_explain_multiclass *****')
+def test_local_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_local_influence_multiclass *****')
     args.model_type = 'multiclass'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=args.n_class)
     test_ids = np.array([0, 1])
@@ -159,8 +159,9 @@ def test_explain_multiclass(args, explainer_cls, explainer_str, kwargs):
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
 
+    # local influence shape=(no. test, no. train, no. class)
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
-    influences = explainer.explain(X_train[test_ids], y_train[test_ids])   # shape=(no. test, no. train, no. class)
+    influences = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])
 
     for i, test_idx in enumerate(test_ids):
 

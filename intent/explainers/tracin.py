@@ -8,43 +8,45 @@ class TracIn(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles.
 
-    Self-Influence Semantics
-        TODO
+    Global-Influence Semantics
+        - Global influence of x_i = gradient sum over all boosting iterations.
+            * Regression: Pos. no. means increase in the pre-act. pred.; neg. is the opposite.
+            * Binary: Pos. no. means increase in the pre-act. pred. for the POS. class; neg. is the opposite.
+            * Multiclass: Pos. no. means increase in pre-act. pred. for the kth class; neg. decrease for kth class.
+        - Negative gradients are used, since the model needs to move in the direction of the neg. gradient.
+        - Could have done self-influence (e.g. measure loss of x_i on itself); however, this would
+            amount to multiplying the gradient by itself. Thus, all numbers would be positive indicating
+            each example reduces the loss on itself.
 
-    Explain Semantics
-        - z and z' are the train and test examples, respectively.
-        - Original TracIn: Tracin(z, z') = sum_t learning_rate * dot_prod(grad(w_t, z), grad(w_t, z'))
-            * Trying to approximate sum_{i=0}^n TracInIdeal(zi, z') = L(W0, z') - L(WT, z')
+    Local-Influence Semantics
+        - z and z' are train and test examples, respectively.
+        - Original TracIn: TracIn(z, z') = sum_t learning_rate * dot_prod(grad(w_t, z), grad(w_t, z')).
+            * Trying to approximate sum_{i=0}^n TracInIdeal(zi, z') = L(W0, z') - L(WT, z').
             * W0 and WT are the initial and final parameters before and after training.
         - Tree-ensemble Tracin: TracIn(z, z') = sum_t grad(z) * grad(z')
             * No dot product since GBDTs do gradient boosting in FUNCTIONAL space not parameter space.
-        - A pos. number means the test loss is reduced (a.k.a. proponent, helpful).
-        - A neg. number means the test loss is increased (a.k.a. opponent, harmful).
-
-    Notes
-        - For RFs, there is no initial guess, so each gradient layer is associated
-            with a tree (or boosting iteration).
-
-        - For GBDTs, there is an iniitial guess, so there is an extra gradient layer
-            at the beginning; this layer can be included or exlcuded in both the global
-            and local explanations by using the `initial_grad` argument.
-
-        - Currently, we use error residuals to compute marginal contributions; however,
-            one could also use the tree output instead (approx. of the error residuals).
-            There would be no initial guess gradient though, so this would require
-            `initial_grad`='keep' for GBDTs.
-
-        - Local explanations for GBDT `grad`='approx' with `initial_grad`='skip' is essentially
-            the same as doing the dot product using the LeafOutput tree kernel.
+            * Pos. number means reduction in test loss (a.k.a. proponent, helpful).
+            * Neg. number means increase in test loss (a.k.a. opponent, harmful).
+            * For multiclass, this applies to each class.
 
     Reference
          - https://github.com/frederick0329/TracIn
 
     Paper
-        https://arxiv.org/abs/2002.08484
+        - https://arxiv.org/abs/2002.08484
+
+    Note
+        - We use negative gradients for both global and local influences.
+            * For global, negative gradient is needed since we want the sign of the
+                influence for each train example to represent the direction
+                the model is needs to go towards.
+            * For local, it does not matter if we use the gradient or
+                negative gradient. Ultimately, the train gradient is MULTIPLIED by
+                the test gradient; thus, the value will only be negative if the
+                gradient values have opposite signs, otherwise it will be positive.
 
     TODO
-        Should we be using gradients or negative gradients?
+        - Add RF support?
     """
     def __init__(self, use_leaf=0, verbose=0):
         """
@@ -80,17 +82,8 @@ class TracIn(Explainer):
 
         return self
 
-    def get_self_influence(self):
+    def get_global_influence(self):
         """
-        TODO what does self_influence mean in this context?
-            Treat each train example as test example?
-                Doesn't seem to show how much a point affects the overall model,
-                only itself.
-            Sum gradients?
-                Doesn't really show how loss changes though, but neither
-                does TREX; LeafInfluence does compute influence of train example on itself.
-                I like this one better at the moment.
-
         - Compute influence of each training instance on itself.
             Sum of gradients across all boosting iterations.
 
@@ -109,7 +102,7 @@ class TracIn(Explainer):
 
         return self_influence
 
-    def explain(self, X, y):
+    def get_local_influence(self, X, y):
         """
         - Compute influence of each training instance on the test loss
             by computing the dot prod. between the train gradient and the test gradient.
@@ -188,7 +181,7 @@ class TracIn(Explainer):
             for class_idx in range(n_class):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
-        return gradients * learning_rate
+        return -gradients * learning_rate
 
     def _get_loss_function(self):
         """

@@ -14,12 +14,12 @@ def main(args):
     kwargs = {'use_leaf': args.use_leaf, 'verbose': args.verbose}
 
     # tests
-    test_util.test_self_influence_regression(args, TracIn, 'tracin', kwargs)
-    test_util.test_self_influence_binary(args, TracIn, 'tracin', kwargs)
-    test_util.test_self_influence_multiclass(args, TracIn, 'tracin', kwargs)
-    test_util.test_explain_regression(args, TracIn, 'tracin', kwargs)
-    test_util.test_explain_binary(args, TracIn, 'tracin', kwargs)
-    test_util.test_explain_multiclass(args, TracIn, 'tracin', kwargs)
+    test_util.test_global_influence_regression(args, TracIn, 'tracin', kwargs)
+    test_util.test_global_influence_binary(args, TracIn, 'tracin', kwargs)
+    test_util.test_global_influence_multiclass(args, TracIn, 'tracin', kwargs)
+    test_util.test_local_influence_regression(args, TracIn, 'tracin', kwargs)
+    test_util.test_local_influence_binary(args, TracIn, 'tracin', kwargs)
+    test_util.test_local_influence_multiclass(args, TracIn, 'tracin', kwargs)
 
 
 if __name__ == '__main__':

@@ -34,9 +34,9 @@ class Explainer(object):
         assert self.model_.objective in ['regression', 'binary', 'multiclass']
 
     @abstractmethod
-    def get_self_influence(self):
+    def get_global_influence(self):
         """
-        - Compute influence of each training instance on itself.
+        - Compute influence of each training example overall.
         - Provides a global perspective of which training intances
           are most important.
 
@@ -48,14 +48,14 @@ class Explainer(object):
         pass
 
     @abstractmethod
-    def explain(self, X, y):
+    def get_local_influence(self, X, y):
         """
-        - Compute influence of each training instance on the test instance loss.
-        - Provides local explanations for the given test example losses or predictions.
+        - Compute influence of each training instance on test prediction(s) or loss(es).
 
         Input
-            - X: 2d array of shape=(1, no. feature).
-            - y: 1d array of shape=(target,). True or predicted label (see notes).
+            - X: 2d array of test examples.
+            - y: 1d array of test targets
+                * Could be the actual label or the predicted label depending on the explainer.
 
         Return
             - Regression and binary: 2d array of shape=(no. train, X.shape[0]).

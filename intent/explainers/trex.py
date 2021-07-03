@@ -18,26 +18,37 @@ class Trex(Explainer):
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
 
-    Semantics
-        - phi(x_t) := sum_i dot(f_i * f_t) * alpha_i
-        - Regression:
+    Global-Influence Semantics
+        - x_i is the ith train example and x_t is a test example, respectively.
+        - The alpha values (train weights) used to compute the representer values are
+            used as a poxy for the self influence of the train examples.
+        - An alpha value is essentially the gradient * learning rate over multiple
+            iterations of gradient descent.
+        - Regression
             * A neg. number means x_i DECREASES the x_t pre-activation prediction.
             * A pos. number means x_i INCREASES the x_t pre-activation prediction.
-        - Binary:
+        - Binary
             * A neg. number means x_i DECREASES the x_t pre-activation prediction for the POSITIVE class.
             * A pos. number means x_i INCREASES the x_t pre-activation prediction for the POSITIVE class.
-        - Multiclass:
+        - Multiclass
             * A neg. number means x_i DECREASES the x_t pre-activation prediction for the k class.
             * A pos. number means x_i INCREASES the x_t pre-activation prediction for the k class.
 
+
+    Local-Influence Semantics
+        - phi(x_t) := sum_i dot(f_i * f_t) * alpha_i
+        - Semantics are the same as global, but each train example's alpha value is
+            multiplied by the similarity between x_i and x_t.
+
     Notes
         - 'kernel', 'lmbd', and 'target' have a significant effect on approximation accuracy.
+        - Supports both RF and GBDT.
 
     Reference
          - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
 
     Paper
-        https://arxiv.org/abs/1811.09720
+        - https://arxiv.org/abs/1811.09720
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
                  random_state=1, verbose=0):
@@ -79,8 +90,8 @@ class Trex(Explainer):
 
         Input
             model: tree ensemble.
-            X: training data.
-            y: training targets.
+            X: 2d array of train examples.
+            y: 1d array of train targets.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
@@ -116,10 +127,12 @@ class Trex(Explainer):
 
         return self
 
-    def get_self_influence(self):
+    def get_global_influence(self):
         """
-        - Compute influence of each training instance on itself.
-        - Provides a global importance to all training intances.
+        - Return learned train weights as a measure of global importance
+            for each training example.
+            * These weights are essentially the sum of gradients * learning_rate
+                over all iterations of gradient descent.
 
         Return
             - Regression and binary: 1d array of shape=(no. train,).
@@ -128,13 +141,13 @@ class Trex(Explainer):
         """
         return self.alpha_.copy()
 
-    def explain(self, X, y):
+    def get_local_influence(self, X, y):
         """
-        - Compute attribution of each training instance on the test instance prediction.
-            Transform the test instance using the specified tree kernel.
-            Compute dot prod. between transformed train and test, weighted by alpha.
+        - Compute the attribution of each training example for each test example prediction.
+            * Transform the test example using the specified tree kernel.
+            * Compute dot prod. between transformed train and test, weighted by alpha.
 
-        - Provides a local explanation of the test instance PREDICTION not LOSS.
+        - Provides a local explanation of the test example PREDICTION not LOSS.
 
         Return
             - Regression and binary: 2d array of shape=(no. train, X.shape[0]).

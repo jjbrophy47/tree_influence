@@ -8,21 +8,28 @@ class LeafInfluence(Explainer):
     """
     LeafInfluence: Explainer that adapts the influence functions method to tree ensembles.
 
-    Semantics
-        - Inf.(x_i) := L(y, F(x_t)) - L(y, F_{w/o x_i}(x_t))
-        - A neg. number means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-        - A pos. number means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+    Global-Influence Semantics
+        - x_i is the ith train example and x_t is a test example, respectively.
+        - Global inf. of x_i = influence of x_i on itself.
+            * Self inf.(x_i, x_i) := L(y, F(x_i)) - L(y, F_{w/o x_i}(x_i))
+            * Neg. no. means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
+            * Pos. no. means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+
+    Local-Influence Semantics
+        - Inf.(x_i, x_t) := L(y, F(x_t)) - L(y, F_{w/o x_i}(x_t))
+        - Same semantics as global influence, but applied to the loss of a test example.
 
     Note
         - Does NOT take class or instance weight into account.
 
     Reference
-         https://github.com/bsharchilev/influence_boosting/blob/master/influence_boosting/influence/leaf_influence.py
+        - https://github.com/bsharchilev/influence_boosting/blob/master/influence_boosting/influence/leaf_influence.py
 
     Paper
-        https://arxiv.org/abs/1802.06640
+        - https://arxiv.org/abs/1802.06640
 
-    TODO: add RF support?
+    TODO
+        - Add RF support?
     """
     def __init__(self, update_set=0, random_state=1, verbose=0):
         """
@@ -188,9 +195,9 @@ class LeafInfluence(Explainer):
 
         return self
 
-    def get_self_influence(self):
+    def get_global_influence(self):
         """
-        - Compute influence of each training instance on itself.
+        - Compute change in loss of each training instance on itself.
         - Provides a global importance to all training examples.
 
         Return
@@ -216,9 +223,9 @@ class LeafInfluence(Explainer):
 
         return self_influence
 
-    def explain(self, X, y):
+    def get_local_influence(self, X, y):
         """
-        - Compute influence of each training example on the loss of the test examples.
+        - Compute influence of each training example on each test example loss.
 
         Return
             - Regression and binary: 2d array of shape=(no. train, X.shape[0])

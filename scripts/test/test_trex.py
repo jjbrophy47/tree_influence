@@ -15,12 +15,12 @@ def main(args):
               'lmbd': args.lmbd, 'verbose': args.verbose}
 
     # tests
-    test_util.test_self_influence_regression(args, Trex, 'trex', kwargs)
-    test_util.test_self_influence_binary(args, Trex, 'trex', kwargs)
-    test_util.test_self_influence_multiclass(args, Trex, 'trex', kwargs)
-    test_util.test_explain_regression(args, Trex, 'trex', kwargs)
-    test_util.test_explain_binary(args, Trex, 'trex', kwargs)
-    test_util.test_explain_multiclass(args, Trex, 'trex', kwargs)
+    test_util.test_global_influence_regression(args, Trex, 'trex', kwargs)
+    test_util.test_global_influence_binary(args, Trex, 'trex', kwargs)
+    test_util.test_global_influence_multiclass(args, Trex, 'trex', kwargs)
+    test_util.test_local_influence_regression(args, Trex, 'trex', kwargs)
+    test_util.test_local_influence_binary(args, Trex, 'trex', kwargs)
+    test_util.test_local_influence_multiclass(args, Trex, 'trex', kwargs)
 
 
 if __name__ == '__main__':
