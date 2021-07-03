@@ -30,10 +30,13 @@ def test_self_influence_regression(args, explainer_cls, str_explainer, kwargs):
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer.get_self_influence()
 
+    s_ids = np.argsort(np.abs(self_inf))[::-1]
+
     print('\ny_mean:', y_train.mean())
-    print('y_pred         (head):', tree.predict(X_train)[:5])
-    print('y_train        (head):', y_train[:5])
-    print('self influence (head):', self_inf[:5])
+    print('sorted_indices         (head):', s_ids[:5])
+    print('y_pred         (sorted, head):', tree.predict(X_train)[s_ids][:5])
+    print('y_train        (sorted, head):', y_train[s_ids][:5])
+    print('self influence (sorted, head):', self_inf[s_ids][:5])
 
     status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
     print(f'\n{status}')
@@ -50,8 +53,13 @@ def test_self_influence_binary(args, explainer_cls, explainer_str, kwargs):
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer.get_self_influence()
 
-    print('\ny_train        (head):', y_train[:5])
-    print('self influence (head):\n', self_inf[:5])
+    s_ids = np.argsort(np.abs(self_inf))[::-1]
+
+    print('\ny_mean:', y_train.mean())
+    print('sorted_indices (head):', s_ids[:5])
+    print('y_pred (pos.)  (sorted, head):', tree.predict_proba(X_train)[:, 1][s_ids][:5])
+    print('y_train        (sorted, head):', y_train[s_ids][:5])
+    print('self_influence (sorted, head):', self_inf[s_ids][:5])
 
     status = 'passed' if self_inf.shape[0] == y_train.shape[0] else 'failed'
     print(f'\n{status}')
@@ -69,8 +77,14 @@ def test_self_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train)
     self_inf = explainer.get_self_influence()
 
-    print('y_train        (head):', y_train[:5])
-    print('self influence (head):\n', self_inf[:5])
+    s_ids = np.argsort(np.sum(np.abs(self_inf), axis=1))[::-1]
+
+    _, class_count = np.unique(y_train, return_counts=True)
+    print('\ny_mean:', class_count / np.sum(class_count))
+    print('sorted_indices (head):', s_ids[:5])
+    print('y_pred (pos.)  (sorted, head):', tree.predict_proba(X_train)[s_ids][:5])
+    print('y_train        (sorted, head):', y_train[s_ids][:5])
+    print('self influence (sorted, head):\n', self_inf[s_ids][:5])
 
     status = 'passed' if self_inf.shape == (y_train.shape[0], n_class) else 'failed'
     print(f'\n{status}')

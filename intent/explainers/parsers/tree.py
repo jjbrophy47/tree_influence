@@ -28,7 +28,7 @@ class Tree(object):
 
     def predict(self, X):
         """
-        Return 1d array of leaf values, shape=(X.shape[0]).
+        Return 1d array of leaf values, shape=(X.shape[0],).
         """
         assert X.ndim == 2
         return self.tree_.predict(X)
@@ -180,10 +180,6 @@ class TreeEnsemble(object):
     def get_leaf_counts(self):
         """
         Returns 2d array of leaf counts; shape=(no. boost, no. class).
-
-        Note
-            - Multiclass trees are flattened s.t. trees from all classes in one boosting
-                iteration come before those in the subsequent boosting iteration.
         """
         leaf_counts = np.zeros((self.n_boost_, self.n_class_), dtype=np.int32)
         for boost_idx in range(self.n_boost_):

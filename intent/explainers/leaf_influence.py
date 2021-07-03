@@ -208,11 +208,11 @@ class LeafInfluence(Explainer):
 
         # reshape result based on the objective
         if self.model_.objective in ['regression', 'binary']:
-            self_influence = self_influence.squeeze()  # shape=(no. train,)
+            self_influence = self_influence.squeeze()  # remove axes 1 and 2
 
         else:
             assert self.model_.objective == 'multiclass'
-            self_influence = self_influence.squeeze(axis=1)  # remove axis=1
+            self_influence = self_influence.squeeze(axis=1)  # remove axis 1
 
         return self_influence
 
