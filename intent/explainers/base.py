@@ -4,7 +4,8 @@ TODO
         * TracIn measures test LOSS with respect to bossting iterations.
         * Trex decomposes the test PREDICTION into training example attributions.
         * LeafInfluence measures test LOSS with respect to changing leaf values.
-        * HYDRA measures TODO...
+        * HyDRA is VERY similar to TracIn. Maybe uses Hessian to do further approximations
+            but omits this step in their own implementation.
 """
 from abc import abstractmethod
 

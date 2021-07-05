@@ -31,7 +31,7 @@ class LeafInfluence(Explainer):
     TODO
         - Add RF support?
     """
-    def __init__(self, update_set=0, random_state=1, verbose=0):
+    def __init__(self, update_set=-1, random_state=1, verbose=0):
         """
         Input
             update_set: int, No. neighboring leaf values to use for approximating leaf influence.

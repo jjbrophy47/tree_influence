@@ -23,7 +23,7 @@ class TracIn(Explainer):
         - Original TracIn: TracIn(z, z') = sum_t learning_rate * dot_prod(grad(w_t, z), grad(w_t, z')).
             * Trying to approximate sum_{i=0}^n TracInIdeal(zi, z') = L(W0, z') - L(WT, z').
             * W0 and WT are the initial and final parameters before and after training.
-        - Tree-ensemble Tracin: TracIn(z, z') = sum_t grad(z) * grad(z')
+        - Tree-ensemble Tracin: TracIn(z, z') = sum_t grad(z) * grad(z') * learning_rate
             * No dot product since GBDTs do gradient boosting in FUNCTIONAL space not parameter space.
             * Pos. number means reduction in test loss (a.k.a. proponent, helpful).
             * Neg. number means increase in test loss (a.k.a. opponent, harmful).
@@ -42,7 +42,7 @@ class TracIn(Explainer):
                 the model is needs to go towards.
             * For local, it does not matter if we use the gradient or
                 negative gradient. Ultimately, the train gradient is MULTIPLIED by
-                the test gradient; thus, the value will only be negative if the
+                the test gradient; the value will only be negative if the
                 gradient values have opposite signs, otherwise it will be positive.
 
     TODO

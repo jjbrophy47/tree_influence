@@ -36,7 +36,7 @@ class Trex(Explainer):
 
 
     Local-Influence Semantics
-        - phi(x_t) := sum_i dot(f_i * f_t) * alpha_i
+        - phi(x_t) := sum_i dot(f_i, f_t) * alpha_i
         - Semantics are the same as global, but each train example's alpha value is
             multiplied by the similarity between x_i and x_t.
 
