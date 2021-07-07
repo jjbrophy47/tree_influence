@@ -40,15 +40,14 @@ class Trex(Explainer):
         - Semantics are the same as global, but each train example's alpha value is
             multiplied by the similarity between x_i and x_t.
 
-    Notes
-        - 'kernel', 'lmbd', and 'target' have a significant effect on approximation accuracy.
-        - Supports both RF and GBDT.
-
     Reference
          - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
 
     Paper
         - https://arxiv.org/abs/1811.09720
+
+    Note
+        - Supports both GBDTs and RFs.
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
                  random_state=1, verbose=0):

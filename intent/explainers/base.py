@@ -42,7 +42,7 @@ class Explainer(object):
           are most important.
 
         Return
-            - Regression and binary: 1d array of shape=(no. train).
+            - Regression and binary: 1d array of shape=(no. train,).
             - Multiclass: 2d array of shape=(no. train, no. classes).
             - Arrays are returned in the same order as the traing data.
         """

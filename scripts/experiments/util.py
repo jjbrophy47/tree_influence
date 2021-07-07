@@ -1,10 +1,11 @@
 """
-Utility methods for displaying data.
+Utility methods.
 """
 import os
 import sys
 import shutil
 import logging
+import numpy as np
 
 from catboost import CatBoostRegressor
 from catboost import CatBoostClassifier
@@ -73,30 +74,42 @@ def clear_dir(in_dir):
     return 0
 
 
-def get_toy_data(dataset, task, random_state, test_size=0.2):
+def get_data(data_dir, dataset):
+    """
+    Return train and test data for the specified dataset.
+    """
+    data = np.load(os.path.join(data_dir, dataset, 'data.npy'), allow_pickle=True)[()]
+
+    X_train, y_train = data['X_train'], data['y_train']
+    X_test, y_test = data['X_test'], data['y_test']
+
+    return X_train, X_test, y_train, y_test
+
+
+def get_toy_data(dataset, objective, random_state, test_size=0.2):
 
     if dataset == 'boston':
-        assert task == 'regression'
+        assert objective == 'regression'
         data = load_boston()
 
     elif dataset == 'iris':
-        assert task == 'multiclass'
+        assert objective == 'multiclass'
         data = load_iris()
 
     elif dataset == 'diabetes':
-        assert task == 'regression'
+        assert objective == 'regression'
         data = load_diabetes()
 
     elif dataset == 'digits':
-        assert task == 'multiclass'
+        assert objective == 'multiclass'
         data = load_digits()
 
     elif dataset == 'wine':
-        assert task == 'multiclass'
+        assert objective == 'multiclass'
         data = load_wine()
 
     elif dataset == 'breast_cancer':
-        assert task == 'binary'
+        assert objective == 'binary'
         data = load_breast_cancer()
 
     X = data['data']
@@ -118,7 +131,8 @@ def get_model(tree_type='lgb', task='regression', n_tree=100, max_depth=5, rando
     if tree_type == 'cb':
         class_fn = CatBoostRegressor if task == 'regression' else CatBoostClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth,
-                        random_state=random_state, logging_level='Silent')
+                        leaf_estimation_iterations=1, random_state=random_state,
+                        logging_level='Silent')
 
     elif tree_type == 'lgb':
         class_fn = LGBMRegressor if task == 'regression' else LGBMClassifier

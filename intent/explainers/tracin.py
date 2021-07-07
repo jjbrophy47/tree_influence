@@ -9,25 +9,15 @@ class TracIn(Explainer):
     Explainer that adapts the TracIn method to tree ensembles.
 
     Global-Influence Semantics
-        - Global influence of x_i = gradient sum over all boosting iterations.
-            * Regression: Pos. no. means increase in the pre-act. pred.; neg. is the opposite.
-            * Binary: Pos. no. means increase in the pre-act. pred. for the POS. class; neg. is the opposite.
-            * Multiclass: Pos. no. means increase in pre-act. pred. for the kth class; neg. decrease for kth class.
-        - Negative gradients are used, since the model needs to move in the direction of the neg. gradient.
-        - Could have done self-influence (e.g. measure loss of x_i on itself); however, this would
-            amount to multiplying the gradient by itself. Thus, all numbers would be positive indicating
-            each example reduces the loss on itself.
+        - Influence of x_i on itself
+        - Inf.(x_i, x_i) = sum of -grad(x_i) * -grad(x_i) * learning_rate over all boosts.
+        - Pos. value means a decrease in loss (a.k.a. proponent, helpful).
+        - Neg. value means an increase in loss (a.k.a. opponent, harmful).
 
     Local-Influence Semantics
-        - z and z' are train and test examples, respectively.
-        - Original TracIn: TracIn(z, z') = sum_t learning_rate * dot_prod(grad(w_t, z), grad(w_t, z')).
-            * Trying to approximate sum_{i=0}^n TracInIdeal(zi, z') = L(W0, z') - L(WT, z').
-            * W0 and WT are the initial and final parameters before and after training.
-        - Tree-ensemble Tracin: TracIn(z, z') = sum_t grad(z) * grad(z') * learning_rate
-            * No dot product since GBDTs do gradient boosting in FUNCTIONAL space not parameter space.
-            * Pos. number means reduction in test loss (a.k.a. proponent, helpful).
-            * Neg. number means increase in test loss (a.k.a. opponent, harmful).
-            * For multiclass, this applies to each class.
+        - BoostIn(x_i, x_t) = sum of -grad(x_i) * -grad(x_t) * learning_rate over all boosts.
+        - Pos. value means a decrease in test loss (a.k.a. proponent, helpful).
+        - Neg. value means an increase in test loss (a.k.a. opponent, harmful).
 
     Reference
          - https://github.com/frederick0329/TracIn
@@ -37,16 +27,10 @@ class TracIn(Explainer):
 
     Note
         - We use negative gradients for both global and local influences.
-            * For global, negative gradient is needed since we want the sign of the
-                influence for each train example to represent the direction
-                the model is needs to go towards.
-            * For local, it does not matter if we use the gradient or
-                negative gradient. Ultimately, the train gradient is MULTIPLIED by
-                the test gradient; the value will only be negative if the
-                gradient values have opposite signs, otherwise it will be positive.
-
-    TODO
-        - Add RF support?
+            * It does not matter if we use pos. or neg. gradients. For global,
+                the value will always be positive; for local, we only care if
+                the signs of the gradients differ.
+        - Only support GBDTs.
     """
     def __init__(self, use_leaf=0, verbose=0):
         """
@@ -75,6 +59,8 @@ class TracIn(Explainer):
 
         self.n_boost_ = self.model_.n_boost_
         self.n_class_ = self.model_.n_class_
+        self.learning_rate_ = self.model_.learning_rate
+
         self.loss_fn_ = self._get_loss_function()
 
         self.train_gradients_ = self._compute_gradients(X, y)
@@ -91,37 +77,31 @@ class TracIn(Explainer):
           are most important.
 
         Return
-            - Regression and binary: 1d array of shape=(no. train,).
-            - Multiclass: 2d array of shape=(no. train, no. class).
+            - 1d array of shape=(no. train,).
             - Arrays are returned in the same order as the traing data.
         """
-        self_influence = self.train_gradients_.sum(axis=1)  # sum over all boosting iterations
-
-        if self.model_.objective in ['regression', 'binary']:
-            self_influence = self_influence.squeeze()  # remove class axis
-
-        return self_influence
+        # compute self influence, shape=(no. train, no. boost, no. class)
+        influence = np.sum(self.train_gradients_ * self.train_gradients_) * self.learning_rate_
+        influence = influence.sum(axis=1).sum(axis=1)  # sum over boosts, then classes
+        return influence
 
     def get_local_influence(self, X, y):
         """
-        - Compute influence of each training instance on the test loss
-            by computing the dot prod. between the train gradient and the test gradient.
-
-        - Provides a local explanation of the test instance loss.
+        - Computes effect of each train example on the loss of the test example.
 
         - If `use_leaf` is True, then attribute train attribution to the test loss
             ONLY if the train example is in the same leaf(s) as the test example.
 
         Return
-            - Regression and binary: 2d array of shape=(no. train, X.shape[0]).
-            - Multiclass: 3d array of shape=(X.shape[0], no. train, no. class).
-            - Array is returned in the same order as the training data.
+            - 2d array of shape=(no. train, X.shape[0]).
+                * Array is returned in the same order as the training data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
         train_gradients = self.train_gradients_  # shape=(no. train, no. boost, no. class)
         test_gradients = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
         weight = 1.0 / self.n_train_
+        lr = self.learning_rate_
 
         # get leaf indices each example arrives in
         if self.use_leaf:
@@ -138,15 +118,14 @@ class TracIn(Explainer):
             if self.use_leaf:
                 mask = np.where(train_leaves == test_leaves[i], 1, 0)  # shape=(no. train, no. boost, no. class)
                 weighted_mask = mask * leaf_weights  # shape=(no. train, no. boost, no. class)
-                influence[i, :, :] = np.sum(train_gradients * weighted_mask * test_gradients[i], axis=1)
+                influence[i, :, :] = np.sum(train_gradients * weighted_mask * test_gradients[i], axis=1) * lr
 
             else:
-                influence[i, :, :] = np.sum(train_gradients * test_gradients[i] * weight, axis=1)
+                influence[i, :, :] = np.sum(train_gradients * test_gradients[i] * weight, axis=1) * lr
 
-        # reshape result based on the objective
-        if self.model_.objective in ['regression', 'binary']:
-            influence = influence.transpose(1, 0, 2)  # shape=(no. train, X.shape[0], no. class)
-            influence = influence.squeeze()  # remove class axis
+        # reshape influences
+        influence = influence.transpose(1, 0, 2)  # shape=(no. train, X.shape[0], no. class)
+        influence = influence.sum(axis=2)  # sum over classes
 
         return influence
 
@@ -168,7 +147,6 @@ class TracIn(Explainer):
         n_boost = self.model_.n_boost_
         n_class = self.model_.n_class_
         bias = self.model_.bias
-        learning_rate = self.model_.learning_rate
 
         current_approx = np.tile(bias, (n_train, 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
         gradients = np.zeros((n_train, n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
@@ -181,7 +159,7 @@ class TracIn(Explainer):
             for class_idx in range(n_class):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
-        return -gradients * learning_rate
+        return -gradients
 
     def _get_loss_function(self):
         """

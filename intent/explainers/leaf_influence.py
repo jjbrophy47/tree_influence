@@ -9,17 +9,22 @@ class LeafInfluence(Explainer):
     LeafInfluence: Explainer that adapts the influence functions method to tree ensembles.
 
     Global-Influence Semantics
-        - x_i is the ith train example and x_t is a test example, respectively.
-        - Global inf. of x_i = influence of x_i on itself.
-            * Self inf.(x_i, x_i) := L(y, F(x_i)) - L(y, F_{w/o x_i}(x_i))
-            * Neg. no. means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-            * Pos. no. means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+        - Influence of x_i on itself.
+        - Original Inf.(x_i, x_i) := L(y, F(x_i)) - L(y, F_{w/o x_i}(x_i))
+        - Updated Inf.(x_i, x_i) := L(y, F_{w/o x_i}(x_i)) - L(y, F(x_i))
+            * Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
+            * Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) := L(y, F(x_t)) - L(y, F_{w/o x_i}(x_t))
-        - Same semantics as global influence, but applied to the loss of a test example.
+        - Original Inf.(x_i, x_t) := L(y, F(x_t)) - L(y, F_{w/o x_i}(x_t))
+        - Updated Inf.(x_i, x_t) := L(y, F_{w/o x_i}(x_t)) - L(y, F(x_t))
+            * Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
+            * Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
 
     Note
+        - Influence values are multipled by -1 to get the "updated" influence semantics
+            above; this is to make the semantics of LeafInfluence values more consistent
+            with other influence methods that approximate changes in loss.
         - Does NOT take class or instance weight into account.
 
     Reference
@@ -31,7 +36,7 @@ class LeafInfluence(Explainer):
     TODO
         - Add RF support?
     """
-    def __init__(self, update_set=-1, random_state=1, verbose=0):
+    def __init__(self, update_set=-1, verbose=0):
         """
         Input
             update_set: int, No. neighboring leaf values to use for approximating leaf influence.
@@ -41,12 +46,10 @@ class LeafInfluence(Explainer):
             l2_leaf_reg: float, Regularization coefficient to prevent leaf values from overfitting.
                 First used in XGBoost paper. If set to 0, then learning reverts to traditiional
                 gradient tree boosting.
-            random_state: int, Random state seed to generate reproducible results.
             verbose: int, Output verbosity.
         """
         assert update_set >= -1
         self.update_set = update_set
-        self.random_state = random_state
         self.verbose = verbose
 
     def fit(self, model, X, y):
@@ -201,36 +204,35 @@ class LeafInfluence(Explainer):
         - Provides a global importance to all training examples.
 
         Return
-            - Regression and binary: 1d array of shape=(no. train).
-            - Multiclass: 2d array of shape=(no. train, no. class).
+            - 1d array of shape=(no. train,).
             - Array is returned in the same order as the traing data.
         """
-        self_influence = np.zeros((self.X_train_.shape[0], 1, self.n_class_), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], 1, self.n_class_), dtype=np.float32)
 
         # compute influence of each training example on itself
         for remove_idx in range(self.X_train_.shape[0]):
             X = self.X_train_[[remove_idx]]
             y = self.y_train_[[remove_idx]]
-            self_influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
+            influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
 
         # reshape result based on the objective
         if self.model_.objective in ['regression', 'binary']:
-            self_influence = self_influence.squeeze()  # remove axes 1 and 2
+            influence = influence.squeeze()  # remove axes 1 and 2
 
         else:
             assert self.model_.objective == 'multiclass'
-            self_influence = self_influence.squeeze(axis=1)  # remove axis 1
+            influence = influence.squeeze(axis=1)  # remove axis 1
+            influence = influence.sum(axis=1)  # sum over classes
 
-        return self_influence
+        return influence
 
     def get_local_influence(self, X, y):
         """
         - Compute influence of each training example on each test example loss.
 
         Return
-            - Regression and binary: 2d array of shape=(no. train, X.shape[0])
-            - Multiclass: 3d array of shape=(X.shape[0], no. train, no. class).
-            - Train influences are in the same order as the original ordering.
+            - 2d array of shape=(no. train, X.shape[0])
+                * Train influences are in the same order as the original training order.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
@@ -246,7 +248,7 @@ class LeafInfluence(Explainer):
 
         else:
             assert self.model_.objective == 'multiclass'
-            influence = influence.transpose(1, 0, 2)  # shape=(no. test, no. train, no. class)
+            influence = influence.sum(axis=2)  # sum over class, shape=(no. train, X.shape[0])
 
         return influence
 
@@ -263,6 +265,10 @@ class LeafInfluence(Explainer):
 
         Return
             - Array of test influences of shape=(X.shape[0], no. class).
+
+        Note
+            - We multiply the result by -1 to have consistent semantics
+                with other influence methods that approx. loss.
         """
         doc2leaf = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
 
@@ -284,7 +290,7 @@ class LeafInfluence(Explainer):
                 n_prev_leaves += self.leaf_counts_[boost_idx, class_idx]
             tree_idx += 1
 
-        return self.loss_fn_.gradient(y, og_pred) * new_pred
+        return -self.loss_fn_.gradient(y, og_pred) * new_pred
 
     def _get_docs_to_update(self, leaf_count, leaf_docs, remove_idx, da):
         """

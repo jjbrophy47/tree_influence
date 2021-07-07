@@ -119,27 +119,29 @@ class SquaredLoss(object):
     Note
         - y and yhat could be swapped and the gradient would still be the same.
         - y_raw and y_hat are equivalent.
-        - Shape of y and y_raw are (no. examples, 1). This is to be
+        - Shape of y and y_raw / y_pred are (no. examples, 1). This is to be
             compatible with multiclass models.
     """
 
-    def __call__(self, y, y_raw):
+    def __call__(self, y, y_pred, raw=True):
         """
         Input
-            y: 2d array of regression values.
-            y_raw: 2d array of predicted values.
+            y: 1d or 2d array of regression values.
+            y_raw: 1d or 2d array of predicted values.
+            raw: UNUSED, for compatibility with other loss functions.
 
         Return
-            2d array of mean-squared error losses.
+            1d array of losses of shape=(y.shape[0],).
         """
-        y, y_raw = self._check_y(y, y_raw)
-        return 0.5 * (y - y_raw) ** 2
+        y, y_pred = self._check_y(y, y_pred)
+        losses = 0.5 * (y - y_pred) ** 2
+        return losses.flatten()
 
     def gradient(self, y, y_raw):
         """
         Input
-            y: 2d array of regression values.
-            y_raw: 2d array of predicted values.
+            y: 1d or 2d array of regression values.
+            y_raw: 1d or 2d array of predicted values.
 
         Returns 2d array of gradients w.r.t. the prediction.
         """
@@ -149,8 +151,8 @@ class SquaredLoss(object):
     def hessian(self, y, y_raw):
         """
         Input
-            y: 2d array of regression values.
-            y_raw: 2d array of predicted values.
+            y: 1d or 2d array of regression values.
+            y_raw: 1d or 2d array of predicted values.
 
         Returns 2d array of second-order derivatives w.r.t. the prediction.
         """
@@ -160,8 +162,8 @@ class SquaredLoss(object):
     def third(self, y, y_raw):
         """
         Input
-            y: 2d array of regression values.
-            y_raw: 2d array of predicted values.
+            y: 1d or 2d array of regression values.
+            y_raw: 1d or 2d array of predicted values.
 
         Returns 2d array of third-order derivatives w.r.t. the prediction.
         """
@@ -200,36 +202,37 @@ class LogisticLoss(object):
             a2806c6732eee8d27762edd6d864e0c179d8e9e8/mlfromscratch/supervised_learning/xgboost.py
 
     Note
-        - Shape of y and y_raw are (no. examples, 1). This is to be
+        - Shape of y and y_raw / y_pred are (no. examples, 1). This is to be
             compatible with multiclass models.
     """
 
-    def __call__(self, y, y_raw, eps=1e-15):
+    def __call__(self, y, y_pred, eps=1e-15, raw=True):
         """
-        Clip yhat to just above 0 and just below 1
-        since log is undefined for 0.
+        Compute logistic loss for each example.
 
         Input
-            y: 2d array of 0 and 1 labels.
-            y_raw: 2d array of unnormalized log probs.
+            y: 1d or 2d array of 0 and 1 labels.
+            y_pred: 1d or 2d array of logits or predicted probabilities.
 
-        Return 2d array of neg. log losses.
+        Return 1d array of log losses.
         """
         assert np.all(np.unique(y) == np.array([0, 1]))
 
-        y, y_raw = self._check_y(y, y_raw)
+        y, y_pred = self._check_y(y, y_pred)
 
-        y_hat = sigmoid(y_raw)
-        y_hat = np.clip(y_hat, eps, 1 - eps)  # prevent log(0)
-        losses = -(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))
+        if raw:  # squash value between 0 and 1
+            y_pred = sigmoid(y_pred)
 
-        return losses
+        y_pred = np.clip(y_pred, eps, 1 - eps)  # prevent log(0)
+        losses = -(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred))
+
+        return lossesf.flatten()
 
     def gradient(self, y, y_raw):
         """
         Input
-            y: 2d array of 0 and 1 labels.
-            yhat: 2d array of pre-activation values.
+            y: 1d or 2d array of 0 and 1 labels.
+            yhat: 1d or 2d array of pre-activation values.
 
         Returns 2d array of gradients w.r.t. the prediction.
         """
@@ -240,8 +243,8 @@ class LogisticLoss(object):
     def hessian(self, y, y_raw):
         """
         Input
-            y: 1d array of 0 and 1 labels.
-            yhat: 1d array of pre-activation values.
+            y: 1d or 2d array of 0 and 1 labels.
+            y_raw: 1d or 2d array of pre-activation values.
 
         Returns 1d array of second-order gradients w.r.t. the prediction.
         """
@@ -252,8 +255,8 @@ class LogisticLoss(object):
     def third(self, y, y_raw):
         """
         Input
-            y: 2d array of 0 and 1 labels.
-            yhat: 2d array of pre-activation values.
+            y: 1d or 2d array of 0 and 1 labels.
+            yhat: 1d or 2d array of pre-activation values.
 
         Returns 2d array of third-order gradients w.r.t. the prediction.
         """
@@ -299,22 +302,25 @@ class SoftmaxLoss(object):
         self.factor = factor
         self.n_class = n_class
 
-    def __call__(self, y, y_raw):
+    def __call__(self, y, y_pred, raw=True):
         """
         Input
-            y: 2d array of one-hot-encoded labels; shape=(no. examples, no. classes).
-            y_raw: 2d array of unnormalized log probs.; shape=(no. examples, no. classes).
+            y: 1d or 2d array of one-hot-encoded labels; shape=(no. examples, no. classes).
+            y_pred: 2d array of predicted values; shape=(no. examples, no. classes).
+            raw: If True, then normalize logits.
 
-        Return losses of shape=y_raw.shape.
+        Return 1d array of losses of shape=(y_pred.shape[0],).
         """
         y = self._check_y(y)
-        y_raw_norm = y_raw - logsumexp(y_raw)  # normalize log probs in log space
-        return -np.sum(y * y_raw_norm, axis=1)
+        # normalize logits or put probabilities into log space
+        y_pred = y_pred - logsumexp(y_pred) if raw else np.log(y_pred)
+        losses = -np.sum(y * y_pred, axis=1)  # sum over classes
+        return losses.flatten()
 
     def gradient(self, y, y_raw):
         """
         Input
-            y: 2d array of one-hot-encoded labels, shape=(no. examples, no. classes).
+            y: 1d or 2d array of one-hot-encoded labels, shape=(no. examples, no. classes).
             y_hat: 2d array of pre-activation values, shape=(no. examples, no. classes).
 
         Returns 2d array of gradients w.r.t. the prediction; shape=(no. examples, no. classes).
@@ -326,7 +332,7 @@ class SoftmaxLoss(object):
     def hessian(self, y, y_raw):
         """
         Input
-            y: 2d array of one-hot-encoded labels, shape=(no. examples, no. classes).
+            y: 1d or 2d array of one-hot-encoded labels, shape=(no. examples, no. classes).
             y_hat: 2d array of pre-activation values, shape=(no. examples, no. classes).
 
         Returns 1d array of second-order gradients w.r.t. the prediction; shape=(no. examples, no. classes).
@@ -338,7 +344,7 @@ class SoftmaxLoss(object):
     def third(self, y, y_raw):
         """
         Input
-            y: 2d array of one-hot-encoded labels, shape=(no. examples, no. classes).
+            y: 1d or 2d array of one-hot-encoded labels, shape=(no. examples, no. classes).
             y_hat: 2d array of pre-activation values, shape=(no. examples, no. classes).
 
         Returns 2d array of third-order gradients w.r.t. the prediction; shape=(no. examples, no. classses).
