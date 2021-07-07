@@ -64,8 +64,10 @@ class LOO(Explainer):
 
             models[train_idx] = clone(model).fit(new_X, new_y)
 
-        self.origial_model_ = model
+        self.original_model_ = model
         self.models_ = models
+
+        return self
 
     def get_global_influence(self):
         """
@@ -81,7 +83,7 @@ class LOO(Explainer):
 
         influence = np.zeros((X.shape[0]), dtype=np.float32)  # shape=(X.shape[0],)
 
-        original_losses = self._loss(self.origial_model_, X, y)  # shape=(X.shape[0],)
+        original_losses = self._get_losses(self.original_model_, X, y)  # shape=(X.shape[0],)
 
         for remove_idx in range(self.models_.shape[0]):
             losses = self._get_losses(self.models_[remove_idx], X[[remove_idx]], y[[remove_idx]])  # shape=(1,)
@@ -105,7 +107,7 @@ class LOO(Explainer):
 
         influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
 
-        original_losses = self._loss(self.origial_model_, X, y)  # shape=(X.shape[0],)
+        original_losses = self._get_losses(self.original_model_, X, y)  # shape=(X.shape[0],)
 
         for remove_idx in range(self.models_.shape[0]):
             losses = self._get_losses(self.models_[remove_idx], X, y)
@@ -120,9 +122,12 @@ class LOO(Explainer):
         if self.model_.objective == 'regression':
             y_pred = model.predict(X)  # shape=(X.shape[0])
 
+        elif self.model_.objective == 'binary':
+            y_pred = model.predict_proba(X)[:, 1]  # 1d arry of pos. probabilities
+
         else:
-            assert self.model_.objective in ['binary', 'multiclass']
-            y_pred = self.model.predict_proba(X)  # shape=(X.shape[0], no. class)
+            assert self.model_.objective == 'multiclass'
+            y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
 
         losses = self.loss_fn_(y, y_pred)
         return losses
