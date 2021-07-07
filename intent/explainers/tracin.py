@@ -81,8 +81,8 @@ class TracIn(Explainer):
             - Arrays are returned in the same order as the traing data.
         """
         # compute self influence, shape=(no. train, no. boost, no. class)
-        influence = np.sum(self.train_gradients_ * self.train_gradients_) * self.learning_rate_
-        influence = influence.sum(axis=1).sum(axis=1)  # sum over boosts, then classes
+        influence = self.train_gradients_ * self.train_gradients_ * self.learning_rate_
+        influence = influence.sum(axis=(1, 2))  # sum over boosts and classes
         return influence
 
     def get_local_influence(self, X, y):
