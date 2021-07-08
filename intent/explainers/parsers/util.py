@@ -401,4 +401,5 @@ class SoftmaxLoss(object):
             class_cat = [np.arange(self.n_class).tolist()]
             y = y.reshape(-1, 1)
             y = OneHotEncoder(categories=class_cat, sparse=False, dtype=np.float32).fit_transform(y)
+
         return y

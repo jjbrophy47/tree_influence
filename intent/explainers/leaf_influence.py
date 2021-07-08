@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 from .base import Explainer
 from .parsers import util
@@ -150,7 +151,7 @@ class LeafInfluence(Explainer):
         leaf_derivatives = np.zeros((X.shape[0], np.sum(leaf_counts)), dtype=np.float32)
 
         # copy and compute new leaf values resulting from the removal of each x in X.
-        for remove_idx in range(X.shape[0]):
+        for remove_idx in tqdm(range(X.shape[0]), disable=self.verbose == 0):
 
             # intermediate containers
             da = np.zeros((X.shape[0], n_class), dtype=np.float32)

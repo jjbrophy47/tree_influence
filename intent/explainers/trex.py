@@ -40,6 +40,9 @@ class Trex(Explainer):
 
     Note
         - Supports both GBDTs and RFs.
+        - Ordering of local influence using loss approx. magnitude is not necessarily the
+            same as using the magniutde of representer values as the activation of the
+            loss function can cause slightly differing orderings.
 
     TODO
         - Does conversion to loss semantics still work if training labels are predicted, not actual?
@@ -178,10 +181,10 @@ class Trex(Explainer):
         influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
         original_losses = self.loss_fn_(y, rep_vals_sum, raw=True)  # shape=(X.shape[0],)
 
+        # compute losses without each train example, and their influences
         for test_idx in range(X.shape[0]):
-            # losses without each train examples, shape=(no. train,)
             y_temp = np.tile(y[test_idx], (self.X_train_.shape[0], 1))
-            removed_losses = self.loss_fn_(y_temp, rep_vals_delta[:, test_idx, :], raw=True)
+            removed_losses = self.loss_fn_(y_temp, rep_vals_delta[:, test_idx, :], raw=True)  # shape=(no. train,)
             influence[:, test_idx] = removed_losses - original_losses[test_idx]  # shape=(no. train,)
 
         return influence

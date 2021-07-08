@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 from sklearn.base import clone
 
 from .base import Explainer
@@ -50,7 +51,7 @@ class LOO(Explainer):
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
         self.n_class_ = self.model_.n_class_
-        self.loss_fn_ = util._get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
+        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
 
@@ -58,10 +59,9 @@ class LOO(Explainer):
         models = np.zeros(X.shape[0], dtype=np.object)  # shape=(X.shape[0])
 
         # save fitted model for each training example
-        for train_idx in range(X.shape[0]):
+        for train_idx in tqdm(range(X.shape[0]), disable=self.verbose == 0):
             new_X = np.delete(X, train_idx, axis=0)
             new_y = np.delete(y, train_idx)
-
             models[train_idx] = clone(model).fit(new_X, new_y)
 
         self.original_model_ = model

@@ -85,7 +85,7 @@ def evaluate(objective, model, X, y, logger, prefix=''):
         target = y[0]
         y_hat = model.predict_proba(X)[0]  # shape=(no. class,)
         result['pred'] = y_hat[target]
-        result['loss'] = np.log(y_hat)[target]
+        result['loss'] = -np.log(y_hat)[target]
         result['loss_type'] = 'cross_entropy_loss'
 
     logger.info(f"[{prefix}] prediction: {result['pred']:>10.3f}, "
@@ -155,27 +155,8 @@ def experiment(args, logger, params, out_dir):
 
     else:
         explainer = intent.TreeExplainer(method=args.method, params=params).fit(tree, X_train, y_train)
-        local_influence = explainer.get_local_influence(X_test, y_test)
-
-        # sum absolute influence over all classes
-        if args.objective in ['regression', 'binary']:
-            local_influence = local_influence[:, 0]
-
-        else:
-            assert args.objective == 'multiclass'
-            local_influence = local_influence[0, :, y_test[0]]  # shape=(no. train,)
-
-        # if args.method == 'leaf_influence':
-        #     local_influence
-
-        # sort train examples based on largest absolute influence
-        # ranking = np.argsort(np.abs(local_influence))[::-1]
-        # ranking = np.argsort(np.abs(local_influence))
-        ranking = np.argsort(local_influence)[::-1]
-
-        # print(ranking)
-        # print(local_influence[ranking])
-        # print(y_train[ranking])
+        local_influence = explainer.get_local_influence(X_test, y_test)[:, 0]
+        ranking = np.argsort(local_influence)[::-1]  # sort on magnitude
 
     rank_time = time.time() - start
     logger.info(f'\nrank time: {rank_time:.5f}s')

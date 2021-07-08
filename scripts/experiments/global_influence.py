@@ -117,10 +117,6 @@ def experiment(args, logger, params, out_dir):
         explainer = intent.TreeExplainer(method=args.method, params=params).fit(tree, X_train, y_train)
         global_influence = explainer.get_global_influence()
 
-        # sum absolute influence over all classes
-        if args.objective == 'multiclass':
-            global_influence = np.abs(global_influence).sum(axis=1)
-
         # sort train examples based on largest absolute influence
         ranking = np.argsort(np.abs(global_influence))[::-1]
         # ranking = np.argsort(np.abs(global_influence))
@@ -190,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_leaf', type=int, default=1)  # TracIn
     parser.add_argument('--update_set', type=int, default=-1)  # LeafInfluence
     parser.add_argument('--kernel', type=str, default='lpw')  # Trex
-    parser.add_argument('--target', type=str, default='predicted')  # Trex
+    parser.add_argument('--target', type=str, default='actual')  # Trex
     parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
     parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
     parser.add_argument('--verbose', type=int, default=0)  # TracIn, LeafInfluence, + Trex

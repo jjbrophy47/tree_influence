@@ -1,6 +1,7 @@
 from .explainers import TracIn
 from .explainers import Trex
 from .explainers import LeafInfluence
+from .explainers import LOO
 
 
 class TreeExplainer(object):
@@ -33,6 +34,9 @@ class TreeExplainer(object):
 
         elif method == 'hydra':
             self.explainer = Hydra(**params)
+
+        elif method == 'loo':
+            self.explainer = LOO(**params)
 
         else:
             raise ValueError(f'Unknown method {method}')
