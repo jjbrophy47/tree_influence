@@ -61,7 +61,7 @@ class TracIn(Explainer):
         self.n_class_ = self.model_.n_class_
         self.learning_rate_ = self.model_.learning_rate
 
-        self.loss_fn_ = self._get_loss_function()
+        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
         self.train_gradients_ = self._compute_gradients(X, y)
         self.train_leaves_ = self.model_.apply(X)

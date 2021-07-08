@@ -75,7 +75,7 @@ class LeafInfluence(Explainer):
 
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
-        self.loss_fn_ = self._get_loss_function()
+        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
         # extract tree-ensemble metadata
         trees = self.model_.trees
@@ -205,7 +205,7 @@ class LeafInfluence(Explainer):
 
         Return
             - 1d array of shape=(no. train,).
-            - Array is returned in the same order as the traing data.
+                * Array is returned in the same order as the traing data.
         """
         influence = np.zeros((self.X_train_.shape[0], 1, self.n_class_), dtype=np.float32)
 

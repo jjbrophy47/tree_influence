@@ -50,7 +50,7 @@ class LOO(Explainer):
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
         self.n_class_ = self.model_.n_class_
-        self.loss_fn_ = self._get_loss_function()
+        self.loss_fn_ = util._get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
 
@@ -129,22 +129,5 @@ class LOO(Explainer):
             assert self.model_.objective == 'multiclass'
             y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
 
-        losses = self.loss_fn_(y, y_pred)
+        losses = self.loss_fn_(y, y_pred, raw=False)
         return losses
-
-    def _get_loss_function(self):
-        """
-        Return the appropriate loss function for the given objective.
-        """
-        if self.model_.objective == 'regression':
-            loss_fn = util.SquaredLoss()
-
-        elif self.model_.objective == 'binary':
-            loss_fn = util.LogisticLoss()
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            n_class = self.model_.n_class_
-            loss_fn = util.SoftmaxLoss(factor=self.model_.factor, n_class=n_class)
-
-        return loss_fn

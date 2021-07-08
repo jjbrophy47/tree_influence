@@ -125,6 +125,23 @@ def to_np(x):
     return x.data.cpu().numpy()
 
 
+def get_loss_fn(objective, n_class, factor):
+    """
+    Return the appropriate loss function for the given objective.
+    """
+    if objective == 'regression':
+        loss_fn = SquaredLoss()
+
+    elif objective == 'binary':
+        loss_fn = LogisticLoss()
+
+    else:
+        assert objective == 'multiclass'
+        loss_fn = SoftmaxLoss(factor=factor, n_class=n_class)
+
+    return loss_fn
+
+
 class SquaredLoss(object):
     """
     Squared loss.
@@ -372,6 +389,14 @@ class SoftmaxLoss(object):
         """
         Converts 1d array of multiclass labels to a 2d array of one-hot encoded labels.
         """
+        if y.ndim == 2:
+
+            if y.shape[1] == 1:
+                y = y.flatten()
+
+            elif y.shape[1] != self.n_class:
+                raise ValueError(f'y has the wrong no. classes: y.shape: {y.shape}')
+
         if y.ndim == 1:
             class_cat = [np.arange(self.n_class).tolist()]
             y = y.reshape(-1, 1)

@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--kernel', type=str, default='lpw')
-    parser.add_argument('--target', type=str, default='predicted', help='actual or predicted.')
+    parser.add_argument('--target', type=str, default='actual', help='actual or predicted.')
     parser.add_argument('--lmbd', type=float, default=0.003, help='l2 regularizer coefficient.')
     parser.add_argument('--verbose', type=int, default=0)
 

@@ -19,18 +19,26 @@ class Trex(Explainer):
     Representer point method to tree ensembles.
 
     Global-Influence Semantics
-        - Influence of x_i on itself.
-        - Inf.(x_i, x_i) := L(phi(sum_j * (alpha_{j=i}=0) K(x_i, x_i)) - L(phi(sum_i alpha_i k(x_i, x_i))).
-        - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-        - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+        - x_i is the ith train example and x_t is a test example, respectively.
+        - The alpha values (train weights) used to compute the representer values are
+            used as a poxy for the self influence of the train examples.
+        - An alpha value is essentially the gradient * learning rate over multiple
+            iterations of gradient descent.
+        - Regression
+            * A neg. number means x_i DECREASES the x_t pre-activation prediction.
+            * A pos. number means x_i INCREASES the x_t pre-activation prediction.
+        - Binary
+            * A neg. number means x_i DECREASES the x_t pre-activation prediction for the POSITIVE class.
+            * A pos. number means x_i INCREASES the x_t pre-activation prediction for the POSITIVE class.
+        - Multiclass
+            * A neg. number means x_i DECREASES the x_t pre-activation prediction for the k class.
+            * A pos. number means x_i INCREASES the x_t pre-activation prediction for the k class.
 
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) := L(phi(sum_j * (alpha_{j=i}=0) K(x_i, x_t)) - L(phi(sum_i alpha_i k(x_i, x_t))).
-        - Phi is the activation of the pre-activation prediction.
-        - Alpha_i has y_i baked into it if the kernelized model uses actual labels, i.e. alpha_i = alpha_i * y_i.
-        - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-        - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+        - phi(x_t) := sum_i dot(f_i, f_t) * alpha_i
+        - Semantics are the same as global, but each train example's alpha value is
+            multiplied by the similarity between x_i and x_t.
 
     Reference
          - https://github.com/chihkuanyeh/Representer_Point_Selection/blob/master/compute_representer_vals.py
@@ -40,12 +48,8 @@ class Trex(Explainer):
 
     Note
         - Supports both GBDTs and RFs.
-
-    TODO
-        - Does conversion to loss semantics still work if training labels are predicted, not actual?
-        - Can we just return alphas for global influence instead of influence of x_i on itself?
     """
-    def __init__(self, kernel='lpw', target='actual', lmbd=0.003, n_epoch=3000,
+    def __init__(self, kernel='lpw', target='actual', lmbd=0.00003, n_epoch=3000,
                  random_state=1, verbose=0):
         """
         Input
@@ -93,9 +97,7 @@ class Trex(Explainer):
 
         self.model_.update_node_count(X)
 
-        self.n_class_ = self.model_.n_class_
         self.X_train_ = self._kernel_transform(X)
-        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
         # select target
         if self.target == 'actual':
@@ -126,63 +128,50 @@ class Trex(Explainer):
 
     def get_global_influence(self):
         """
-        - Compute change in loss of each training instance on itself.
-        - Provides a global importance to all training examples.
+        - Return learned train weights as a measure of global importance
+            for each training example.
+            * These weights are essentially the sum of gradients * learning_rate
+                over all iterations of gradient descent.
 
         Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
+            - Regression and binary: 1d array of shape=(no. train,).
+            - Multiclass: 2d array of shape=(no. train, no. class).
+            - Arrays are returned in the same order as the traing data.
         """
-        X = self.X_train_
-        y = self.y_train_
-
-        # compute pre-act. predictions for each train example
-        W = np.matmul(X.T, self.alpha_)  # shape=(no. features, no. class)
-        rep_vals_sum = np.matmul(X, W)  # shape=(no. train, no. class)
-
-        sim = np.sum(X * X, axis=1, keepdims=True)  # shape=(no. train, 1)
-        rep_vals = sim * self.alpha_  # shape=(no. train, no. class)
-        rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, no. class)
-
-        original_losses = self.loss_fn_(rep_vals_sum, y, raw=True)  # shape=(no. train,)
-        removed_losses = self.loss_fn_(rep_vals_delta, y, raw=True)  # shape=(no. train,)
-
-        influence = removed_losses - original_losses  # shape=(no. train,)
-
-        return influence
+        return self.alpha_.copy()
 
     def get_local_influence(self, X, y):
         """
-        - Compute influence of each train examples on each test example loss.
+        - Compute the attribution of each training example for each test example prediction.
+            * Transform the test example using the specified tree kernel.
+            * Compute dot prod. between transformed train and test, weighted by alpha.
+
+        - Provides a local explanation of the test example PREDICTION not LOSS.
 
         Return
-            - 2d array of shape=(no. train, X.shape[0]).
-                * Array is returned in the same order as the traing data.
+            - Regression and binary: 2d array of shape=(no. train, X.shape[0]).
+            - Multiclass: 3d array of shape=(X.shape[0], no. train, no. class).
+            - Arrays are returned in the same order as the traing data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        X_test_ = self._kernel_transform(X)  # shape=(X.shape[0], no. feature)
+        X_test_ = self._kernel_transform(X)  # shape=(X.shape[0], no. kernel feature)
         sim = np.matmul(self.X_train_, X_test_.T)  # shape=(no. train, X.shape[0])
 
-        # intermediate result, shape=(no. train, X.shape[0], no. class)
-        rep_vals = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=np.float32)
+        # compute representer values
+        if self.model_.objective in ['regression', 'binary']:
+            influence = sim * self.alpha_.reshape(-1, 1)
 
-        for class_idx in range(self.n_class_):  # per class
-            rep_vals[:, :, class_idx] = sim * self.alpha_[:, class_idx].reshape(-1, 1)
+        else:  # multiclass
+            assert self.model_.objective == 'multiclass'
 
-        # compute pre-act. pred. with and without each train example
-        rep_vals_sum = np.sum(rep_vals, axis=0)  # sum over train, shape=(X.shape[0], no. class)
-        rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, X.shape[0], no. class)
+            # shape=(no. train, X.shape[0], no. class)
+            influence = np.zeros((sim.shape[0], X.shape[0], self.alpha_.shape[1]), dtype=np.float32)
 
-        # compute losses with and then without each train example
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
-        original_losses = self.loss_fn_(y, rep_vals_sum, raw=True)  # shape=(X.shape[0],)
+            for class_idx in range(influence.shape[2]):  # per class
+                influence[:, :, class_idx] = sim * self.alpha_[:, class_idx].reshape(-1, 1)
 
-        for test_idx in range(X.shape[0]):
-            # losses without each train examples, shape=(no. train,)
-            y_temp = np.tile(y[test_idx], (self.X_train_.shape[0], 1))
-            removed_losses = self.loss_fn_(y_temp, rep_vals_delta[:, test_idx, :], raw=True)
-            influence[:, test_idx] = removed_losses - original_losses[test_idx]  # shape=(no. train,)
+            influence = influence.transpose(1, 0, 2)  # shape=(X.shape[0], no. train, no. class)
 
         return influence
 
@@ -363,7 +352,7 @@ class Trex(Explainer):
         alpha = torch.div(alpha, (-2.0 * self.lmbd * N))
 
         # compute W based on the Representer Theorem decomposition
-        W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,) or (no. features, no. class)
+        W = torch.matmul(torch.t(X), alpha)  # shape=(no. features,)
 
         output_approx = torch.matmul(X, W)
 
@@ -392,12 +381,7 @@ class Trex(Explainer):
         self.p_corr_ = p_corr
         self.s_corr_ = s_corr
 
-        # convert alpha to numpy and reshape if necessary
-        alpha = util.to_np(alpha)
-        if self.model_.objective in ['regression', 'binary']:
-            alpha = alpha.reshape(-1, 1)
-
-        return alpha
+        return util.to_np(alpha)
 
     def _backtracking_line_search(self, model, grad, X, y, val, beta=0.5):
         """
