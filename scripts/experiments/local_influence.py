@@ -156,7 +156,7 @@ def experiment(args, logger, params, out_dir):
     else:
         explainer = intent.TreeExplainer(method=args.method, params=params).fit(tree, X_train, y_train)
         local_influence = explainer.get_local_influence(X_test, y_test)[:, 0]
-        ranking = np.argsort(local_influence)[::-1]  # sort on magnitude
+        ranking = np.argsort(local_influence)[::-1]  # most helpful to most harmful
 
     rank_time = time.time() - start
     logger.info(f'\nrank time: {rank_time:.5f}s')

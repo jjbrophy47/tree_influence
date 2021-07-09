@@ -5,7 +5,7 @@ import argparse
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import TracIn
+from intent.explainers import BoostIn
 
 
 def main(args):
@@ -14,12 +14,12 @@ def main(args):
     kwargs = {'use_leaf': args.use_leaf, 'verbose': args.verbose}
 
     # tests
-    test_util.test_global_influence_regression(args, TracIn, 'tracin', kwargs)
-    test_util.test_global_influence_binary(args, TracIn, 'tracin', kwargs)
-    test_util.test_global_influence_multiclass(args, TracIn, 'tracin', kwargs)
-    test_util.test_local_influence_regression(args, TracIn, 'tracin', kwargs)
-    test_util.test_local_influence_binary(args, TracIn, 'tracin', kwargs)
-    test_util.test_local_influence_multiclass(args, TracIn, 'tracin', kwargs)
+    test_util.test_global_influence_regression(args, BoostIn, 'boostin', kwargs)
+    test_util.test_global_influence_binary(args, BoostIn, 'boostin', kwargs)
+    test_util.test_global_influence_multiclass(args, BoostIn, 'boostin', kwargs)
+    test_util.test_local_influence_regression(args, BoostIn, 'boostin', kwargs)
+    test_util.test_local_influence_binary(args, BoostIn, 'boostin', kwargs)
+    test_util.test_local_influence_multiclass(args, BoostIn, 'boostin', kwargs)
 
 
 if __name__ == '__main__':

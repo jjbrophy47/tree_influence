@@ -239,7 +239,7 @@ class LogisticLoss(object):
             compatible with multiclass models.
     """
 
-    def __call__(self, y, y_pred, eps=1e-15, raw=True):
+    def __call__(self, y, y_pred, eps=1e-5, raw=True):
         """
         Compute logistic loss for each example.
 
@@ -333,7 +333,7 @@ class SoftmaxLoss(object):
         self.factor = factor
         self.n_class = n_class
 
-    def __call__(self, y, y_pred, raw=True):
+    def __call__(self, y, y_pred, eps=1e-5, raw=True):
         """
         Input
             y: 1d or 2d array of one-hot-encoded labels; shape=(no. examples, no. classes).
@@ -343,8 +343,15 @@ class SoftmaxLoss(object):
         Return 1d array of losses of shape=(y_pred.shape[0],).
         """
         y = self._check_y(y)
-        # normalize logits or put probabilities into log space
-        y_pred = y_pred - logsumexp(y_pred) if raw else np.log(y_pred)
+
+        # normalize logits
+        if raw:
+            y_pred = y_pred - logsumexp(y_pred)
+
+        else:  # put probabilities into log space
+            y_pred = np.clip(y_pred, eps, 1 - eps)
+            y_pred = np.log(y_pred)
+
         losses = -np.sum(y * y_pred, axis=1)  # sum over classes
         return losses.flatten()
 

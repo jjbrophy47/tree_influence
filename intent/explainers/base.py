@@ -1,12 +1,3 @@
-"""
-TODO
-    - How do we pick a comparable way to choose train instances for explaining a single test instance.
-        * TracIn measures test LOSS with respect to bossting iterations.
-        * Trex decomposes the test PREDICTION into training example attributions.
-        * LeafInfluence measures test LOSS with respect to changing leaf values.
-        * HyDRA is VERY similar to TracIn. Maybe uses Hessian to do further approximations
-            but omits this step in their own implementation.
-"""
 from abc import abstractmethod
 
 from .parsers import parse_model

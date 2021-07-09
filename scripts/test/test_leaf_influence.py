@@ -11,7 +11,7 @@ from intent.explainers import LeafInfluence
 def main(args):
 
     # explainer arguments
-    kwargs = {'update_set': args.update_set}
+    kwargs = {'update_set': args.update_set, 'verbose': args.verbose}
 
     # tests
     test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
@@ -40,6 +40,7 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--update_set', type=int, default=-1)
+    parser.add_argument('--verbose', type=int, default=0)
 
     args = parser.parse_args()
 

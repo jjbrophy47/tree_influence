@@ -43,13 +43,9 @@ class Trex(Explainer):
         - Ordering of local influence using loss approx. magnitude is not necessarily the
             same as using the magniutde of representer values as the activation of the
             loss function can cause slightly differing orderings.
-
-    TODO
-        - Does conversion to loss semantics still work if training labels are predicted, not actual?
-        - Can we just return alphas for global influence instead of influence of x_i on itself?
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.003, n_epoch=3000,
-                 random_state=1, verbose=0):
+                 use_alpha=0, random_state=1, verbose=0):
         """
         Input
             kernel: Transformation of the input using the tree-ensemble structure.
@@ -77,6 +73,7 @@ class Trex(Explainer):
         self.target = target
         self.lmbd = lmbd
         self.n_epoch = n_epoch
+        self.use_alpha = use_alpha
         self.random_state = random_state
         self.verbose = verbose
 
@@ -134,23 +131,30 @@ class Trex(Explainer):
 
         Return
             - 1d array of shape=(no. train,).
+                * If `use_alpha` is True, then return weight magnitude, summed over classes.
+                    Otherwise, return the influence of each train example on itself.
                 * Arrays are returned in the same order as the traing data.
         """
-        X = self.X_train_
-        y = self.y_train_
+        if self.use_alpha:
+            influence = np.abs(self.alpha_).sum(axis=1)  # sum over classes
 
-        # compute pre-act. predictions for each train example
-        W = np.matmul(X.T, self.alpha_)  # shape=(no. features, no. class)
-        rep_vals_sum = np.matmul(X, W)  # shape=(no. train, no. class)
+        else:  # compute influence of each train example on itself
 
-        sim = np.sum(X * X, axis=1, keepdims=True)  # shape=(no. train, 1)
-        rep_vals = sim * self.alpha_  # shape=(no. train, no. class)
-        rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, no. class)
+            X = self.X_train_
+            y = self.y_train_
 
-        original_losses = self.loss_fn_(rep_vals_sum, y, raw=True)  # shape=(no. train,)
-        removed_losses = self.loss_fn_(rep_vals_delta, y, raw=True)  # shape=(no. train,)
+            # compute pre-act. predictions for each train example
+            W = np.matmul(X.T, self.alpha_)  # shape=(no. features, no. class)
+            rep_vals_sum = np.matmul(X, W)  # shape=(no. train, no. class)
 
-        influence = removed_losses - original_losses  # shape=(no. train,)
+            sim = np.sum(X * X, axis=1, keepdims=True)  # shape=(no. train, 1)
+            rep_vals = sim * self.alpha_  # shape=(no. train, no. class)
+            rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, no. class)
+
+            original_losses = self.loss_fn_(rep_vals_sum, y, raw=True)  # shape=(no. train,)
+            removed_losses = self.loss_fn_(rep_vals_delta, y, raw=True)  # shape=(no. train,)
+
+            influence = removed_losses - original_losses  # shape=(no. train,)
 
         return influence
 

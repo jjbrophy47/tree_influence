@@ -80,6 +80,8 @@ def parse_skrf_ensemble(model):
         - RandomForestRegressor and RandomForestClassifier, `estimators_`.shape=(no. estimators).
         - For multiclass classification, each tree's `value`.shape=(no. nodes, 1, no. classes).
     """
+    assert model.bootstrap is False, 'RF w/ bootstrap not supported'
+
     estimators = model.estimators_
     n_class = model.n_classes_ if hasattr(model, 'n_classes_') else 0
 

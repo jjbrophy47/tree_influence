@@ -1,4 +1,4 @@
-from .explainers import TracIn
+from .explainers import BoostIn
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LOO
@@ -16,15 +16,16 @@ class TreeExplainer(object):
         - XGBRegressor, XGBClassifier
 
     Currently supported explainers:
-        - TracIn
+        - TracIn (BoostIn)
         - Representer-point (Trex)
         - Influence Function (LeafInfluence)
         - HYDRA
+        - LOO
     """
-    def __init__(self, method='tracin', params={}):
+    def __init__(self, method='boostin', params={}):
 
-        if method == 'tracin':
-            self.explainer = TracIn(**params)
+        if method == 'boostin':
+            self.explainer = BoostIn(**params)
 
         elif method == 'trex':
             self.explainer = Trex(**params)

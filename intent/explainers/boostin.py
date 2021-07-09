@@ -4,7 +4,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class TracIn(Explainer):
+class BoostIn(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles.
 
@@ -15,7 +15,7 @@ class TracIn(Explainer):
         - Neg. value means an increase in loss (a.k.a. opponent, harmful).
 
     Local-Influence Semantics
-        - BoostIn(x_i, x_t) = sum of -grad(x_i) * -grad(x_t) * learning_rate over all boosts.
+        - Inf.(x_i, x_t) = sum of -grad(x_i) * -grad(x_t) * learning_rate over all boosts.
         - Pos. value means a decrease in test loss (a.k.a. proponent, helpful).
         - Neg. value means an increase in test loss (a.k.a. opponent, harmful).
 
@@ -26,10 +26,9 @@ class TracIn(Explainer):
         - https://arxiv.org/abs/2002.08484
 
     Note
-        - We use negative gradients for both global and local influences.
-            * It does not matter if we use pos. or neg. gradients. For global,
-                the value will always be positive; for local, we only care if
-                the signs of the gradients differ.
+        - It does not matter if we use pos. or neg. gradients when computing influence.
+            For global, the value will always be positive; for local, we only care if
+            the signs of the gradients differ.
         - Only support GBDTs.
     """
     def __init__(self, use_leaf=0, verbose=0):
@@ -52,6 +51,8 @@ class TracIn(Explainer):
             X: 2d array of train examples.
             y: 1d array of train targets.
         """
+        assert self.model_.tree_type != 'rf', 'RF not supported for BoostIn'
+
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
@@ -159,7 +160,7 @@ class TracIn(Explainer):
             for class_idx in range(n_class):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
-        return -gradients
+        return gradients
 
     def _get_loss_function(self):
         """

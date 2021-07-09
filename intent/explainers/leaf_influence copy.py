@@ -1,6 +1,5 @@
 import numpy as np
 from tqdm import tqdm
-from sklearn.preprocessing import LabelBinarizer
 
 from .base import Explainer
 from .parsers import util
@@ -24,8 +23,7 @@ class LeafInfluence(Explainer):
             * Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
 
     Note
-        - Wrapper for LeafInfluenceGBDT and LeafInfluenceRF.
-        - For GBDT, influence values are multipled by -1 to get the "updated" influence semantics
+        - Influence values are multipled by -1 to get the "updated" influence semantics
             above; this is to make the semantics of LeafInfluence values more consistent
             with other influence methods that approximate changes in loss.
         - Does NOT take class or instance weight into account.
@@ -42,58 +40,13 @@ class LeafInfluence(Explainer):
     def __init__(self, update_set=-1, verbose=0):
         """
         Input
-            update_set (GBDT only): int, No. neighboring leaf values to use for approximating leaf influence.
-                0: Use no other leaves, influence is computed independent of other trees.
-                -1: Use all other trees, most accurate but also most computationally expensive.
-                1+: Trade-off between accuracy and computational resources.
-            verbose: int, Output verbosity.
-        """
-        self.update_set = update_set
-        self.verbose = verbose
-
-    def fit(self, model, X, y):
-        """
-        Call the appropriate fit method.
-        """
-        super().fit(model, X, y)
-
-        if self.model_.tree_type == 'gbdt':
-            explainer = LeafInfluenceGBDT(update_set=self.update_set, verbose=self.verbose)
-
-        else:
-            assert self.model_.tree_type == 'rf'
-            explainer = LeafInfluenceRF(verbose=self.verbose)
-
-        explainer.fit(model, X, y)
-
-        self.explainer_ = explainer
-
-        return self
-
-    def get_global_influence(self):
-        """
-        Return 1d array of global influence values of shape=(no. train,).
-        """
-        return self.explainer_.get_global_influence()
-
-    def get_local_influence(self, X, y):
-        """
-        Return 2d array of local influence values of shape=(no. train, X.shape[0]).
-        """
-        return self.explainer_.get_local_influence(X, y)
-
-
-class LeafInfluenceGBDT(Explainer):
-    """
-    LeafInfluence method designed specifically for GBDTs.
-    """
-    def __init__(self, update_set=-1, verbose=0):
-        """
-        Input
             update_set: int, No. neighboring leaf values to use for approximating leaf influence.
                 0: Use no other leaves, influence is computed independent of other trees.
                 -1: Use all other trees, most accurate but also most computationally expensive.
                 1+: Trade-off between accuracy and computational resources.
+            l2_leaf_reg: float, Regularization coefficient to prevent leaf values from overfitting.
+                First used in XGBoost paper. If set to 0, then learning reverts to traditiional
+                gradient tree boosting.
             verbose: int, Output verbosity.
         """
         assert update_set >= -1
@@ -237,9 +190,9 @@ class LeafInfluenceGBDT(Explainer):
                     tree_idx += 1
 
         # save results of this method
-        self.leaf_values_ = leaf_values  # shape=(total no. leaves,)
+        self.leaf_values_ = leaf_values  # shape=(total no. leaves across ALL trees)
         self.leaf_derivatives_ = leaf_derivatives  # shape=(no. train, total no. leaves)
-        self.leaf_counts_ = leaf_counts  # shape=(no. boost, no. class)
+        self.leaf_counts_ = leaf_counts  # shape=(no. trees * no. class,)
         self.bias_ = bias
         self.n_boost_ = n_boost
         self.n_class_ = n_class
@@ -263,8 +216,14 @@ class LeafInfluenceGBDT(Explainer):
             y = self.y_train_[[remove_idx]]
             influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
 
-        # reshape result
-        influence = influence.squeeze(axis=1).sum(axis=1)  # remove axis 1, then sum over classes
+        # reshape result based on the objective
+        if self.model_.objective in ['regression', 'binary']:
+            influence = influence.squeeze()  # remove axes 1 and 2
+
+        else:
+            assert self.model_.objective == 'multiclass'
+            influence = influence.squeeze(axis=1)  # remove axis 1
+            influence = influence.sum(axis=1)  # sum over classes
 
         return influence
 
@@ -284,8 +243,13 @@ class LeafInfluenceGBDT(Explainer):
         for remove_idx in range(self.X_train_.shape[0]):
             influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
 
-        # reshape result
-        influence = influence.sum(axis=2)  # sum over class, shape=(no. train, X.shape[0])
+        # reshape result based on the objective
+        if self.model_.objective in ['regression', 'binary']:
+            influence = influence.squeeze()  # shape=(no. train, X.shape[0])
+
+        else:
+            assert self.model_.objective == 'multiclass'
+            influence = influence.sum(axis=2)  # sum over class, shape=(no. train, X.shape[0])
 
         return influence
 
@@ -355,221 +319,6 @@ class LeafInfluenceGBDT(Explainer):
                 result |= leaf_docs[leaf_idx]
 
         return result
-
-    def _get_loss_function(self):
-        """
-        Return the appropriate loss function for the given objective.
-        """
-        if self.model_.objective == 'regression':
-            loss_fn = util.SquaredLoss()
-
-        elif self.model_.objective == 'binary':
-            loss_fn = util.LogisticLoss()
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            n_class = self.model_.n_class_
-            loss_fn = util.SoftmaxLoss(factor=self.model_.factor, n_class=n_class)
-
-        return loss_fn
-
-
-class LeafInfluenceRF(Explainer):
-    """
-    LeafInfluence method designed specifically for RFs.
-    """
-    def __init__(self, verbose=0):
-        """
-        Input
-            verbose: int, Output verbosity.
-        """
-        self.verbose = verbose
-
-    def fit(self, model, X, y):
-        """
-        - Copy leaf values, and compute new array of leaf values, one
-            array per removed training example.
-
-        Input
-            model: tree-ensemble model.
-            X: 2d array of train data.
-            y: 1d array of train targets.
-
-        Return
-            - 2d array of leaf values of shape=(no. train, no. leaves across all trees).
-        """
-        super().fit(model, X, y)
-        X, y = util.check_data(X, y, objective=self.model_.objective)
-
-        self.X_train_ = X.copy()
-        self.y_train_ = y.copy()
-        self.loss_fn_ = self._get_loss_function()
-
-        # extract tree-ensemble metadata
-        trees = self.model_.trees
-        n_boost = self.model_.n_boost_
-        n_class = self.model_.n_class_
-        leaf_counts = self.model_.get_leaf_counts()  # shape=(no. boost, no. class)
-        leaf_vals = self.model_.get_leaf_values()  # shape=(total no. leaves,)
-
-        # reshape targets
-        if self.model_.objective in ['regression', 'binary']:
-            y = y.reshape(-1, 1)  # shape=(no. train, 1)
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            y = LabelBinarizer().fit_transform(y)  # shape=(no. train, no. class)
-
-        # result container
-        new_leaf_values = np.tile(leaf_vals, (X.shape[0], 1))  # shape=(X.shape[0], total no. leaves)
-
-        # update leaf values for leaves affected by each removed train example
-        for remove_idx in tqdm(range(X.shape[0]), disable=self.verbose == 0):
-            n_prev_leaves = 0
-
-            for boost_idx in range(n_boost):
-
-                og_leaf_val = np.zeros(n_class, dtype=np.float32)  # shape=(no. class,)
-                new_leaf_val = np.zeros(n_class, dtype=np.float32)  # shape=(no. class,)
-                leaf_ids = np.zeros(n_class, dtype=np.int32)  # shape=(no. class,)
-
-                og_boost_count = 0
-                new_boost_count = 0
-
-                # update leaf metadata
-                for class_idx in range(n_class):
-
-                    # get leaf affected by the removed train example
-                    doc2leaf = trees[boost_idx, class_idx].apply(X)  # shape=(X.shape[0],)
-                    leaf_idx = doc2leaf[remove_idx]
-                    leaf_docs = np.where(doc2leaf == leaf_idx)[0]
-                    leaf_ids[class_idx] = leaf_idx
-
-                    og_leaf_val[class_idx] = y[leaf_docs, class_idx].sum()
-                    new_leaf_val[class_idx] = y[leaf_docs, class_idx].sum() - y[remove_idx, class_idx]
-
-                    # compute normalization constant
-                    if self.model_.objective in ['regression', 'binary']:
-                        og_boost_count += len(leaf_docs)
-                        new_boost_count += len(leaf_docs) - 1
-
-                    else:
-                        assert self.model_.objective == 'multiclass'
-                        og_boost_count += og_leaf_val[class_idx]
-                        new_boost_count += new_leaf_val[class_idx]
-
-                # leaf is now empty
-                if new_boost_count == 0:
-
-                    if self.model_.objective == 'regression':
-                        new_leaf_val[0] = 0
-
-                    elif self.model_.objective == 'binary':  # uniform
-                        new_leaf_val[0] = 0.5
-
-                    else:
-                        assert self.model_.objective == 'multiclass'
-                        new_leaf_val = np.full(n_class, 1.0 / n_class, dtype=np.float32)
-
-                # recompute the new leaf value
-                else:
-                    og_leaf_val = og_leaf_val / og_boost_count
-                    new_leaf_val = new_leaf_val / new_boost_count
-
-                # update leaf value and perform sanity check
-                for class_idx in range(n_class):
-                    leaf_idx = leaf_ids[class_idx]
-
-                    assert np.isclose(leaf_vals[n_prev_leaves + leaf_idx], og_leaf_val[class_idx], atol=1e-5)
-                    new_leaf_values[remove_idx, n_prev_leaves + leaf_idx] = new_leaf_val[class_idx]
-
-                    n_prev_leaves += leaf_counts[boost_idx, class_idx]
-
-        self.leaf_values_ = leaf_vals
-        self.new_leaf_values_ = new_leaf_values
-        self.leaf_counts_ = leaf_counts
-        self.bias_ = self.model_.bias
-        self.n_boost_ = n_boost
-        self.n_class_ = n_class
-
-        return self
-
-    def get_global_influence(self):
-        """
-        - Compute change in loss of each training instance on itself.
-        - Provides a global importance to all training examples.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Array is returned in the same order as the traing data.
-        """
-        influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)
-
-        # compute influence of each training example on itself
-        for remove_idx in range(self.X_train_.shape[0]):
-            X = self.X_train_[[remove_idx]]
-            y = self.y_train_[[remove_idx]]
-            influence[remove_idx] = self._loss_difference(X, y, remove_idx)
-
-        return influence
-
-    def get_local_influence(self, X, y):
-        """
-        - Compute influence of each training example on each test example loss.
-
-        Return
-            - 2d array of shape=(no. train, X.shape[0])
-                * Train influences are in the same order as the original training order.
-        """
-        X, y = util.check_data(X, y, objective=self.model_.objective)
-
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
-
-        # compute influence of each training example on the test example
-        for remove_idx in range(self.X_train_.shape[0]):
-            influence[remove_idx] = self._loss_difference(X, y, remove_idx)
-
-        return influence
-
-    # private
-    def _loss_difference(self, X, y, remove_idx):
-        """
-        Compute the influence on the set of examples (X, y) using the updated
-            set of leaf values from removing `remove_idx`.
-
-        Input
-            X: 2d array of examples.
-            y: 1d array of targets.
-            remove_idx: index of removed train instance
-
-        Return
-            - Array of influences of shape=(X.shape[0], no. class).
-        """
-        doc2leaf = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
-
-        og_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
-        new_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
-
-        # get prediction of each test example using the original and new leaf values
-        n_prev_leaves = 0
-
-        for boost_idx in range(self.n_boost_):  # per boosting iteration
-            for class_idx in range(self.n_class_):  # per class
-
-                for test_idx in range(X.shape[0]):  # per test example
-                    leaf_idx = doc2leaf[test_idx, boost_idx, class_idx]
-                    og_pred[test_idx, class_idx] += self.leaf_values_[n_prev_leaves + leaf_idx]
-                    new_pred[test_idx, class_idx] += self.new_leaf_values_[remove_idx, n_prev_leaves + leaf_idx]
-
-                n_prev_leaves += self.leaf_counts_[boost_idx, class_idx]
-
-        og_pred /= self.n_boost_
-        new_pred /= self.n_boost_
-
-        # compute influence, shape=(X.shape[0],)
-        influence = self.loss_fn_(y, new_pred, raw=False) - self.loss_fn_(y, og_pred, raw=False)
-
-        return influence
 
     def _get_loss_function(self):
         """

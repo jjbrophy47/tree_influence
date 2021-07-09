@@ -224,7 +224,8 @@ def _get_model(args):
 
     elif args.tree_type == 'skrf':
         class_fn = RandomForestRegressor if args.model_type == 'regressor' else RandomForestClassifier
-        tree = class_fn(n_estimators=args.n_tree, max_depth=args.max_depth, random_state=args.rs)
+        tree = class_fn(n_estimators=args.n_tree, max_depth=args.max_depth, random_state=args.rs,
+                        bootstrap=False, max_features='sqrt')
 
     elif args.tree_type == 'xgb':
 

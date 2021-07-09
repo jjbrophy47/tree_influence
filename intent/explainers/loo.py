@@ -16,7 +16,6 @@ class LOO(Explainer):
         - Inf.(x_i, x_i) := L(y_t, f_{w/o x_i}(x_i)) - L(y_t, f(x_i))
         - Pos. value means removing x_i increases loss (adding x_i decreases loss, helpful).
         - Neg. value means removing x_i decreases loss (adding x_i increases loss, harmful).
-        - TODO: should it be the effect of x_i on the entire model's training score?
 
     Local-Influence Semantics
         - Inf.(x_i, x_t) := L(y_t, f_{w/o x_i}(x_t)) - L(y_t, f(x_t))
@@ -25,6 +24,9 @@ class LOO(Explainer):
 
     Note
         - Supports both GBDTs and RFs.
+
+    TODO
+        - Add parallelization.
     """
     def __init__(self, verbose=0):
         """
