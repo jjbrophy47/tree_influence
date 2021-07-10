@@ -1,5 +1,5 @@
+import joblib
 import numpy as np
-from tqdm import tqdm
 from sklearn.base import clone
 
 from .base import Explainer
@@ -24,15 +24,16 @@ class LOO(Explainer):
 
     Note
         - Supports both GBDTs and RFs.
-
-    TODO
-        - Add parallelization.
+        - Supports parallelization.
     """
-    def __init__(self, verbose=0):
+    def __init__(self, n_jobs=1, verbose=0):
         """
         Input
+            n_jobs: int, No. processes to run in parallel.
+                -1 means use the no. of available CPU cores.
             verbose: int, Output verbosity.
         """
+        self.n_jobs = n_jobs
         self.verbose = verbose
 
     def fit(self, model, X, y):
@@ -57,17 +58,22 @@ class LOO(Explainer):
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
 
-        # result container
-        models = np.zeros(X.shape[0], dtype=np.object)  # shape=(X.shape[0])
+        # select no. processes to run in parallel
+        if self.n_jobs == -1:
+            n_jobs = joblib.cpu_count()
 
-        # save fitted model for each training example
-        for train_idx in tqdm(range(X.shape[0]), disable=self.verbose == 0):
-            new_X = np.delete(X, train_idx, axis=0)
-            new_y = np.delete(y, train_idx)
-            models[train_idx] = clone(model).fit(new_X, new_y)
+        else:
+            assert self.n_jobs >= 1
+            n_jobs = min(self.n_jobs, joblib.cpu_count())
 
+        verbose_cnt = X.shape[0] if self.verbose > 0 else 0
+
+        # fit each model in parallel
+        results = joblib.Parallel(n_jobs=n_jobs, verbose=verbose_cnt)\
+            (joblib.delayed(_fit_LOO_model)(model, X, y, train_idx) for train_idx in range(X.shape[0]))
+
+        self.models_ = np.array(results, dtype=np.object)
         self.original_model_ = model
-        self.models_ = models
 
         return self
 
@@ -133,3 +139,15 @@ class LOO(Explainer):
 
         losses = self.loss_fn_(y, y_pred, raw=False)
         return losses
+
+
+def _fit_LOO_model(model, X, y, train_idx):
+    """
+    Fit model after leaving out the specified `train_idx` train example.
+
+    Note
+        - Parallelizable method.
+    """
+    new_X = np.delete(X, train_idx, axis=0)
+    new_y = np.delete(y, train_idx)
+    return clone(model).fit(new_X, new_y)

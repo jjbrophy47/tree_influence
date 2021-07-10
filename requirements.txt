@@ -10,5 +10,6 @@ xgboost
 torch
 
 # visualizers
+pqdm
 tqdm
 matplotlib

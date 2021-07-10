@@ -36,8 +36,8 @@ class LeafInfluence(Explainer):
     Paper
         - https://arxiv.org/abs/1802.06640
 
-    TODO
-        - Add RF support? YES, assume same structure, just change leaf values.
+    Note
+        - Supports both GBDTs and RFs.
     """
     def __init__(self, update_set=-1, verbose=0):
         """
