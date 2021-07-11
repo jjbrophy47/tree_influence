@@ -211,7 +211,7 @@ def _get_model(args):
     if args.tree_type == 'cb':
         class_fn = CatBoostRegressor if args.model_type == 'regressor' else CatBoostClassifier
         tree = class_fn(n_estimators=args.n_tree, max_depth=args.max_depth,
-                        random_state=args.rs, leaef_estimation_iterations=1,
+                        random_state=args.rs, leaf_estimation_iterations=1,
                         logging_level='Silent')
 
     elif args.tree_type == 'lgb':
