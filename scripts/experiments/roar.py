@@ -1,9 +1,10 @@
 """
-Compute global or local influence.
+Evaluate influence value ranking via remove and retrain.
 """
 import os
 import sys
 import time
+import hashlib
 import argparse
 import resource
 from datetime import datetime
@@ -17,39 +18,55 @@ import intent
 import util
 
 
-def select_elements(arr, rng, n):
-    """
-    - Randomly select `n` elements from `arr`.
+def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test, y_test, logger):
 
-    Input
-        arr: 1d array of elements.
-        rng: numpy pseudo-random number generator.
-        n: int, no. elements to sample.
+    # get appropriate evaluation function
+    eval_fn = util.eval_pred if args.inf_obj == 'global' else util.eval_loss
 
-    Return
-        - 1d array of shape=(n,).
+    # pre-removal performance
+    res = eval_fn(objective, tree, X_test, y_test, logger, prefix='0.00')
 
-    Note
-        - Any sub-sequence should be exactly the same given
-            the same `rng`, regardless of `n`.
-    """
-    assert arr.ndim == 1
+    # get list of remove fractions
+    remove_frac_arr = np.linspace(0, args.remove_frac, 10 + 1)[1:]
 
-    result = np.zeros(n, dtype=arr.dtype)
+    # result container
+    result = {}
+    result['remove_frac'] = np.concatenate([np.array([0.0]), remove_frac_arr])
+    for key in res.keys():
+        result[key] = np.full(remove_frac_arr.shape[0] + 1, np.nan, dtype=np.float32)
+        result[key][0] = res[key]
 
-    for i in range(n):
-        idx = rng.choice(len(arr), size=1, replace=False)[0]
-        result[i] = arr[idx]
-        arr = np.delete(arr, idx)
+    # remove train instances
+    for i, remove_frac in enumerate(remove_frac_arr):
+        n_remove = int(X_train.shape[0] * remove_frac)
+
+        new_X_train = X_train[ranking][n_remove:].copy()
+        new_y_train = y_train[ranking][n_remove:].copy()
+
+        if len(np.unique(new_y_train)) == 1:
+            logger.info('Only samples from one class remain!')
+            break
+
+        else:
+            new_tree = clone(tree).fit(new_X_train, new_y_train)
+            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'{remove_frac:.2f}')
+
+            # add to results
+            result['remove_frac'][i + 1] = remove_frac
+            for key in res.keys():
+                result[key][i + 1] = res[key]
 
     return result
 
 
-def experiment(args, logger, params, out_dir):
+def experiment(args, logger, params, in_dir, out_dir):
 
     # initialize experiment
     begin = time.time()
     rng = np.random.default_rng(args.random_state)
+
+    # get influence results
+    inf_res = np.load(os.path.join(in_dir, 'results.npy'), allow_pickle=True)[()]
 
     # data
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
@@ -59,54 +76,50 @@ def experiment(args, logger, params, out_dir):
 
     # train tree-ensemble
     tree = util.get_model(args.tree_type, objective, args.n_estimators, args.max_depth, args.random_state)
+    tree.set_params(**inf_res['tree_params'])
     tree = tree.fit(X_train, y_train)
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
+    logger.info('')
 
-    # compute infuence
+    # evaluate influence ranking
     start = time.time()
+    result = {}
 
-    explainer = intent.TreeExplainer(method=args.method, params=params).fit(tree, X_train, y_train)
+    influence = inf_res['influence']
 
+    # sort influence starting from most pos. to most neg.
     if args.inf_obj == 'global':
-        influence = explainer.get_global_influence()
+        ranking = np.argsort(influence)[::-1]
+        res = remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test, y_test, logger)
+        result.update(res)  # add ROAR results to result object
 
     else:
         assert args.inf_obj == 'local'
+        test_idxs = inf_res['test_idxs']
 
-        # randomly select test instances to compute influence values for
-        if args.test_select == 'random':
-            avail_idxs = np.arange(X_test.shape[0])
-            test_idxs = select_elements(avail_idxs, rng, n=args.n_test)
+        res_list = []
+        for i, test_idx in enumerate(test_idxs):
+            logger.info(f'\nNo. {i}, Test_idx {test_idx}:')
+            X_temp = X_test[[test_idx]]
+            y_temp = y_test[[test_idx]]
 
-        elif args.test_select == 'correct' and objective != 'regression':
-            y_pred = tree.predict(X_test)
-            correct_idxs = np.where(y_pred == y_test)[0]
-            n_test = min(args.n_test, len(correct_idxs))
-            test_idxs = select_elements(correct_idxs, rng, n=n_test)
+            ranking = np.argsort(influence[:, i])
+            ranking = ranking if args.test_select == 'incorrect' else ranking[::-1]
 
-        else:
-            assert args.test_select == 'incorrect' and objective != 'regression'
-            y_pred = tree.predict(X_test)
-            incorrect_idxs = np.where(y_pred != y_test)[0]
-            n_test = min(args.n_test, len(incorrect_idxs))
-            test_idxs = select_elements(incorrect_idxs, rng, n=n_test)
+            res = remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_temp, y_temp, logger)
+            res_list.append(res)
 
-        influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
+        # combine results from each test example
+        for key in res.keys():
+            result[key] = np.vstack([r[key] for r in res_list])  # shape=(no. test, no. completed ckpts)
 
-    # display influence
-    logger.info(f'\ninfluence: {influence}, shape: {influence.shape}')
+    roar_time = time.time() - start
+    logger.info(f'ROAR time: {roar_time:.5f}s')
 
-    compute_time = time.time() - start
-    logger.info(f'compute time: {compute_time:.5f}s')
+    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB
+    result['total_time'] = time.time() - begin
 
     # save results
-    result = {}
-    result['influence'] = influence
-    result['test_idxs'] = test_idxs if args.inf_obj != 'global' else ''
-    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB
-    result['compute_time'] = compute_time
-    result['total_time'] = time.time() - begin
-    result['tree_params'] = tree.get_params()
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))
     np.save(os.path.join(out_dir, 'results.npy'), result)
@@ -122,6 +135,14 @@ def main(args):
     if args.inf_obj == 'local':
         inf_type = f'local_{args.test_select}'
 
+    # influence dir
+    in_dir = os.path.join(args.in_dir,
+                          args.dataset,
+                          args.tree_type,
+                          f'rs_{args.random_state}',
+                          inf_type,
+                          f'{args.method}_{hash_str}')
+
     # create output dir
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
@@ -136,9 +157,9 @@ def main(args):
 
     logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
-    logger.info(f'\ntimestamp: {datetime.now()}')
+    logger.info(datetime.now())
 
-    experiment(args, logger, params, out_dir)
+    experiment(args, logger, params, in_dir, out_dir)
 
 
 if __name__ == '__main__':
@@ -146,7 +167,8 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--out_dir', type=str, default='output/influence/')
+    parser.add_argument('--in_dir', type=str, default='output/influence/')
+    parser.add_argument('--out_dir', type=str, default='output/roar/')
 
     # Data settings
     parser.add_argument('--dataset', type=str, default='synthetic_regression')
@@ -178,9 +200,8 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
-
-    parser.add_argument('--n_test', type=int, default=20)  # local
-    parser.add_argument('--test_select', type=str, default='random', help='random, correct, incorrect')  # local
+    parser.add_argument('--test_select', type=str, default='random')  # local
+    parser.add_argument('--remove_frac', type=float, default=0.5)
 
     args = parser.parse_args()
     main(args)

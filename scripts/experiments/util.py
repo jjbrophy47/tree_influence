@@ -5,6 +5,7 @@ import os
 import sys
 import shutil
 import logging
+import hashlib
 import numpy as np
 
 from catboost import CatBoostRegressor
@@ -135,45 +136,45 @@ def get_toy_data(dataset, objective, random_state, test_size=0.2):
     return X_train, X_test, y_train, y_test
 
 
-def get_model(tree_type='lgb', task='regression', n_tree=100, max_depth=5, random_state=1):
+def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, random_state=1):
     """
-    Return the ensemble object from the specified framework and task.
+    Return the ensemble object from the specified framework and objective.
     """
 
     if tree_type == 'cb':
-        class_fn = CatBoostRegressor if task == 'regression' else CatBoostClassifier
+        class_fn = CatBoostRegressor if objective == 'regression' else CatBoostClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth,
                         leaf_estimation_iterations=1, random_state=random_state,
                         logging_level='Silent')
 
     elif tree_type == 'lgb':
-        class_fn = LGBMRegressor if task == 'regression' else LGBMClassifier
+        class_fn = LGBMRegressor if objective == 'regression' else LGBMClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
 
     elif tree_type == 'skgbm':
-        class_fn = GradientBoostingRegressor if task == 'regression' else GradientBoostingClassifier
+        class_fn = GradientBoostingRegressor if objective == 'regression' else GradientBoostingClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
 
     elif tree_type == 'skrf':
-        class_fn = RandomForestRegressor if task == 'regression' else RandomForestClassifier
+        class_fn = RandomForestRegressor if objective == 'regression' else RandomForestClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
 
     elif tree_type == 'xgb':
 
-        if task == 'regression':
+        if objective == 'regression':
             tree = XGBRegressor(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
 
-        elif task == 'binary':
+        elif objective == 'binary':
             tree = XGBClassifier(n_estimators=n_tree, max_depth=max_depth,
                                  random_state=random_state, use_label_encoder=False,
                                  eval_metric='logloss')
 
-        elif task == 'multiclass':
+        elif objective == 'multiclass':
             tree = XGBClassifier(n_estimators=n_tree, max_depth=max_depth,
                                  random_state=random_state, use_label_encoder=False,
                                  eval_metric='mlogloss')
         else:
-            raise ValueError(f'Unknown task {task}')
+            raise ValueError(f'Unknown objective {objective}')
 
     else:
         raise ValueError(f'Unknown tree_type {tree_type}')
@@ -181,23 +182,23 @@ def get_model(tree_type='lgb', task='regression', n_tree=100, max_depth=5, rando
     return tree
 
 
-def eval_pred(task, tree, X, y, logger, prefix=''):
+def eval_pred(objective, tree, X, y, logger, prefix=''):
     """
     Evaluate the predictive performance of the tree on X and y.
     """
     result = {'mse': -1, 'acc': -1, 'auc': -1}
 
-    if task == 'regression':
+    if objective == 'regression':
         pred = tree.predict(X)
         result['mse'] = mean_squared_error(y, pred)
 
-    elif task == 'binary':
+    elif objective == 'binary':
         pred = tree.predict(X)
         proba = tree.predict_proba(X)[:, 1]
         result['acc'] = accuracy_score(y, pred)
         result['auc'] = roc_auc_score(y, proba)
 
-    elif task == 'multiclass':
+    elif objective == 'multiclass':
         pred = tree.predict(X)
         result['acc'] = accuracy_score(y, pred)
 
@@ -206,3 +207,103 @@ def eval_pred(task, tree, X, y, logger, prefix=''):
                 f"AUC: {result['auc']:>10.3f}")
 
     return result
+
+
+def eval_loss(objective, model, X, y, logger, prefix=''):
+    """
+    Return individual losses.
+    """
+    assert X.shape[0] == y.shape[0] == 1
+
+    result = {}
+
+    if objective == 'regression':
+        y_hat = model.predict(X)  # shape=(X.shape[0])
+        losses = 0.5 * (y - y_hat) ** 2
+        result['pred'] = y_hat[0]
+        result['loss'] = losses[0]
+        loss_type = 'squared_loss'
+
+    elif objective == 'binary':
+        eps = 1e-5
+        y_hat = model.predict_proba(X)[:, 1]  # shape=(X.shape[0])
+        y_hat = np.clip(y_hat, eps, 1 - eps)  # prevent log(0)
+        losses = -(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))
+        result['pred'] = y_hat[0]
+        result['loss'] = losses[0]
+        loss_type = 'logloss'
+
+    else:
+        assert objective == 'multiclass'
+        target = y[0]
+        y_hat = model.predict_proba(X)[0]  # shape=(no. class,)
+        result['pred'] = y_hat[target]
+        result['loss'] = -np.log(y_hat)[target]
+        loss_type = 'cross_entropy_loss'
+
+    logger.info(f"[{prefix}] prediction: {result['pred']:>10.3f}, "
+                f"{loss_type}: {result['loss']:>10.3f}, ")
+
+    return result
+
+
+def dict_to_hash(my_dict):
+    """
+    Convert to string and concatenate the desired values
+    in `my_dict` and return the hashed string.
+    """
+    d = my_dict.copy()
+
+    # remove keys not desired in the hash string
+    for key in ['n_jobs', 'random_state', 'verbose']:
+        if key in d:
+            del d[key]
+
+    s = ''.join(str(v) for k, v in sorted(d.items()))  # alphabetical key sort
+
+    result = hashlib.md5(s.encode('utf-8')).hexdigest() if s != '' else ''
+
+    return result
+
+
+def explainer_params_to_dict(explainer, exp_params):
+    """
+    Return dict of explainer hyperparameters.
+    """
+    params = {}
+
+    if explainer == 'boostin':
+        params['use_leaf'] = exp_params['use_leaf']
+        params['verbose'] = exp_params['verbose']
+
+    elif explainer == 'leaf_influence':
+        params['update_set'] = exp_params['update_set']
+        params['verbose'] = exp_params['verbose']
+
+    elif explainer == 'trex':
+        params['kernel'] = exp_params['kernel']
+        params['target'] = exp_params['target']
+        params['lmbd'] = exp_params['lmbd']
+        params['n_epoch'] = exp_params['n_epoch']
+        params['use_alpha'] = exp_params['use_alpha']
+        params['random_state'] = exp_params['random_state']
+        params['verbose'] = exp_params['verbose']
+
+    elif explainer == 'loo':
+        params['n_jobs'] = exp_params['n_jobs']
+        params['verbose'] = exp_params['verbose']
+
+    elif explainer == 'dshap':
+        params['trunc_frac'] = exp_params['trunc_frac']
+        params['n_jobs'] = exp_params['n_jobs']
+        params['check_every'] = exp_params['check_every']
+        params['random_state'] = exp_params['random_state']
+        params['verbose'] = exp_params['verbose']
+
+    elif explainer == 'random':
+        params['random_state'] = exp_params['random_state']
+
+    # create hash string based on the chosen hyperparameters
+    hash_str = dict_to_hash(params)
+
+    return params, hash_str
