@@ -51,10 +51,10 @@ class BoostIn(Explainer):
             X: 2d array of train examples.
             y: 1d array of train targets.
         """
-        assert self.model_.tree_type != 'rf', 'RF not supported for BoostIn'
-
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
+
+        assert self.model_.tree_type != 'rf', 'RF not supported for BoostIn'
 
         self.n_train_ = X.shape[0]
 

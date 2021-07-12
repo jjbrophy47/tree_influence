@@ -2,6 +2,8 @@ from .explainers import BoostIn
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LOO
+from .explainers import DShap
+from .explainers import Random
 
 
 class TreeExplainer(object):
@@ -21,6 +23,8 @@ class TreeExplainer(object):
         - Influence Function (LeafInfluence)
         - HYDRA
         - LOO
+        - Appox. data Shapley
+        - Random
     """
     def __init__(self, method='boostin', params={}):
 
@@ -38,6 +42,12 @@ class TreeExplainer(object):
 
         elif method == 'loo':
             self.explainer = LOO(**params)
+
+        elif method == 'dshap':
+            self.explainer = DShap(**params)
+
+        elif method == 'random':
+            self.explainer = Random(**params)
 
         else:
             raise ValueError(f'Unknown method {method}')

@@ -83,7 +83,19 @@ def get_data(data_dir, dataset):
     X_train, y_train = data['X_train'], data['y_train']
     X_test, y_test = data['X_test'], data['y_test']
 
-    return X_train, X_test, y_train, y_test
+    # get objective for the given dataset
+    d = {}
+    d['regression'] = ['synthetic_regression']
+    d['binary'] = ['synthetic_binary']
+    d['multiclass'] = ['synthetic_multiclass']
+
+    objective = ''
+    for k in d.keys():
+        if dataset in d[k]:
+            objective = k
+            break
+
+    return X_train, X_test, y_train, y_test, objective
 
 
 def get_toy_data(dataset, objective, random_state, test_size=0.2):
@@ -169,7 +181,7 @@ def get_model(tree_type='lgb', task='regression', n_tree=100, max_depth=5, rando
     return tree
 
 
-def evaluate(task, tree, X, y, logger, prefix=''):
+def eval_pred(task, tree, X, y, logger, prefix=''):
     """
     Evaluate the predictive performance of the tree on X and y.
     """
