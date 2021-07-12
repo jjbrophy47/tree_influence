@@ -125,7 +125,7 @@ class LOO(Explainer):
 
     def _get_losses(self, model, X, y):
         """
-        Returns 1d array of individual losses of shape=(X.shape[0]).
+        Returns 1d array of individual losses of shape=(X.shape[0],).
         """
         if self.model_.objective == 'regression':
             y_pred = model.predict(X)  # shape=(X.shape[0])

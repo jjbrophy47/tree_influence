@@ -94,7 +94,7 @@ def test_local_influence_regression(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_local_influence_regression *****')
     args.model_type = 'regressor'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
-    test_ids = np.array([0, 1])
+    test_ids = np.array([0, 1])[:args.n_test]
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
@@ -124,7 +124,7 @@ def test_local_influence_binary(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_local_influence_binary *****')
     args.model_type = 'binary'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=2)
-    test_ids = np.array([0, 1])
+    test_ids = np.array([0, 1])[:args.n_test]
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
@@ -154,7 +154,7 @@ def test_local_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     print(f'\n***** test_{explainer_str}_local_influence_multiclass *****')
     args.model_type = 'multiclass'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=args.n_class)
-    test_ids = np.array([0, 1])
+    test_ids = np.array([0, 1])[:args.n_test]
 
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)

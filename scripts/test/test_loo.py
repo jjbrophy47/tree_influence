@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # data settings
     parser.add_argument('--n_train', type=int, default=100)
-    parser.add_argument('--n_test', type=int, default=1)
+    parser.add_argument('--n_test', type=int, default=2)
     parser.add_argument('--n_class', type=int, default=3)
     parser.add_argument('--n_feat', type=int, default=10)
 

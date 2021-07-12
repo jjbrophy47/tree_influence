@@ -246,6 +246,7 @@ class LogisticLoss(object):
         Input
             y: 1d or 2d array (with 1 column) of 0 and 1 labels.
             y_pred: 1d or 2d array (with 1 column) of logits or predicted probabilities.
+            raw: If True, then normalize logits.
 
         Return 1d array of log losses.
         """
@@ -329,6 +330,7 @@ class SoftmaxLoss(object):
         Input
             factor: float, number to multiply hessian and third to rescale
                 the redundant class; typically (no. class) / (no. class - 1).
+            n_class: no. classes.
         """
         self.factor = factor
         self.n_class = n_class

@@ -20,7 +20,7 @@ class BoostIn(Explainer):
         - Neg. value means an increase in test loss (a.k.a. opponent, harmful).
 
     Reference
-         - https://github.com/frederick0329/TracIn
+        - https://github.com/frederick0329/TracIn
 
     Paper
         - https://arxiv.org/abs/2002.08484

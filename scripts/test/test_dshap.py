@@ -5,22 +5,22 @@ import argparse
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import Trex
+from intent.explainers import DShap
 
 
 def main(args):
 
     # explainer arguments
-    kwargs = {'kernel': args.kernel, 'target': args.target,
-              'lmbd': args.lmbd, 'verbose': args.verbose}
+    kwargs = {'trunc_frac': args.trunc_frac, 'n_jobs': args.n_jobs,
+              'check_every': args.check_every, 'verbose': args.verbose}
 
     # tests
-    test_util.test_global_influence_regression(args, Trex, 'trex', kwargs)
-    test_util.test_global_influence_binary(args, Trex, 'trex', kwargs)
-    test_util.test_global_influence_multiclass(args, Trex, 'trex', kwargs)
-    test_util.test_local_influence_regression(args, Trex, 'trex', kwargs)
-    test_util.test_local_influence_binary(args, Trex, 'trex', kwargs)
-    test_util.test_local_influence_multiclass(args, Trex, 'trex', kwargs)
+    test_util.test_global_influence_regression(args, DShap, 'dshap', kwargs)
+    test_util.test_global_influence_binary(args, DShap, 'dshap', kwargs)
+    test_util.test_global_influence_multiclass(args, DShap, 'dshap', kwargs)
+    test_util.test_local_influence_regression(args, DShap, 'dshap', kwargs)
+    test_util.test_local_influence_binary(args, DShap, 'dshap', kwargs)
+    test_util.test_local_influence_multiclass(args, DShap, 'dshap', kwargs)
 
 
 if __name__ == '__main__':
@@ -40,9 +40,9 @@ if __name__ == '__main__':
     parser.add_argument('--rs', type=int, default=1)
 
     # explainer settings
-    parser.add_argument('--kernel', type=str, default='lpw')
-    parser.add_argument('--target', type=str, default='actual', help='actual or predicted.')
-    parser.add_argument('--lmbd', type=float, default=0.003, help='l2 regularizer coefficient.')
+    parser.add_argument('--trunc_frac', type=float, default=0.25)
+    parser.add_argument('--check_every', type=int, default=100)
+    parser.add_argument('--n_jobs', type=int, default=1)
     parser.add_argument('--verbose', type=int, default=0)
 
     args = parser.parse_args()
