@@ -1,4 +1,6 @@
+import time
 import joblib
+
 import numpy as np
 from sklearn.base import clone
 
@@ -37,20 +39,20 @@ class DShap(Explainer):
             for early truncation.
             * However, we can use a hard truncation limit via `trunc_frac`.
     """
-    def __init__(self, trunc_frac=0.25, n_jobs=1, check_every=100, random_state=1, verbose=0):
+    def __init__(self, trunc_frac=0.25, n_jobs=1, check_every=100, random_state=1, logger=None):
         """
         Input
             trunc_frac: float, fraction of instances to compute marginals for per iter.
             n_jobs: int, no. iterations / processes to run in parallel.
             check_every: int, no. iterations to run between checking convergence.
             random_state: int, random seed to enhance reproducibility.
-            verbose: int, verbosity level.
+            logger: object, If not None, output to logger.
         """
         self.trunc_frac = trunc_frac
         self.n_jobs = n_jobs
         self.check_every = check_every
         self.random_state = random_state
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """
@@ -136,16 +138,18 @@ class DShap(Explainer):
             assert self.n_jobs >= 1
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
-        verbose_cnt = X_train.shape[0] if self.verbose > 0 else 0
+        start = time.time()
+        if self.logger:
+            self.logger.info('\n[INFO] computing approx. data Shapley values...')
 
         # run TMC-Shapley alg. until convergence
-        with joblib.Parallel(n_jobs=n_jobs, verbose=verbose_cnt) as parallel:
+        with joblib.Parallel(n_jobs=n_jobs) as parallel:
             marginals = np.zeros((0, self.X_train_.shape[0]), dtype=np.float32)  # result container
             iteration = 0
 
             while True:
 
-                results = parallel(joblib.delayed(_run_iteration)\
+                results = parallel(joblib.delayed(_run_iteration)
                                                  (original_model, X_train, y_train, loss_fn, random_loss,
                                                   truncation_frac, objective, n_class, random_state,
                                                   iteration, i, X_test, y_test) for i in range(check_every))
@@ -160,8 +164,10 @@ class DShap(Explainer):
                 # diff. between last `n_run` runs and last run, divide by last run, average over all points
                 errors = np.mean(np.abs(all_vals[-n_run:] - all_vals[-1:]) / (np.abs(all_vals[-1:]) + 1e-12), axis=-1)
 
-                if self.verbose > 0:
-                    print(f'[Iter. {iteration:,}] Stability: {np.max(errors):.3f}')
+                if self.logger:
+                    cum_time = time.time() - start
+                    self.logger.info(f'[INFO] Iter. {iteration:,}, stability: {np.max(errors):.3f}, '
+                                     f'cum. time: {cum_time:.3f}s')
                 
                 # check convergence
                 if np.max(errors) < stability_tol:

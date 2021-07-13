@@ -12,7 +12,7 @@ def main(args):
 
     # explainer arguments
     kwargs = {'kernel': args.kernel, 'target': args.target,
-              'lmbd': args.lmbd, 'verbose': args.verbose}
+              'lmbd': args.lmbd}
 
     # tests
     test_util.test_global_influence_regression(args, Trex, 'trex', kwargs)
@@ -43,7 +43,6 @@ if __name__ == '__main__':
     parser.add_argument('--kernel', type=str, default='lpw')
     parser.add_argument('--target', type=str, default='actual', help='actual or predicted.')
     parser.add_argument('--lmbd', type=float, default=0.003, help='l2 regularizer coefficient.')
-    parser.add_argument('--verbose', type=int, default=0)
 
     args = parser.parse_args()
 

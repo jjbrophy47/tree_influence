@@ -12,7 +12,7 @@ def main(args):
 
     # explainer arguments
     kwargs = {'trunc_frac': args.trunc_frac, 'n_jobs': args.n_jobs,
-              'check_every': args.check_every, 'verbose': args.verbose}
+              'check_every': args.check_every}
 
     # tests
     test_util.test_global_influence_regression(args, DShap, 'dshap', kwargs)
@@ -43,7 +43,6 @@ if __name__ == '__main__':
     parser.add_argument('--trunc_frac', type=float, default=0.25)
     parser.add_argument('--check_every', type=int, default=100)
     parser.add_argument('--n_jobs', type=int, default=1)
-    parser.add_argument('--verbose', type=int, default=0)
 
     args = parser.parse_args()
 

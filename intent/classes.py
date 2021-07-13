@@ -25,29 +25,25 @@ class TreeExplainer(object):
         - Appox. data Shapley
         - Random
     """
-    def __init__(self, method='boostin', params={}):
+    def __init__(self, method='boostin', params={}, logger=None):
 
         if method == 'boostin':
-            self.explainer = BoostIn(**params)
+            self.explainer = BoostIn(**params, logger=logger)
 
         elif method == 'trex':
-            self.explainer = Trex(**params)
+            self.explainer = Trex(**params, logger=logger)
 
         elif method == 'leaf_influence':
-            self.explainer = LeafInfluence(**params)
-
-        elif method == 'hydra':
-            raise ValueError('hydra not supported!')
-            self.explainer = Hydra(**params)
+            self.explainer = LeafInfluence(**params, logger=logger)
 
         elif method == 'loo':
-            self.explainer = LOO(**params)
+            self.explainer = LOO(**params, logger=logger)
 
         elif method == 'dshap':
-            self.explainer = DShap(**params)
+            self.explainer = DShap(**params, logger=logger)
 
         elif method == 'random':
-            self.explainer = Random(**params)
+            self.explainer = Random(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')

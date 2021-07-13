@@ -255,7 +255,7 @@ def dict_to_hash(my_dict):
     d = my_dict.copy()
 
     # remove keys not desired in the hash string
-    for key in ['n_jobs', 'random_state', 'verbose']:
+    for key in ['n_jobs', 'random_state']:
         if key in d:
             del d[key]
 
@@ -274,11 +274,9 @@ def explainer_params_to_dict(explainer, exp_params):
 
     if explainer == 'boostin':
         params['use_leaf'] = exp_params['use_leaf']
-        params['verbose'] = exp_params['verbose']
 
     elif explainer == 'leaf_influence':
         params['update_set'] = exp_params['update_set']
-        params['verbose'] = exp_params['verbose']
 
     elif explainer == 'trex':
         params['kernel'] = exp_params['kernel']
@@ -287,18 +285,15 @@ def explainer_params_to_dict(explainer, exp_params):
         params['n_epoch'] = exp_params['n_epoch']
         params['use_alpha'] = exp_params['use_alpha']
         params['random_state'] = exp_params['random_state']
-        params['verbose'] = exp_params['verbose']
 
     elif explainer == 'loo':
         params['n_jobs'] = exp_params['n_jobs']
-        params['verbose'] = exp_params['verbose']
 
     elif explainer == 'dshap':
         params['trunc_frac'] = exp_params['trunc_frac']
         params['n_jobs'] = exp_params['n_jobs']
         params['check_every'] = exp_params['check_every']
         params['random_state'] = exp_params['random_state']
-        params['verbose'] = exp_params['verbose']
 
     elif explainer == 'random':
         params['random_state'] = exp_params['random_state']

@@ -31,15 +31,15 @@ class BoostIn(Explainer):
             the signs of the gradients differ.
         - Only support GBDTs.
     """
-    def __init__(self, use_leaf=0, verbose=0):
+    def __init__(self, use_leaf=0, logger=0):
         """
         Input
             use_leaf: bool, If True, only add attribution to examples
                 ONLY if those examples share the same leaf as the test example.
-            verbose: int, controls the amount of output.
+            logger: object, If not None, output to logger.
         """
         self.use_leaf = use_leaf
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """

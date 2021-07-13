@@ -129,7 +129,7 @@ def test_local_influence_binary_original_vs_adapted(args, kwargs, n=10, show_plo
 def main(args):
 
     # explainer arguments
-    kwargs = {'update_set': args.update_set, 'verbose': args.verbose}
+    kwargs = {'update_set': args.update_set}
 
     # tests
     test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
@@ -161,7 +161,6 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--update_set', type=int, default=-1)
-    parser.add_argument('--verbose', type=int, default=0)
 
     args = parser.parse_args()
 

@@ -65,7 +65,7 @@ def experiment(args, logger, params, out_dir):
     # compute infuence
     start = time.time()
 
-    explainer = intent.TreeExplainer(method=args.method, params=params).fit(tree, X_train, y_train)
+    explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
 
     if args.inf_obj == 'global':
         influence = explainer.get_global_influence()
@@ -174,7 +174,6 @@ if __name__ == '__main__':
 
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--verbose', type=int, default=1)  # BoostIn, LeafInfluence, Trex, LOO, DShap
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')

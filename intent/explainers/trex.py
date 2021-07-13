@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import OneHotEncoder
 from torch.autograd import Variable
@@ -45,7 +44,7 @@ class Trex(Explainer):
             loss function can cause slightly differing orderings.
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.003, n_epoch=3000,
-                 use_alpha=0, random_state=1, verbose=0):
+                 use_alpha=0, random_state=1, logger=None):
         """
         Input
             kernel: Transformation of the input using the tree-ensemble structure.
@@ -64,7 +63,7 @@ class Trex(Explainer):
             lmbd: Regularizer for the linear model; necessary for the Representer decomposition.
             n_epoch: Max. no. epochs to train the linear model.
             random_state: Random state seed to generate reproducible results.
-            verbose: Output verbosity.
+            logger: object, If not None, output to logger.
         """
         assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
         assert target in ['actual', 'predicted']
@@ -75,7 +74,7 @@ class Trex(Explainer):
         self.n_epoch = n_epoch
         self.use_alpha = use_alpha
         self.random_state = random_state
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """
@@ -323,6 +322,9 @@ class Trex(Explainer):
         min_loss = 10000.0
         optimizer = optim.SGD([model.W], lr=1.0)
 
+        if self.logger:
+            self.logger.info(f'\n[INFO] computing alpha values...')
+
         # train
         for epoch in range(self.n_epoch):
             phi_loss = 0
@@ -347,15 +349,15 @@ class Trex(Explainer):
                 best_W = temp_W
 
                 if min_loss < init_grad / 200:
-                    if self.verbose > 0:
-                        print(f'stopping criteria reached in epoch: {epoch}')
+                    if self.logger:
+                        self.logger.info(f'[INFO] stopping criteria reached in epoch: {epoch}')
                     break
 
             self._backtracking_line_search(model, model.W.grad, X, y, loss)
 
-            if epoch % 100 == 0 and self.verbose > 1:
-                print(f'Epoch:{epoch:4d}, loss:{util.to_np(loss):.7f}'
-                      f', phi_loss:{phi_loss:.7f}, grad:{grad_loss:.7f}')
+            if epoch % 100 == 0 and self.logger:
+                self.logger.info(f'[INFO] Epoch: {epoch:4d}, loss: {util.to_np(loss):.7f}'
+                                 f', phi_loss: {phi_loss:.7f}, grad: {grad_loss:.7f}')
 
         # compute alpha based on the representer theorem's decomposition
         output = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)
@@ -388,12 +390,8 @@ class Trex(Explainer):
         p_corr, _ = pearsonr(y, yp)
         s_corr, _ = spearmanr(y, yp)
 
-        if self.verbose > 0:
-            print(f'L1 diff.: {l1_diff:.5f}, pearsonr: {p_corr:.5f}, spearmanr: {s_corr:.5f}')
-
-            if self.verbose > 1:
-                plt.scatter(yp, y)
-                plt.show()
+        if self.logger:
+            self.logger.info(f'[INFO] L1 diff.: {l1_diff:.5f}, pearsonr: {p_corr:.5f}, spearmanr: {s_corr:.5f}')
 
         self.l1_diff_ = l1_diff
         self.p_corr_ = p_corr

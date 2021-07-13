@@ -1,5 +1,6 @@
+import time
+
 import numpy as np
-from tqdm import tqdm
 from sklearn.preprocessing import LabelBinarizer
 
 from .base import Explainer
@@ -39,17 +40,17 @@ class LeafInfluence(Explainer):
     Note
         - Supports both GBDTs and RFs.
     """
-    def __init__(self, update_set=-1, verbose=0):
+    def __init__(self, update_set=-1, logger=None):
         """
         Input
             update_set (GBDT only): int, No. neighboring leaf values to use for approximating leaf influence.
                 0: Use no other leaves, influence is computed independent of other trees.
                 -1: Use all other trees, most accurate but also most computationally expensive.
                 1+: Trade-off between accuracy and computational resources.
-            verbose: int, Output verbosity.
+            logger: object, If not None, output to logger.
         """
         self.update_set = update_set
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """
@@ -58,11 +59,11 @@ class LeafInfluence(Explainer):
         super().fit(model, X, y)
 
         if self.model_.tree_type == 'gbdt':
-            explainer = LeafInfluenceGBDT(update_set=self.update_set, verbose=self.verbose)
+            explainer = LeafInfluenceGBDT(update_set=self.update_set, logger=self.logger)
 
         else:
             assert self.model_.tree_type == 'rf'
-            explainer = LeafInfluenceRF(verbose=self.verbose)
+            explainer = LeafInfluenceRF(logger=self.logger)
 
         explainer.fit(model, X, y)
 
@@ -87,18 +88,18 @@ class LeafInfluenceGBDT(Explainer):
     """
     LeafInfluence method designed specifically for GBDTs.
     """
-    def __init__(self, update_set=-1, verbose=0):
+    def __init__(self, update_set=-1, logger=None):
         """
         Input
             update_set: int, No. neighboring leaf values to use for approximating leaf influence.
                 0: Use no other leaves, influence is computed independent of other trees.
                 -1: Use all other trees, most accurate but also most computationally expensive.
                 1+: Trade-off between accuracy and computational resources.
-            verbose: int, Output verbosity.
+            logger: object, If not None, output to logger.
         """
         assert update_set >= -1
         self.update_set = update_set
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """
@@ -198,7 +199,16 @@ class LeafInfluenceGBDT(Explainer):
         leaf_derivatives = np.zeros((X.shape[0], np.sum(leaf_counts)), dtype=np.float32)
 
         # copy and compute new leaf values resulting from the removal of each x in X.
-        for remove_idx in tqdm(range(X.shape[0]), disable=self.verbose == 0):
+        start = time.time()
+        if self.logger:
+            self.logger.info(f'\n[INFO] computing alternate leaf values...')
+
+        for remove_idx in range(X.shape[0]):
+
+            # display progress
+            if self.logger and (remove_idx + 1) % 100 == 0:
+                cum_time = time.time() - start
+                self.logger.info(f'[INFO] {remove_idx + 1:,} / {X.shape[0]:,}: cum. time: {cum_time:.3f}s')
 
             # intermediate containers
             da = np.zeros((X.shape[0], n_class), dtype=np.float32)
@@ -378,12 +388,12 @@ class LeafInfluenceRF(Explainer):
     """
     LeafInfluence method designed specifically for RFs.
     """
-    def __init__(self, verbose=0):
+    def __init__(self, logger=None):
         """
         Input
-            verbose: int, Output verbosity.
+            logger: object, If not None, output to logger.
         """
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """
@@ -424,7 +434,17 @@ class LeafInfluenceRF(Explainer):
         new_leaf_values = np.tile(leaf_vals, (X.shape[0], 1))  # shape=(X.shape[0], total no. leaves)
 
         # update leaf values for leaves affected by each removed train example
-        for remove_idx in tqdm(range(X.shape[0]), disable=self.verbose == 0):
+        start = time.time()
+        if self.logger:
+            self.logger.info(f'\n[INFO] computing alternate leaf values...')
+
+        for remove_idx in range(X.shape[0]):
+
+            # display progress
+            if self.logger and (remove_idx + 1) % 100 == 0:
+                cum_time = time.time() - start
+                self.logger.info(f'[INFO] {remove_idx + 1:,} / {X.shape[0]:,}: cum. time: {cum_time:.3f}s')
+
             n_prev_leaves = 0
 
             for boost_idx in range(n_boost):

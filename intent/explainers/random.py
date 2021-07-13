@@ -17,12 +17,14 @@ class Random(Explainer):
     Note
         - Supports GBDTs and RFs.
     """
-    def __init__(self, random_state=1):
+    def __init__(self, random_state=1, logger=None):
         """
         Input
             random_state: int, random seed to enhance reproducibility.
+            logger: object, If not None, output to logger.
         """
         self.random_state = random_state
+        self.logger = logger
 
     def fit(self, model, X, y):
         """

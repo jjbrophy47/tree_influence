@@ -1,4 +1,6 @@
+import time
 import joblib
+
 import numpy as np
 from sklearn.base import clone
 
@@ -26,15 +28,15 @@ class LOO(Explainer):
         - Supports both GBDTs and RFs.
         - Supports parallelization.
     """
-    def __init__(self, n_jobs=1, verbose=0):
+    def __init__(self, n_jobs=1, logger=None):
         """
         Input
             n_jobs: int, No. processes to run in parallel.
                 -1 means use the no. of available CPU cores.
-            verbose: int, Output verbosity.
+            logger: object, If not None, output to logger.
         """
         self.n_jobs = n_jobs
-        self.verbose = verbose
+        self.logger = logger
 
     def fit(self, model, X, y):
         """
@@ -66,13 +68,38 @@ class LOO(Explainer):
             assert self.n_jobs >= 1
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
-        verbose_cnt = X.shape[0] if self.verbose > 0 else 0
+        # result container
+        models = np.zeros(0, dtype=np.object)
+
+        # trackers
+        fits_completed = 0
+        fits_remaining = X.shape[0]
+
+        start = time.time()
+        if self.logger:
+            self.logger.info('\n[INFO] computing LOO values...')
 
         # fit each model in parallel
-        results = joblib.Parallel(n_jobs=n_jobs, verbose=verbose_cnt)\
-            (joblib.delayed(_fit_LOO_model)(model, X, y, train_idx) for train_idx in range(X.shape[0]))
+        with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
-        self.models_ = np.array(results, dtype=np.object)
+            # get number of fits to perform for this iteration
+            while fits_remaining > 0:
+                n = min(100, fits_remaining)
+
+                results = parallel(joblib.delayed(_fit_LOO_model)
+                                                 (model, X, y, train_idx) for train_idx in range(fits_completed,
+                                                                                                 fits_completed + n))
+                fits_completed += n
+                fits_remaining -= n
+
+                # synchronization barrier
+                models = np.concatenate([models, np.array(results, dtype=np.object)])
+
+                if self.logger:
+                    cum_time = time.time() - start
+                    self.logger.info(f'[INFO] fits: {fits_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
+
+        self.models_ = models
         self.original_model_ = model
 
         return self
