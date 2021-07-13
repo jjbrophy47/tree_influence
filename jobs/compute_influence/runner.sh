@@ -13,7 +13,7 @@ inf_obj=$6
 
 python3 scripts/experiments/compute_influence.py \
   --dataset $dataset \
-  --tree_type $type \
+  --tree_type $tree_type \
   --n_estimators $n_estimators \
   --max_depth $max_depth \
   --method $method \
