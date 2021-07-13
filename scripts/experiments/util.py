@@ -157,7 +157,7 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
 
     elif tree_type == 'skrf':
         class_fn = RandomForestRegressor if objective == 'regression' else RandomForestClassifier
-        tree = class_fn(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
+        tree = class_fn(n_estimators=n_tree, max_depth=max_depth, random_state=random_state, bootstrap=False)
 
     elif tree_type == 'xgb':
 
