@@ -21,7 +21,6 @@ class TreeExplainer(object):
         - TracIn (BoostIn)
         - Representer-point (Trex)
         - Influence Function (LeafInfluence)
-        - HYDRA
         - LOO
         - Appox. data Shapley
         - Random
@@ -38,6 +37,7 @@ class TreeExplainer(object):
             self.explainer = LeafInfluence(**params)
 
         elif method == 'hydra':
+            raise ValueError('hydra not supported!')
             self.explainer = Hydra(**params)
 
         elif method == 'loo':
