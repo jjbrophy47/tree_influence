@@ -78,6 +78,7 @@ class LOO(Explainer):
         start = time.time()
         if self.logger:
             self.logger.info('\n[INFO] computing LOO values...')
+            self.logger.info('[INFO] no. cpus: {n_jobs:,}...')
 
         # fit each model in parallel
         with joblib.Parallel(n_jobs=n_jobs) as parallel:
