@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
-    parser.add_argument('--test_select', type=str, default='correct')  # local
+    parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--remove_frac', type=float, default=0.5)
 
     args = parser.parse_args()

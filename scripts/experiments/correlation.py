@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
-    parser.add_argument('--test_select', type=str, default='correct')  # local
+    parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
 
