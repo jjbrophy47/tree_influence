@@ -180,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('--inf_obj', type=str, default='global')
 
     parser.add_argument('--n_test', type=int, default=20)  # local
-    parser.add_argument('--test_select', type=str, default='random', help='random, correct, incorrect')  # local
+    parser.add_argument('--test_select', type=str, default='correct', help='random, correct, incorrect')  # local
 
     args = parser.parse_args()
     main(args)
