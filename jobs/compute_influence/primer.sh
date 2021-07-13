@@ -12,7 +12,7 @@ inf_obj_list=('global' 'local')
 
 for inf_obj in ${inf_obj_list[@]}; do
 
-    job_name=CI_${dataset}_${method}_${inf_obj}
+    job_name=CI_${dataset}_${tree_type}_${method}_${inf_obj}
 
     sbatch --mem=${mem}G \
            --time=$time \
