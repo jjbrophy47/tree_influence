@@ -141,7 +141,7 @@ class DShap(Explainer):
         start = time.time()
         if self.logger:
             self.logger.info('\n[INFO] computing approx. data Shapley values...')
-            self.logger.info('[INFO] no. cpus: {n_jobs:,}...')
+            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
 
         # run TMC-Shapley alg. until convergence
         with joblib.Parallel(n_jobs=n_jobs) as parallel:
