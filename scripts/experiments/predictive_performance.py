@@ -76,12 +76,13 @@ def get_model(args, objective):
         if objective == 'regression':
             clf = Pipeline(steps=[
                 ('ss', StandardScaler()),
-                ('svm', SVR(gamma='auto', C=args.C, kernel=args.kernel, random_state=args.random_state))
+                ('svm', SVR(gamma='auto', C=args.C, kernel=args.kernel))
             ])
         else:
             clf = Pipeline(steps=[
                 ('ss', StandardScaler()),
-                ('svm', SVC(gamma='auto', C=args.C, kernel=args.kernel, random_state=args.random_state))
+                ('svm', SVC(gamma='auto', C=args.C, kernel=args.kernel,
+                            probability=True, random_state=args.random_state))
             ])
         params = {'svm__C': [1e-2, 1e-1, 1e0]}
 
