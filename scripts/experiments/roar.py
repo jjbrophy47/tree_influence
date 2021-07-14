@@ -24,7 +24,7 @@ def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test,
     eval_fn = util.eval_pred if args.inf_obj == 'global' else util.eval_loss
 
     # pre-removal performance
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix='0.00')
+    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:.2f}%')
 
     # get list of remove fractions
     remove_frac_arr = np.linspace(0, args.remove_frac, args.n_ckpt + 1)[1:]
@@ -49,7 +49,7 @@ def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test,
 
         else:
             new_tree = clone(tree).fit(new_X_train, new_y_train)
-            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'{remove_frac:.2f}')
+            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'{i + 1:>5}: {remove_frac * 100:.2f}%')
 
             # add to results
             result['remove_frac'][i + 1] = remove_frac
