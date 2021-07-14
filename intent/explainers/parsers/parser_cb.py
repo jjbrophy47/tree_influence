@@ -18,10 +18,9 @@ def parse_cb_ensemble(model):
     assert model_params['leaf_estimation_method'] == 'Newton'
 
     # parsing
-    json_data = _get_json_data_from_cb_model(model)
-    trees = np.array([_parse_cb_tree(tree_dict) for tree_dict in json_data], dtype=np.dtype(object))
-
     n_class = model.classes_.shape[0]
+    json_data = _get_json_data_from_cb_model(model)
+    trees = np.array([_parse_cb_tree(tree_dict, n_class) for tree_dict in json_data], dtype=np.dtype(object))
 
     # regression
     if n_class == 0:
@@ -57,7 +56,7 @@ def parse_cb_ensemble(model):
 
 
 # private
-def _parse_cb_tree(tree_dict):
+def _parse_cb_tree(tree_dict, n_class):
     """
     Data has format:
     {
@@ -65,7 +64,7 @@ def _parse_cb_tree(tree_dict):
         'leaf_values': [float, float, ...]
     }
 
-    IF multiclass, then 'leaf_values': [[float, float, ...], [float, ...]]
+    If multiclass, then 'leaf_values' has shape=(no. leaves in one tree * no. class).
 
     Notes:
         - No. leaves = 2 ^ no. splits.
@@ -75,7 +74,7 @@ def _parse_cb_tree(tree_dict):
     Returns one tree if binary class., otherwise returns a list of trees,
     one for each class.
     """
-    _validate_data(tree_dict)
+    _validate_data(tree_dict, n_class)
 
     children_left = []
     children_right = []
@@ -83,16 +82,14 @@ def _parse_cb_tree(tree_dict):
     threshold = []
     leaf_vals = []
 
-    n_class = 2
-    if isinstance(tree_dict['leaf_values'][0], list):
-        n_class = len(tree_dict['leaf_values'][0])
+    if n_class > 2:
         leaf_vals = [[] for j in range(n_class)]
 
     node_id = 0
     for depth, split_dict in enumerate(reversed(tree_dict['splits'])):
 
         for i in range(2 ** depth):
-            feature.append(split_dict['feature_idx'])
+            feature.append(split_dict['float_feature_index'])
             threshold.append(split_dict['border'])
 
             if n_class > 2:
@@ -116,7 +113,7 @@ def _parse_cb_tree(tree_dict):
 
         if n_class > 2:
             for j in range(n_class):
-                leaf_vals[j].append(tree_dict['leaf_values'][i][j])
+                leaf_vals[j].append(tree_dict['leaf_values'][(i * n_class) + j])
         else:
             leaf_vals.append(tree_dict['leaf_values'][i])
 
@@ -141,7 +138,7 @@ def _parse_cb_tree(tree_dict):
     return result
 
 
-def _get_json_data_from_cb_model(model):
+def _get_json_data_from_cb_model_old(model):
     """
     Parse CatBoost model based on its json representation.
     """
@@ -166,12 +163,37 @@ def _get_json_data_from_cb_model(model):
     return json_data
 
 
-def _validate_data(data_json):
+def _get_json_data_from_cb_model(model):
+    """
+    Parse CatBoost model based on its json representation.
+    """
+    assert 'CatBoost' in str(model)
+    here = os.path.abspath(os.path.dirname(__file__))
+
+    temp_dir = os.path.join(here, 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
+
+    # temp_model_bin_fp = os.path.join(temp_dir, 'model.bin')
+    temp_model_json_fp = os.path.join(temp_dir, 'model.json')
+
+    model.save_model(temp_model_json_fp, format='json')
+    # command = f'{here}/export_catboost {temp_model_bin_fp} > {temp_model_json_fp}'
+    # os.system(command)
+
+    with open(temp_model_json_fp) as f:
+        json_data = json.load(f)
+
+    shutil.rmtree(temp_dir)
+
+    return json_data['oblivious_trees']
+
+
+def _validate_data(data_json, n_class):
     """
     Checks to make sure JSON data is valid.
     """
     for split in data_json['splits']:
-        assert isinstance(split['feature_idx'], int)
+        assert isinstance(split['float_feature_index'], int)
         assert isinstance(split['border'], (int, float))
 
     for value in data_json['leaf_values']:
@@ -180,4 +202,7 @@ def _validate_data(data_json):
     num_splits = len(data_json['splits'])
     num_values = len(data_json['leaf_values'])
 
-    assert num_values == 2 ** num_splits
+    if n_class > 2:
+        assert num_values == 2 ** num_splits * n_class
+    else:
+        assert num_values == 2 ** num_splits

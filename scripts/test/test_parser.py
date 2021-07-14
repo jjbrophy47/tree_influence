@@ -234,7 +234,7 @@ def test_skrf_regressor(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
 
     tree = RandomForestRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
-                                 random_state=args.rs)
+                                 random_state=args.rs, bootstrap=False)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)
@@ -251,7 +251,7 @@ def test_skrf_binary_classifier(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
 
     tree = RandomForestClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                                  random_state=args.rs)
+                                  random_state=args.rs, bootstrap=False)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)
@@ -268,7 +268,7 @@ def test_skrf_multiclass_classifier(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=args.n_class)
 
     tree = RandomForestClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                                  random_state=args.rs)
+                                  random_state=args.rs, bootstrap=False)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)

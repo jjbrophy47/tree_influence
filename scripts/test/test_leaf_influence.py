@@ -132,8 +132,8 @@ def main(args):
     kwargs = {'update_set': args.update_set}
 
     # tests
-    test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
-    test_util.test_global_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
+    # test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
+    # test_util.test_global_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_global_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
