@@ -27,7 +27,7 @@ def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test,
     res = eval_fn(objective, tree, X_test, y_test, logger, prefix='0.00')
 
     # get list of remove fractions
-    remove_frac_arr = np.linspace(0, args.remove_frac, 10 + 1)[1:]
+    remove_frac_arr = np.linspace(0, args.remove_frac, args.n_ckpt + 1)[1:]
 
     # result container
     result = {}
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('--out_dir', type=str, default='output/roar/')
 
     # Data settings
-    parser.add_argument('--dataset', type=str, default='synthetic_regression')
+    parser.add_argument('--dataset', type=str, default='synth_regression')
 
     # Tree-ensemble settings
     parser.add_argument('--tree_type', type=str, default='lgb')
@@ -202,6 +202,7 @@ if __name__ == '__main__':
     parser.add_argument('--inf_obj', type=str, default='global')
     parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--remove_frac', type=float, default=0.5)
+    parser.add_argument('--n_ckpt', type=int, default=1000)
 
     args = parser.parse_args()
     main(args)

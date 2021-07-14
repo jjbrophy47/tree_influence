@@ -39,7 +39,7 @@ class DShap(Explainer):
             for early truncation.
             * However, we can use a hard truncation limit via `trunc_frac`.
     """
-    def __init__(self, trunc_frac=0.25, n_jobs=1, check_every=10, random_state=1, logger=None):
+    def __init__(self, trunc_frac=0.25, n_jobs=1, check_every=100, random_state=1, logger=None):
         """
         Input
             trunc_frac: float, fraction of instances to compute marginals for per iter.
@@ -79,7 +79,7 @@ class DShap(Explainer):
 
         return self
 
-    def get_global_influence(self, check_every=10, stability_tol=0.1):
+    def get_global_influence(self):
         """
         - Compute influence of each training example on itself.
         - Provides a global perspective of which training intances
