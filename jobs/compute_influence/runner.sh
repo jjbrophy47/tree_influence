@@ -2,7 +2,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=uoml
-module load python3/3.7.5
+module load miniconda
+conda activate jbrophy-20210713
 
 dataset=$1
 tree_type=$2
