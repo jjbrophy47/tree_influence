@@ -14,7 +14,7 @@ for inf_obj in ${inf_obj_list[@]}; do
 
     job_name=CI_${dataset}_${tree_type}_${method}_${inf_obj}
 
-    sbatch --cpus_per_task=${ncpu} \
+    sbatch --cpus-per-task=$ncpu \
            --time=$time \
            --partition=$partition \
            --job-name=$job_name \
