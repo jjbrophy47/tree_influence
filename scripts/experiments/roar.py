@@ -202,7 +202,7 @@ if __name__ == '__main__':
     parser.add_argument('--inf_obj', type=str, default='global')
     parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--remove_frac', type=float, default=0.5)
-    parser.add_argument('--n_ckpt', type=int, default=1000)
+    parser.add_argument('--n_ckpt', type=int, default=100)
 
     args = parser.parse_args()
     main(args)
