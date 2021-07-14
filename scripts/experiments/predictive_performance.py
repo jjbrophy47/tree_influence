@@ -12,12 +12,17 @@ warnings.simplefilter(action='ignore', category=UserWarning)  # lgb compiler war
 
 import numpy as np
 import pandas as pd
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVR
 from sklearn.svm import SVC
-from sklearn.svm import LinearSVC
+from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.neural_network import MLPRegressor
+from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold
@@ -43,35 +48,56 @@ def get_model(args, objective):
         params = {'n_estimators': [10, 25, 50, 100, 200], 'max_depth': [2, 3, 5, 7]}
 
     elif args.model == 'dt':
-        clf = DecisionTreeClassifier(random_state=args.random_state)
-        params = {'criterion': ['gini', 'entropy'], 'splitter': ['best', 'random'],
-                  'max_depth': [3, 5, 10, None]}
+        if objective == 'regression':
+            clf = DecisionTreeRegressor(random_state=args.random_state)
+            params = {'criterion': ['mse', 'friedman_mse'], 'splitter': ['best', 'random'],
+                      'max_depth': [3, 5, 10, None]}
+        else:
+            clf = DecisionTreeClassifier(random_state=args.random_state)
+            params = {'criterion': ['gini', 'entropy'], 'splitter': ['best', 'random'],
+                      'max_depth': [3, 5, 10, None]}
 
     elif args.model == 'lr':
-        clf = Pipeline(steps=[
-            ('ss', StandardScaler()),
-            ('lr', LogisticRegression(penalty=args.penalty, C=args.C, solver='liblinear',
-                                      random_state=args.random_state))
-        ])
-        params = {'lr__penalty': ['l1', 'l2'], 'lr__C': [1e-2, 1e-1, 1e0]}
+        if objective == 'regression':
+            clf = Pipeline(steps=[
+                ('ss', StandardScaler()),
+                ('lr', LinearRegression())
+            ])
+            params = {}
+        else:
+            clf = Pipeline(steps=[
+                ('ss', StandardScaler()),
+                ('lr', LogisticRegression(penalty=args.penalty, C=args.C, solver='liblinear',
+                                          random_state=args.random_state))
+            ])
+            params = {'lr__penalty': ['l1', 'l2'], 'lr__C': [1e-2, 1e-1, 1e0]}
 
-    elif args.model == 'svm_linear':
-        clf = Pipeline(steps=[
-            ('ss', StandardScaler()),
-            ('svm', LinearSVC(dual=False, penalty=args.penalty, C=args.C, random_state=args.random_state))
-        ])
-        params = {'svm__penalty': ['l1', 'l2'], 'svm__C': [1e-2, 1e-1, 1e0]}
-
-    elif args.model == 'svm_rbf':
-        clf = Pipeline(steps=[
-            ('ss', StandardScaler()),
-            ('svm', SVC(gamma='auto', C=args.C, kernel=args.kernel, random_state=args.random_state))
-        ])
+    elif args.model == 'svm':
+        if objective == 'regression':
+            clf = Pipeline(steps=[
+                ('ss', StandardScaler()),
+                ('svm', SVR(gamma='auto', C=args.C, kernel=args.kernel, random_state=args.random_state))
+            ])
+        else:
+            clf = Pipeline(steps=[
+                ('ss', StandardScaler()),
+                ('svm', SVC(gamma='auto', C=args.C, kernel=args.kernel, random_state=args.random_state))
+            ])
         params = {'svm__C': [1e-2, 1e-1, 1e0]}
 
     elif args.model == 'knn':
-        clf = KNeighborsClassifier(weights=args.weights, n_neighbors=args.n_neighbors)
-        params = {'n_neighbors': [3, 5, 7, 9, 11, 13, 15, 31, 45, 61]}
+        if objective == 'regression':
+            clf = KNeighborsRegressor(weights=args.weights, n_neighbors=args.n_neighbors)
+        else:
+            clf = KNeighborsClassifier(weights=args.weights, n_neighbors=args.n_neighbors)
+        params = {'n_neighbors': [3, 5, 7, 11, 15, 31, 61]}
+
+    elif args.model == 'mlp':
+        if objective == 'regression':
+            clf = MLPRegressor()
+        else:
+            clf = MLPClassifier()
+        params = {'hidden_layer_sizes': [(100,), (100, 100)]}
 
     else:
         raise ValueError('model uknown: {}'.format(args.model))
@@ -118,7 +144,12 @@ def experiment(args, logger, out_dir):
     start = time.time()
 
     if not args.no_tune:
-        skf = StratifiedKFold(n_splits=args.cv, shuffle=True, random_state=args.random_state)
+
+        if objective == 'regression':
+            skf = args.cv
+        else:
+            skf = StratifiedKFold(n_splits=args.cv, shuffle=True, random_state=args.random_state)
+
         gs = GridSearchCV(model, param_grid, scoring=args.scoring, cv=skf, verbose=args.verbose)
         gs = gs.fit(X_train_sub, y_train_sub)
 

@@ -112,9 +112,9 @@ def get_data(data_dir, dataset):
 
     # get objective for the given dataset
     d = {}
-    d['regression'] = ['synthetic_regression']
-    d['binary'] = ['synthetic_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine']
-    d['multiclass'] = ['synthetic_multiclass']
+    d['regression'] = ['synth_regression']
+    d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine']
+    d['multiclass'] = ['synth_multiclass']
 
     objective = ''
     for k in d.keys():
