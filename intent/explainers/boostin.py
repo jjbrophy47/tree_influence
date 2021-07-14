@@ -79,7 +79,7 @@ class BoostIn(Explainer):
 
         Return
             - 1d array of shape=(no. train,).
-            - Arrays are returned in the same order as the traing data.
+                * Arrays are returned in the same order as the traing data.
         """
         # compute self influence, shape=(no. train, no. boost, no. class)
         influence = self.train_gradients_ * self.train_gradients_ * self.learning_rate_
@@ -133,7 +133,7 @@ class BoostIn(Explainer):
     # private
     def _compute_gradients(self, X, y):
         """
-        Compute negative gradients for all train instances across all boosting iterations.
+        Compute gradients for all train instances across all boosting iterations.
 
         Input
             X: 2d array of train examples.
@@ -161,20 +161,3 @@ class BoostIn(Explainer):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
         return gradients
-
-    def _get_loss_function(self):
-        """
-        Return the appropriate loss function for the given objective.
-        """
-        if self.model_.objective == 'regression':
-            loss_fn = util.SquaredLoss()
-
-        elif self.model_.objective == 'binary':
-            loss_fn = util.LogisticLoss()
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            n_class = self.model_.n_class_
-            loss_fn = util.SoftmaxLoss(factor=self.model_.factor, n_class=n_class)
-
-        return loss_fn

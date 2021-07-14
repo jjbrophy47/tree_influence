@@ -366,23 +366,6 @@ class LeafInfluenceGBDT(Explainer):
 
         return result
 
-    def _get_loss_function(self):
-        """
-        Return the appropriate loss function for the given objective.
-        """
-        if self.model_.objective == 'regression':
-            loss_fn = util.SquaredLoss()
-
-        elif self.model_.objective == 'binary':
-            loss_fn = util.LogisticLoss()
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            n_class = self.model_.n_class_
-            loss_fn = util.SoftmaxLoss(factor=self.model_.factor, n_class=n_class)
-
-        return loss_fn
-
 
 class LeafInfluenceRF(Explainer):
     """
@@ -413,7 +396,7 @@ class LeafInfluenceRF(Explainer):
 
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
-        self.loss_fn_ = self._get_loss_function()
+        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
         # extract tree-ensemble metadata
         trees = self.model_.trees
@@ -590,20 +573,3 @@ class LeafInfluenceRF(Explainer):
         influence = self.loss_fn_(y, new_pred, raw=False) - self.loss_fn_(y, og_pred, raw=False)
 
         return influence
-
-    def _get_loss_function(self):
-        """
-        Return the appropriate loss function for the given objective.
-        """
-        if self.model_.objective == 'regression':
-            loss_fn = util.SquaredLoss()
-
-        elif self.model_.objective == 'binary':
-            loss_fn = util.LogisticLoss()
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            n_class = self.model_.n_class_
-            loss_fn = util.SoftmaxLoss(factor=self.model_.factor, n_class=n_class)
-
-        return loss_fn

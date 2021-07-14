@@ -138,31 +138,6 @@ def _parse_cb_tree(tree_dict, n_class):
     return result
 
 
-def _get_json_data_from_cb_model_old(model):
-    """
-    Parse CatBoost model based on its json representation.
-    """
-    assert 'CatBoost' in str(model)
-    here = os.path.abspath(os.path.dirname(__file__))
-
-    temp_dir = os.path.join(here, 'temp')
-    os.makedirs(temp_dir, exist_ok=True)
-
-    temp_model_bin_fp = os.path.join(temp_dir, 'model.bin')
-    temp_model_json_fp = os.path.join(temp_dir, 'model.json')
-
-    model.save_model(temp_model_bin_fp)
-    command = f'{here}/export_catboost {temp_model_bin_fp} > {temp_model_json_fp}'
-    os.system(command)
-
-    with open(temp_model_json_fp) as f:
-        json_data = json.load(f)
-
-    shutil.rmtree(temp_dir)
-
-    return json_data
-
-
 def _get_json_data_from_cb_model(model):
     """
     Parse CatBoost model based on its json representation.
@@ -173,12 +148,9 @@ def _get_json_data_from_cb_model(model):
     temp_dir = os.path.join(here, 'temp')
     os.makedirs(temp_dir, exist_ok=True)
 
-    # temp_model_bin_fp = os.path.join(temp_dir, 'model.bin')
     temp_model_json_fp = os.path.join(temp_dir, 'model.json')
 
     model.save_model(temp_model_json_fp, format='json')
-    # command = f'{here}/export_catboost {temp_model_bin_fp} > {temp_model_json_fp}'
-    # os.system(command)
 
     with open(temp_model_json_fp) as f:
         json_data = json.load(f)

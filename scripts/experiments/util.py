@@ -30,6 +30,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
 
 
+# public
 def get_logger(filename=''):
     """
     Return a logger object to easily save textual output.
@@ -75,6 +76,31 @@ def clear_dir(in_dir):
     return 0
 
 
+def stdout_stderr_to_log(filename):
+    """
+    Log everything printed to stdout or
+    stderr to this specified `filename`.
+    """
+    logfile = open(filename, 'w')
+
+    stderr = sys.stderr
+    stdout = sys.stdout
+
+    sys.stdout = Tee(sys.stdout, logfile)
+    sys.stderr = sys.stdout
+
+    return logfile, stdout, stderr
+
+
+def reset_stdout_stderr(logfile, stdout, stderr):
+    """
+    Restore original stdout and stderr
+    """
+    sys.stdout = stdout
+    sys.stderr = stderr
+    logfile.close()
+
+
 def get_data(data_dir, dataset):
     """
     Return train and test data for the specified dataset.
@@ -87,7 +113,7 @@ def get_data(data_dir, dataset):
     # get objective for the given dataset
     d = {}
     d['regression'] = ['synthetic_regression']
-    d['binary'] = ['synthetic_binary']
+    d['binary'] = ['synthetic_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine']
     d['multiclass'] = ['synthetic_multiclass']
 
     objective = ''
@@ -182,24 +208,24 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
     return tree
 
 
-def eval_pred(objective, tree, X, y, logger, prefix=''):
+def eval_pred(objective, model, X, y, logger, prefix=''):
     """
-    Evaluate the predictive performance of the tree on X and y.
+    Evaluate the predictive performance of the model on X and y.
     """
     result = {'mse': -1, 'acc': -1, 'auc': -1}
 
     if objective == 'regression':
-        pred = tree.predict(X)
+        pred = model.predict(X)
         result['mse'] = mean_squared_error(y, pred)
 
     elif objective == 'binary':
-        pred = tree.predict(X)
-        proba = tree.predict_proba(X)[:, 1]
+        pred = model.predict(X)
+        proba = model.predict_proba(X)[:, 1]
         result['acc'] = accuracy_score(y, pred)
         result['auc'] = roc_auc_score(y, proba)
 
     elif objective == 'multiclass':
-        pred = tree.predict(X)
+        pred = model.predict(X)
         result['acc'] = accuracy_score(y, pred)
 
     logger.info(f"[{prefix}] mse: {result['mse']:>10.3f}, "
@@ -302,3 +328,22 @@ def explainer_params_to_dict(explainer, exp_params):
     hash_str = dict_to_hash(params)
 
     return params, hash_str
+
+
+# private
+class Tee(object):
+    """
+    Class to control where output is printed to.
+    """
+
+    def __init__(self, *files):
+        self.files = files
+
+    def write(self, obj):
+        for f in self.files:
+            f.write(obj)
+            f.flush()   # output to be visible immediately
+
+    def flush(self):
+        for f in self.files:
+            f.flush()

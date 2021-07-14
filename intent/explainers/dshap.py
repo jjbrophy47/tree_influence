@@ -74,7 +74,7 @@ class DShap(Explainer):
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
 
-        self.loss_fn_ = self._get_loss_function()
+        self.loss_fn_ = util.get_loss_fn(self.objective_, self.n_class_, self.model_.factor)
         self.random_loss_ = self._get_random_loss()
 
         return self
@@ -198,23 +198,6 @@ class DShap(Explainer):
 
         return loss
 
-    def _get_loss_function(self):
-        """
-        Return the appropriate loss function for the given objective.
-        """
-        if self.model_.objective == 'regression':
-            loss_fn = util.SquaredLoss()
-
-        elif self.model_.objective == 'binary':
-            loss_fn = util.LogisticLoss()
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            n_class = self.model_.n_class_
-            loss_fn = util.SoftmaxLoss(factor=self.model_.factor, n_class=n_class)
-
-        return loss_fn
-
 
 def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
                    truncation_frac, objective, n_class, finished_iterations,
@@ -255,7 +238,7 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
         if objective == 'regression' and X_batch.shape[0] < 2:
             continue
 
-        if objective == 'binary' and len(np.unique(y_batch)) < 2:
+        elif objective == 'binary' and len(np.unique(y_batch)) < 2:
             continue
 
         elif objective == 'multiclass' and len(np.unique(y_batch)) < n_class:

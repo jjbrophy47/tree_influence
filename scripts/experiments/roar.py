@@ -99,7 +99,7 @@ def experiment(args, logger, params, in_dir, out_dir):
 
         res_list = []
         for i, test_idx in enumerate(test_idxs):
-            logger.info(f'\nNo. {i}, Test_idx {test_idx}:')
+            logger.info(f'\nNo. {i}, test_idx {test_idx}, target {y_test[test_idx]}:')
             X_temp = X_test[[test_idx]]
             y_temp = y_test[[test_idx]]
 
