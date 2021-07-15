@@ -235,7 +235,7 @@ def eval_pred(objective, model, X, y, logger, prefix=''):
     return result
 
 
-def eval_loss(objective, model, X, y, logger, prefix=''):
+def eval_loss(objective, model, X, y, logger, prefix='', eps=1e-5):
     """
     Return individual losses.
     """
@@ -251,7 +251,6 @@ def eval_loss(objective, model, X, y, logger, prefix=''):
         loss_type = 'squared_loss'
 
     elif objective == 'binary':
-        eps = 1e-5
         y_hat = model.predict_proba(X)[:, 1]  # shape=(X.shape[0])
         y_hat = np.clip(y_hat, eps, 1 - eps)  # prevent log(0)
         losses = -(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))
@@ -263,6 +262,7 @@ def eval_loss(objective, model, X, y, logger, prefix=''):
         assert objective == 'multiclass'
         target = y[0]
         y_hat = model.predict_proba(X)[0]  # shape=(no. class,)
+        y_hat = np.clip(y_hat, eps, 1 - eps)
         result['pred'] = y_hat[target]
         result['loss'] = -np.log(y_hat)[target]
         loss_type = 'cross_entropy_loss'
