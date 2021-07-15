@@ -11,6 +11,7 @@ n_estimators=$3
 max_depth=$4
 method=$5
 inf_obj=$6
+trunc_frac=$7
 
 python3 scripts/experiments/compute_influence.py \
   --dataset $dataset \
@@ -19,3 +20,4 @@ python3 scripts/experiments/compute_influence.py \
   --max_depth $max_depth \
   --method $method \
   --inf_obj $inf_obj \
+  --trunc_frac $trunc_frac \

@@ -15,7 +15,8 @@
 ./jobs/compute_influence/primer.sh 'surgical' 'lgb' 50 7 'trex'           3  60  'short'
 ./jobs/compute_influence/primer.sh 'surgical' 'lgb' 50 7 'leaf_influence' 7  600 'short'
 ./jobs/compute_influence/primer.sh 'surgical' 'lgb' 50 7 'loo'            7  600 'short'
-./jobs/compute_influence/primer_multi_cpu.sh 'surgical' 'lgb' 50 7 'dshap'          28  1440 'short'
+./jobs/compute_influence/primer_multi_cpu.sh 'surgical' 'lgb' 50 7 'dshap'         0.5  28  1440 'short'
+./jobs/compute_influence/primer_multi_cpu.sh 'surgical' 'lgb' 50 7 'dshap'         0.75 28  1440 'short'
 
 ./jobs/compute_influence/primer.sh 'vaccine' 'lgb' 200 3 'random'         3  60   'short'
 ./jobs/compute_influence/primer.sh 'vaccine' 'lgb' 200 3 'boostin'        3  60   'short'
