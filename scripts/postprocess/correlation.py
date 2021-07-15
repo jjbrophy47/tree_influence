@@ -17,9 +17,8 @@ from scipy.stats import pearsonr
 from scipy.stats import spearmanr
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../')
-import intent
-import util
+sys.path.insert(0, here + '/../')
+from experiments import util
 
 
 def experiment(args, logger, in_dir1, in_dir2, out_dir):
@@ -51,8 +50,6 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
         ax.set_ylabel(args.method2)
         ax.legend(fontsize=6)
 
-        plt.show()
-
     # shape=(no. train, no. test)
     else:  # compute correlation over all test examples
         assert args.inf_obj == 'local'
@@ -70,7 +67,11 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
         ax.set_ylabel(args.method2)
         ax.legend(fontsize=6)
 
-        plt.show()
+    ax.set_title(f'{args.dataset}, {args.inf_obj}')
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
+    plt.show()
 
 
 def main(args):
@@ -101,15 +102,11 @@ def main(args):
 
     # create output dir
     out_dir = os.path.join(args.out_dir,
-                           args.dataset,
-                           args.tree_type,
-                           f'rs_{args.random_state}',
                            inf_type,
-                           f'{args.method1}_{hash_str1}_{args.method2}_{hash_str2}')
+                           args.dataset)
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
-    util.clear_dir(out_dir)
 
     logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
@@ -124,7 +121,7 @@ if __name__ == '__main__':
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
     parser.add_argument('--in_dir', type=str, default='output/influence/')
-    parser.add_argument('--out_dir', type=str, default='output/correlation/')
+    parser.add_argument('--out_dir', type=str, default='output/plot/correlation/')
 
     # Data settings
     parser.add_argument('--dataset', type=str, default='synthetic_regression')
