@@ -43,8 +43,12 @@ def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test,
         new_X_train = X_train[ranking][n_remove:].copy()
         new_y_train = y_train[ranking][n_remove:].copy()
 
-        if len(np.unique(new_y_train)) == 1:
+        if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')
+            break
+
+        elif objective == 'multiclass' and len(np.unique(new_y_train)) < len(np.unique(y_train)):
+            logger.info('At least 1 sample is not present for all classes!')
             break
 
         else:
@@ -196,7 +200,6 @@ if __name__ == '__main__':
 
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--verbose', type=int, default=1)  # BoostIn, LeafInfluence, Trex, LOO, DShap
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')

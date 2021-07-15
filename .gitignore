@@ -10,3 +10,5 @@ output/
 data/
 jobs/logs/
 jobs/errors/
+
+temp*
