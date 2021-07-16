@@ -132,8 +132,8 @@ def main(args):
     kwargs = {'update_set': args.update_set}
 
     # tests
-    # test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
-    # test_util.test_global_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
+    test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
+    test_util.test_global_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_global_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
@@ -148,7 +148,8 @@ if __name__ == '__main__':
 
     # data settings
     parser.add_argument('--n_train', type=int, default=100)
-    parser.add_argument('--n_test', type=int, default=2)
+    parser.add_argument('--n_test', type=int, default=100)
+    parser.add_argument('--n_local', type=int, default=2)
     parser.add_argument('--n_class', type=int, default=3)
     parser.add_argument('--n_feat', type=int, default=10)
 

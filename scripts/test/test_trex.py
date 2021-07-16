@@ -12,7 +12,7 @@ def main(args):
 
     # explainer arguments
     kwargs = {'kernel': args.kernel, 'target': args.target,
-              'lmbd': args.lmbd}
+              'lmbd': args.lmbd, 'global_op': args.global_op}
 
     # tests
     test_util.test_global_influence_regression(args, Trex, 'trex', kwargs)
@@ -28,7 +28,8 @@ if __name__ == '__main__':
 
     # data settings
     parser.add_argument('--n_train', type=int, default=100)
-    parser.add_argument('--n_test', type=int, default=2)
+    parser.add_argument('--n_test', type=int, default=100)
+    parser.add_argument('--n_local', type=int, default=2)
     parser.add_argument('--n_class', type=int, default=3)
     parser.add_argument('--n_feat', type=int, default=10)
 
@@ -41,8 +42,9 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--kernel', type=str, default='lpw')
-    parser.add_argument('--target', type=str, default='actual', help='actual or predicted.')
-    parser.add_argument('--lmbd', type=float, default=0.003, help='l2 regularizer coefficient.')
+    parser.add_argument('--target', type=str, default='actual')
+    parser.add_argument('--lmbd', type=float, default=0.003)
+    parser.add_argument('--global_op', type=str, default='self')
 
     args = parser.parse_args()
 

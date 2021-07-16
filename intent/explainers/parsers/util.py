@@ -156,19 +156,27 @@ class SquaredLoss(object):
             compatible with multiclass models.
     """
 
-    def __call__(self, y, y_pred, raw=True):
+    def __call__(self, y, y_pred, raw=True, batch=False):
         """
         Input
             y: 1d or 2d array (with 1 column) of regression targets.
             y_raw: 1d or 2d array (with 1 column) of predicted values.
             raw: UNUSED, for compatibility with other loss functions.
+            batch: bool, If True, return avg. over individual losses.
 
         Return
-            1d array of losses of shape=(y.shape[0],).
+            1d array of losses of shape=(y.shape[0],), unless batch=True,
+                then return a single float.
         """
         y, y_pred = self._check_y(y, y_pred)
         losses = 0.5 * (y - y_pred) ** 2
-        return losses.flatten()
+
+        result = losses.flatten()  # shape=(y.shape[0],)
+
+        if batch:
+            result = np.mean(result)
+
+        return result
 
     def gradient(self, y, y_raw):
         """
@@ -239,17 +247,21 @@ class LogisticLoss(object):
             compatible with multiclass models.
     """
 
-    def __call__(self, y, y_pred, eps=1e-5, raw=True):
+    def __call__(self, y, y_pred, eps=1e-5, raw=True, batch=False):
         """
         Compute logistic loss for each example.
 
         Input
             y: 1d or 2d array (with 1 column) of 0 and 1 labels.
             y_pred: 1d or 2d array (with 1 column) of logits or predicted probabilities.
-            raw: If True, then normalize logits.
+            raw: bool, If True, then normalize logits.
+            batch: bool, If True, then return avg. of individual losses.
 
-        Return 1d array of log losses.
+        Return
+            - 1d array of log losses of shape=(y.shape[0]), unless batch=True,
+                then return a single float.
         """
+
         y, y_pred = self._check_y(y, y_pred)
 
         if raw:  # squash value between 0 and 1
@@ -258,7 +270,12 @@ class LogisticLoss(object):
         y_pred = np.clip(y_pred, eps, 1 - eps)  # prevent log(0)
         losses = -(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred))
 
-        return losses.flatten()
+        result = losses.flatten()  # shape=(y.shape[0],)
+
+        if batch:
+            result = np.mean(result)
+
+        return result
 
     def gradient(self, y, y_raw):
         """
@@ -335,16 +352,19 @@ class SoftmaxLoss(object):
         self.factor = factor
         self.n_class = n_class
 
-    def __call__(self, y, y_pred, eps=1e-5, raw=True):
+    def __call__(self, y, y_pred, eps=1e-5, raw=True, batch=False):
         """
         Input
             y: 1d or 2d array of one-hot-encoded labels; shape=(no. examples, no. classes).
             y_pred: 2d array of predicted values; shape=(no. examples, no. classes).
-            raw: If True, then normalize logits.
+            raw: bool, If True, then normalize logits.
+            batch: bool, If True, then return avg. of individual losses.
 
-        Return 1d array of losses of shape=(y_pred.shape[0],).
+        Return
+            - 1d array of losses of shape=(y.shape[0],), unless batch=True,
+                then return a single float.
         """
-        y = self._check_y(y)
+        y = self._check_y(y, y_pred)
 
         # normalize logits
         if raw:
@@ -355,7 +375,13 @@ class SoftmaxLoss(object):
             y_pred = np.log(y_pred)
 
         losses = -np.sum(y * y_pred, axis=1)  # sum over classes
-        return losses.flatten()
+
+        result = losses.flatten()  # shape=(y.shape[0],)
+
+        if batch:
+            result = np.mean(result)
+
+        return result
 
     def gradient(self, y, y_raw):
         """
@@ -394,10 +420,12 @@ class SoftmaxLoss(object):
         return y_hat * (1 - y_hat) * (1 - 2 * y_hat) * self.factor
 
     # private
-    def _check_y(self, y):
+    def _check_y(self, y, y_pred):
         """
         Converts 1d array of multiclass labels to a 2d array of one-hot encoded labels.
         """
+        assert y_pred.ndim == 2 and y_pred.shape[1] == self.n_class
+
         if y.ndim == 2:
 
             if y.shape[1] == 1:

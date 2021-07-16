@@ -112,7 +112,7 @@ def get_data(data_dir, dataset):
 
     # get objective for the given dataset
     d = {}
-    d['regression'] = ['synth_regression']
+    d['regression'] = ['synth_regression', 'casp', 'obesity']
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine']
     d['multiclass'] = ['synth_multiclass']
 

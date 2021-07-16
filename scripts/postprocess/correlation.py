@@ -54,8 +54,8 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
     else:  # compute correlation over all test examples
         assert args.inf_obj == 'local'
 
-        inf1 = inf1[:, 0].flatten()
-        inf2 = inf2[:, 0].flatten()
+        inf1 = inf1.mean(axis=1)
+        inf2 = inf2.mean(axis=1)
 
         pearson = pearsonr(inf1, inf2)[0]
         spearman = spearmanr(inf1, inf2)[0]

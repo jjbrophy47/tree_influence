@@ -148,10 +148,12 @@ def experiment(args, logger, out_dir):
 
         if objective == 'regression':
             skf = args.cv
+            scoring = 'neg_mean_squared_error'
         else:
             skf = StratifiedKFold(n_splits=args.cv, shuffle=True, random_state=args.random_state)
+            scoring = 'accuracy'
 
-        gs = GridSearchCV(model, param_grid, scoring=args.scoring, cv=skf, verbose=args.verbose)
+        gs = GridSearchCV(model, param_grid, scoring=scoring, cv=skf, verbose=args.verbose)
         gs = gs.fit(X_train_sub, y_train_sub)
 
         cols = ['mean_fit_time', 'mean_test_score', 'rank_test_score']
@@ -239,7 +241,6 @@ if __name__ == '__main__':
     # Tuning settings
     parser.add_argument('--no_tune', action='store_true', default=False)
     parser.add_argument('--cv', type=int, default=5)
-    parser.add_argument('--scoring', type=str, default='accuracy')
     parser.add_argument('--tune_frac', type=float, default=1.0)
 
     # Tree hyperparameters

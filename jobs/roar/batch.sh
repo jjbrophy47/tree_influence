@@ -15,7 +15,8 @@
 # ./jobs/roar/primer.sh 'surgical' 'lgb' 50 7 'trex'           3  60 'short'
 # ./jobs/roar/primer.sh 'surgical' 'lgb' 50 7 'leaf_influence' 3  60 'short'
 # ./jobs/roar/primer.sh 'surgical' 'lgb' 50 7 'loo'            3  60 'short'
-# ./jobs/roar/primer.sh 'surgical' 'lgb' 50 7 'dshap'          3  60 'short'
+./jobs/roar/primer.sh 'surgical' 'lgb' 50 7 'dshap'         0.5  3  60 'short'
+./jobs/roar/primer.sh 'surgical' 'lgb' 50 7 'dshap'         0.75 3  60 'short'
 
 # ./jobs/roar/primer.sh 'vaccine' 'lgb' 200 3 'random'         3  60 'short'
 # ./jobs/roar/primer.sh 'vaccine' 'lgb' 200 3 'boostin'        3  60 'short'
@@ -35,8 +36,8 @@
 # ./jobs/roar/primer.sh 'synth_regression' 'lgb' 10 2 'leaf_influence' 3  60 'short'
 # ./jobs/roar/primer.sh 'synth_regression' 'lgb' 10 2 'loo'            3  60 'short'
 
-./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'random'         3  120 'short'
-./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'boostin'        3  120 'short'
-./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'trex'           3  120 'short'
+# ./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'random'         3  120 'short'
+# ./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'boostin'        3  120 'short'
+# ./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'trex'           3  120 'short'
 # ./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'leaf_influence' 3  120 'short'
-./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'loo'            3  120 'short'
+# ./jobs/roar/primer.sh 'synth_multiclass' 'lgb' 200 7 'loo'            3  120 'short'
