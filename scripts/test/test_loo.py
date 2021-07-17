@@ -11,7 +11,7 @@ from intent.explainers import LOO
 def main(args):
 
     # explainer arguments
-    kwargs = {'n_jobs': args.n_jobs}
+    kwargs = {'global_op': args.global_op, 'n_jobs': args.n_jobs}
 
     # tests
     test_util.test_global_influence_regression(args, LOO, 'LOO', kwargs)
@@ -40,6 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('--rs', type=int, default=1)
 
     # explainer settings
+    parser.add_argument('--global_op', type=str, default='self')
     parser.add_argument('--n_jobs', type=int, default=1)
 
     args = parser.parse_args()

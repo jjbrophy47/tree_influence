@@ -28,13 +28,18 @@ class LOO(Explainer):
         - Supports both GBDTs and RFs.
         - Supports parallelization.
     """
-    def __init__(self, n_jobs=1, logger=None):
+    def __init__(self, global_op='self', n_jobs=1, logger=None):
         """
         Input
+            global_op: str, Type of global influence to provide.
+                'alpha': Use the learned train weights as the global importance measure.
+                'global': Compute effect of each train example on the test set loss.
+                'self': Compute effect of each train example on itself.
             n_jobs: int, No. processes to run in parallel.
                 -1 means use the no. of available CPU cores.
             logger: object, If not None, output to logger.
         """
+        self.global_op = global_op
         self.n_jobs = n_jobs
         self.logger = logger
 
@@ -105,25 +110,37 @@ class LOO(Explainer):
 
         return self
 
-    def get_global_influence(self):
+    def get_global_influence(self, X=None, y=None):
         """
-        - Compute influence of each training example on itself.
-        - Provides a global perspective of which training intances
-          are most important.
+        - Provides a global importance to all training examples.
 
         Return
             - 1d array of shape=(no. train,).
-            - Arrays are returned in the same order as the traing data.
+                * Arrays are returned in the same order as the traing data.
         """
-        X, y = self.X_train_, self.y_train_
+        influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)  # shape=(no. train,)
 
-        influence = np.zeros((X.shape[0]), dtype=np.float32)  # shape=(X.shape[0],)
+        # compute influence of each train example on the test set loss
+        if self.global_op == 'global':
+            assert X is not None and y is not None
+            X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        original_losses = self._get_losses(self.original_model_, X, y)  # shape=(X.shape[0],)
+            original_loss = self._get_losses(self.original_model_, X, y, batch=True)  # single float
 
-        for remove_idx in range(self.models_.shape[0]):
-            losses = self._get_losses(self.models_[remove_idx], X[[remove_idx]], y[[remove_idx]])  # shape=(1,)
-            influence[remove_idx] = losses[0] - original_losses[remove_idx]  # shape=(X.shape[0],)
+            for train_idx in range(self.models_.shape[0]):
+                loss = self._get_losses(self.models_[train_idx], X, y, batch=True)  # single float
+                influence[train_idx] = loss - original_loss  # single float
+
+        # compute influence of each train example on itself
+        else:
+            assert self.global_op == 'self'
+            X, y = self.X_train_, self.y_train_
+
+            original_losses = self._get_losses(self.original_model_, X, y)  # shape=(X.shape[0],)
+
+            for train_idx in range(self.models_.shape[0]):
+                losses = self._get_losses(self.models_[train_idx], X[[train_idx]], y[[train_idx]])  # shape=(1,)
+                influence[train_idx] = losses[0] - original_losses[train_idx]  # shape=(X.shape[0],)
 
         return influence
 
@@ -151,9 +168,11 @@ class LOO(Explainer):
 
         return influence
 
-    def _get_losses(self, model, X, y):
+    def _get_losses(self, model, X, y, batch=False):
         """
-        Returns 1d array of individual losses of shape=(X.shape[0],).
+        Return
+            - 1d array of individual losses of shape=(X.shape[0],),
+                unless batch=True, then return a single float.
         """
         if self.model_.objective == 'regression':
             y_pred = model.predict(X)  # shape=(X.shape[0])
@@ -165,8 +184,9 @@ class LOO(Explainer):
             assert self.model_.objective == 'multiclass'
             y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
 
-        losses = self.loss_fn_(y, y_pred, raw=False)
-        return losses
+        result = self.loss_fn_(y, y_pred, raw=False, batch=batch)
+
+        return result
 
 
 def _fit_LOO_model(model, X, y, train_idx):

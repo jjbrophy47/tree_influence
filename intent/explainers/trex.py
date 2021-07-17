@@ -130,13 +130,10 @@ class Trex(Explainer):
 
     def get_global_influence(self, X=None, y=None):
         """
-        - Compute change in loss of each training instance on itself.
         - Provides a global importance to all training examples.
 
         Return
             - 1d array of shape=(no. train,).
-                * If global_op='alpha', then return weight magnitude, summed over classes.
-                    Otherwise, return the influence of each train example on itself.
                 * Arrays are returned in the same order as the traing data.
         """
         if self.global_op == 'alpha':
