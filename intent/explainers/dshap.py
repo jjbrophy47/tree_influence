@@ -39,16 +39,21 @@ class DShap(Explainer):
             for early truncation.
             * However, we can use a hard truncation limit via `trunc_frac`.
     """
-    def __init__(self, trunc_frac=0.25, n_jobs=1, check_every=100, random_state=1, logger=None):
+    def __init__(self, trunc_frac=0.25, global_op='self', n_jobs=1,
+                 check_every=100, random_state=1, logger=None):
         """
         Input
             trunc_frac: float, fraction of instances to compute marginals for per iter.
+            global_op: str, Type of global influence to provide.
+                'global': Compute effect of each train example on the test set loss.
+                'self': Compute effect of each train example on itself.
             n_jobs: int, no. iterations / processes to run in parallel.
             check_every: int, no. iterations to run between checking convergence.
             random_state: int, random seed to enhance reproducibility.
             logger: object, If not None, output to logger.
         """
         self.trunc_frac = trunc_frac
+        self.global_op = global_op
         self.n_jobs = n_jobs
         self.check_every = check_every
         self.random_state = random_state
@@ -79,25 +84,33 @@ class DShap(Explainer):
 
         return self
 
-    def get_global_influence(self):
+    def get_global_influence(self, X=None, y=None):
         """
-        - Compute influence of each training example on itself.
-        - Provides a global perspective of which training intances
-          are most important.
+        - Provides a global importance to all training examples.
+
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
 
         Return
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
         """
-        return self._run_tmc_shapley()
+        if self.global_op == 'global':
+            assert X is not None and y is not None
+            batch = True
+        else:
+            assert self.global_op == 'self'
+            batch = False
+        return self._run_tmc_shapley(X_test=X, y_test=y, batch=batch)
 
     def get_local_influence(self, X, y):
         """
         - Compute influence of each training instance on the test loss.
 
         Input
-            - X: 2d array of test examples.
-            - y: 1d array of test targets.
+            X: 2d array of test examples.
+            y: 1d array of test targets.
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).
@@ -109,7 +122,7 @@ class DShap(Explainer):
         return influence
 
     # private
-    def _run_tmc_shapley(self, X_test=None, y_test=None, stability_tol=0.1, n_run=100):
+    def _run_tmc_shapley(self, X_test=None, y_test=None, batch=False, stability_tol=0.1, n_run=100):
         """
         - Run the TMC-Shapley algorithm until marginal contributions converge.
 
@@ -153,7 +166,7 @@ class DShap(Explainer):
                 results = parallel(joblib.delayed(_run_iteration)
                                                  (original_model, X_train, y_train, loss_fn, random_loss,
                                                   truncation_frac, objective, n_class, random_state,
-                                                  iteration, i, X_test, y_test) for i in range(check_every))
+                                                  iteration, i, X_test, y_test, batch) for i in range(check_every))
                 iteration += check_every
 
                 # synchronization barrier
@@ -165,11 +178,16 @@ class DShap(Explainer):
                 # diff. between last `n_run` runs and last run, divide by last run, average over all points
                 errors = np.mean(np.abs(all_vals[-n_run:] - all_vals[-1:]) / (np.abs(all_vals[-1:]) + 1e-12), axis=-1)
 
+                # TEMP
+                cum_time = time.time() - start
+                print(f'[INFO] Iter. {iteration:,}, stability: {np.max(errors):.3f}, '
+                      f'cum. time: {cum_time:.3f}s')
+
                 if self.logger:
                     cum_time = time.time() - start
                     self.logger.info(f'[INFO] Iter. {iteration:,}, stability: {np.max(errors):.3f}, '
                                      f'cum. time: {cum_time:.3f}s')
-                
+
                 # check convergence
                 if np.max(errors) < stability_tol:
                     break
@@ -201,7 +219,7 @@ class DShap(Explainer):
 
 def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
                    truncation_frac, objective, n_class, finished_iterations,
-                   cur_iter, random_state, X_test=None, y_test=None):
+                   cur_iter, random_state, X_test=None, y_test=None, batch=False):
     """
     - Run one iteration of the TMC-Shapley algorithm.
 
@@ -247,8 +265,22 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
         # train and score
         model = clone(original_model).fit(X_batch, y_batch)
 
+        # local influence
+        if X_test is not None and not batch:
+            loss = _get_loss(loss_fn, model, objective, X=X_test, y=y_test)[0]
+            marginals[train_idx] = old_loss - loss  # loss(x_t) w/o x_i - loss(x_t) w/ x_i
+            old_loss = loss
+
         # global influence
-        if X_test is None:
+        if X_test is not None and batch:
+            loss = _get_loss(loss_fn, model, objective, X=X_test, y=y_test, batch=batch)
+            marginals[train_idx] = old_loss - loss  # loss(X_test) w/o x_i - loss(X_test) w/ x_i
+            old_loss = loss
+
+        # self influence
+        else:
+            assert not batch
+
             X_temp = X_train[[train_idx]]
             y_temp = y_train[[train_idx]]
 
@@ -258,21 +290,15 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
             else:
                 old_loss = _get_loss(loss_fn, old_model, objective, X=X_temp, y=y_temp)
 
-            loss = _get_loss(loss_fn, model, objective, X=X_temp, y=y_temp)
+            loss = _get_loss(loss_fn, model, objective, X=X_temp, y=y_temp)[0]
             marginals[train_idx] = old_loss - loss  # loss(x_i) w/o x_i - loss(x_i) w/ x_i
 
             old_model = model
 
-        # local influence
-        else:
-            loss = _get_loss(loss_fn, model, objective, X=X_test, y=y_test)
-            marginals[train_idx] = old_loss - loss  # loss(x_t) w/o x_i - loss(x_t) w/ x_i
-            old_loss = loss
-
     return marginals
 
 
-def _get_loss(loss_fn, model, objective, X, y):
+def _get_loss(loss_fn, model, objective, X, y, batch=False):
     """
     Return
         - 1d array of individual losses of shape=(X.shape[0],).
@@ -280,8 +306,6 @@ def _get_loss(loss_fn, model, objective, X, y):
     Note
         - Parallelizable method.
     """
-    assert X.shape[0] == y.shape[0] == 1
-
     if objective == 'regression':
         y_pred = model.predict(X)  # shape=(X.shape[0])
 
@@ -292,7 +316,6 @@ def _get_loss(loss_fn, model, objective, X, y):
         assert objective == 'multiclass'
         y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
 
-    losses = loss_fn(y, y_pred, raw=False)  # shape(X.shape[0],)
-    loss = losses[0]
+    result = loss_fn(y, y_pred, raw=False, batch=batch)  # shape=(X.shape[0],) or single float
 
-    return loss
+    return result

@@ -11,8 +11,8 @@ from intent.explainers import DShap
 def main(args):
 
     # explainer arguments
-    kwargs = {'trunc_frac': args.trunc_frac, 'n_jobs': args.n_jobs,
-              'check_every': args.check_every}
+    kwargs = {'trunc_frac': args.trunc_frac, 'global_op': args.global_op,
+              'n_jobs': args.n_jobs, 'check_every': args.check_every}
 
     # tests
     test_util.test_global_influence_regression(args, DShap, 'dshap', kwargs)
@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--trunc_frac', type=float, default=0.25)
+    parser.add_argument('--global_op', type=str, default='self')
     parser.add_argument('--check_every', type=int, default=100)
     parser.add_argument('--n_jobs', type=int, default=1)
 

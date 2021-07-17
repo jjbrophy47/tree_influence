@@ -71,15 +71,25 @@ class LeafInfluence(Explainer):
 
         return self
 
-    def get_global_influence(self):
+    def get_global_influence(self, X=None, y=None):
         """
-        Return 1d array of global influence values of shape=(no. train,).
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
+
+        Return
+            - 1d array of global influence values of shape=(no. train,).
         """
         return self.explainer_.get_global_influence()
 
     def get_local_influence(self, X, y):
         """
-        Return 2d array of local influence values of shape=(no. train, X.shape[0]).
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
+
+        Return
+            - 2d array of local influence values of shape=(no. train, X.shape[0]).
         """
         return self.explainer_.get_local_influence(X, y)
 

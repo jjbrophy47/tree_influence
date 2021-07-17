@@ -132,6 +132,10 @@ class Trex(Explainer):
         """
         - Provides a global importance to all training examples.
 
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
+
         Return
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
@@ -191,6 +195,10 @@ class Trex(Explainer):
     def get_local_influence(self, X, y):
         """
         - Compute influence of each train examples on each test example loss.
+
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).

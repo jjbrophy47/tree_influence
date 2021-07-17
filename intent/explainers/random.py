@@ -40,8 +40,12 @@ class Random(Explainer):
         self.rng_ = np.random.default_rng(self.random_state)
         return self
 
-    def get_global_influence(self):
+    def get_global_influence(self, X=None, y=None):
         """
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
+
         Return
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
@@ -51,6 +55,10 @@ class Random(Explainer):
 
     def get_local_influence(self, X, y):
         """
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
+
         Return
             - 2d array of shape=(no. train, X.shape[0]).
                 * Array is returned in the same order as the training data.

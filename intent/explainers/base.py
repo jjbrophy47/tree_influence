@@ -28,18 +28,14 @@ class Explainer(object):
     @abstractmethod
     def get_global_influence(self, X=None, y=None):
         """
-        - Compute influence of each training example overall.
-        - Provides a global perspective of which training intances
-          are most important.
+        - Provides a global importance to all training examples.
 
         Input
             X: 2d array of test examples.
             y: 1d array of test targets.
 
         Return
-            - Regression and binary: 1d array of shape=(no. train,).
-            - Multiclass: 2d array of shape=(no. train, no. classes).
-            - Arrays are returned in the same order as the traing data.
+            - 1d array of shape=(no. train,).
 
         Note
             - If X and y are not None, then some explainers may provide
@@ -53,8 +49,8 @@ class Explainer(object):
         - Compute influence of each training instance on the test loss.
 
         Input
-            - X: 2d array of test examples.
-            - y: 1d array of test targets.
+            X: 2d array of test examples.
+            y: 1d array of test targets.
                 * Could be the actual label or the predicted label depending on the explainer.
 
         Return

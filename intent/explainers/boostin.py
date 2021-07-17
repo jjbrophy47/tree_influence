@@ -69,13 +69,13 @@ class BoostIn(Explainer):
 
         return self
 
-    def get_global_influence(self):
+    def get_global_influence(self, X=None, y=None):
         """
-        - Compute influence of each training instance on itself.
-            Sum of gradients across all boosting iterations.
+        - Provides a global importance to all training examples.
 
-        - Provides a global perspective of which training intances
-          are most important.
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
 
         Return
             - 1d array of shape=(no. train,).
@@ -90,12 +90,17 @@ class BoostIn(Explainer):
         """
         - Computes effect of each train example on the loss of the test example.
 
-        - If `use_leaf` is True, then attribute train attribution to the test loss
-            ONLY if the train example is in the same leaf(s) as the test example.
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).
                 * Array is returned in the same order as the training data.
+
+        Note
+            - If `use_leaf` is True, then attribute train attribution to the test loss
+                ONLY if the train example is in the same leaf(s) as the test example.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 

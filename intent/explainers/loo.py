@@ -32,7 +32,6 @@ class LOO(Explainer):
         """
         Input
             global_op: str, Type of global influence to provide.
-                'alpha': Use the learned train weights as the global importance measure.
                 'global': Compute effect of each train example on the test set loss.
                 'self': Compute effect of each train example on itself.
             n_jobs: int, No. processes to run in parallel.
@@ -114,6 +113,10 @@ class LOO(Explainer):
         """
         - Provides a global importance to all training examples.
 
+        Input
+            X: 2d array of test data.
+            y: 2d array of test targets.
+
         Return
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
@@ -149,12 +152,12 @@ class LOO(Explainer):
         - Compute influence of each training instance on test prediction(s) or loss(es).
 
         Input
-            - X: 2d array of test examples.
-            - y: 1d array of test targets
+            X: 2d array of test examples.
+            y: 1d array of test targets
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).
-            - Arrays are returned in the same order as the training data.
+                * Arrays are returned in the same order as the training data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
@@ -184,7 +187,7 @@ class LOO(Explainer):
             assert self.model_.objective == 'multiclass'
             y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
 
-        result = self.loss_fn_(y, y_pred, raw=False, batch=batch)
+        result = self.loss_fn_(y, y_pred, raw=False, batch=batch)  # shape(X.shape[0],) or single float
 
         return result
 
