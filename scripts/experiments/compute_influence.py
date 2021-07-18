@@ -167,19 +167,19 @@ if __name__ == '__main__':
     parser.add_argument('--target', type=str, default='actual')  # Trex
     parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
     parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-    parser.add_argument('--use_alpha', type=int, default=0)  # Trex
 
     parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
     parser.add_argument('--check_every', type=int, default=100)  # DShap
 
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
+    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
 
-    parser.add_argument('--n_test', type=int, default=20)  # local
-    parser.add_argument('--test_select', type=str, default='random', help='random, correct, incorrect')  # local
+    parser.add_argument('--n_test', type=int, default=50)  # local
+    parser.add_argument('--test_select', type=str, default='random')  # local
 
     args = parser.parse_args()
     main(args)

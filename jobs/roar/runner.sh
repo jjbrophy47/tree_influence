@@ -12,6 +12,7 @@ max_depth=$4
 method=$5
 inf_obj=$6
 trunc_frac=$7
+global_op=$8
 
 python3 scripts/experiments/roar.py \
   --dataset $dataset \
@@ -21,3 +22,4 @@ python3 scripts/experiments/roar.py \
   --method $method \
   --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
+  --global_op $global_op \

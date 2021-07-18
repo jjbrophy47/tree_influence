@@ -309,14 +309,16 @@ def explainer_params_to_dict(explainer, exp_params):
         params['target'] = exp_params['target']
         params['lmbd'] = exp_params['lmbd']
         params['n_epoch'] = exp_params['n_epoch']
-        params['use_alpha'] = exp_params['use_alpha']
+        params['global_op'] = exp_params['global_op']
         params['random_state'] = exp_params['random_state']
 
     elif explainer == 'loo':
+        params['global_op'] = exp_params['global_op']
         params['n_jobs'] = exp_params['n_jobs']
 
     elif explainer == 'dshap':
         params['trunc_frac'] = exp_params['trunc_frac']
+        params['global_op'] = exp_params['global_op']
         params['n_jobs'] = exp_params['n_jobs']
         params['check_every'] = exp_params['check_every']
         params['random_state'] = exp_params['random_state']

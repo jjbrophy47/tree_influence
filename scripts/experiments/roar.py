@@ -200,6 +200,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
+    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')

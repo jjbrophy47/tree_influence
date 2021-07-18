@@ -192,10 +192,6 @@ class DShap(Explainer):
                     v = (np.cumsum(marginals[:, :, i], axis=0)[-check_every:] / divisor)  # (check_every, no. train)
                     errors[i] = np.max(np.mean(np.abs(v - v[-1:]) / (np.abs(v[-1:]) + 1e-12), axis=1))
 
-                # TEMP
-                cum_time = time.time() - start
-                print(f'[INFO] Iter. {iteration:,}, stability: {errors}, cum. time: {cum_time:.3f}s')
-
                 if self.logger:
                     cum_time = time.time() - start
                     self.logger.info(f'[INFO] Iter. {iteration:,}, stability: {errors}, cum. time: {cum_time:.3f}s')
@@ -206,8 +202,6 @@ class DShap(Explainer):
                 # marginals have converged
                 if np.all(errors < stability_tol):
                     break
-
-        print('converged', marginals.shape)
 
         # compute average marginals
         influence = marginals[-1] / iteration  # shape=(no. train, 1 or X.shape[0])
