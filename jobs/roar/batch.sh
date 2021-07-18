@@ -51,8 +51,8 @@ io2=2
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m5 $tf $go1 $io2 3 60 $p1  # loo
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m5 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m1 $tf $go1 $io2 3 60 $p1  # dshap
-./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m1 $tf $go1 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m6 $tf $go1 $io2 3 60 $p1  # dshap
+./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m6 $tf $go1 $io0 3 60 $p1
 
 ./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m1 $tf $go1 $io2 3 60 $p1  # random
 ./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m2 $tf $go1 $io2 3 60 $p1  # boostin
@@ -62,8 +62,8 @@ io2=2
 ./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
 ./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m5 $tf $go1 $io2 3 60 $p1  # loo
 ./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m5 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m1 $tf $go1 $io2 3 60 $p1  # dshap
-./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m1 $tf $go1 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m6 $tf $go1 $io2 3 60 $p1  # dshap
+./jobs/roar/primer.sh $sk $d2 $tt $nt2 $md2 $m6 $tf $go1 $io0 3 60 $p1
 
 ./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m1 $tf $go1 $io2 3 60 $p1  # random
 ./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m2 $tf $go1 $io2 3 60 $p1  # boostin
@@ -73,8 +73,8 @@ io2=2
 ./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
 ./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m5 $tf $go1 $io2 3 60 $p1  # loo
 ./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m5 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m1 $tf $go1 $io2 3 60 $p1  # dshap
-./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m1 $tf $go1 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m6 $tf $go1 $io2 3 60 $p1  # dshap
+./jobs/roar/primer.sh $sk $d3 $tt $nt3 $md3 $m6 $tf $go1 $io0 3 60 $p1
 
 ./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m1 $tf $go1 $io2 3 60 $p1  # random
 ./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m2 $tf $go1 $io2 3 60 $p1  # boostin
@@ -84,8 +84,8 @@ io2=2
 ./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
 ./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m5 $tf $go1 $io2 3 60 $p1  # loo
 ./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m5 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m1 $tf $go1 $io2 3 60 $p1  # dshap
-./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m1 $tf $go1 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m6 $tf $go1 $io2 3 60 $p1  # dshap
+./jobs/roar/primer.sh $sk $d4 $tt $nt4 $md4 $m6 $tf $go1 $io0 3 60 $p1
 
 ./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m1 $tf $go1 $io2 3 60 $p1  # random
 ./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m2 $tf $go1 $io2 3 60 $p1  # boostin
@@ -95,16 +95,16 @@ io2=2
 ./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
 ./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m5 $tf $go1 $io2 3 60 $p1  # loo
 ./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m5 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m1 $tf $go1 $io2 3 60 $p1  # dshap
-./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m1 $tf $go1 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m6 $tf $go1 $io2 3 60 $p1  # dshap
+./jobs/roar/primer.sh $sk $d5 $tt $nt5 $md5 $m6 $tf $go1 $io0 3 60 $p1
 
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m1 $tf $go1 $io2 3 60 $p1  # random
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m2 $tf $go1 $io2 3 60 $p1  # boostin
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go1 $io2 3 60 $p1  # trex
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go3 $io0 3 60 $p1
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m5 $tf $go1 $io2 3 60 $p1  # loo
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m5 $tf $go2 $io0 3 60 $p1
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m1 $tf $go1 $io2 3 60 $p1  # dshap
-./jobs/roar/primer.sh $d6 $tt $nt6 $md6 $m1 $tf $go1 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m1 $tf $go1 $io2 3 60 $p1  # random
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m2 $tf $go1 $io2 3 60 $p1  # boostin
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m3 $tf $go1 $io2 3 60 $p1  # trex
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m3 $tf $go2 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m3 $tf $go3 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m4 $tf $go1 $io2 3 60 $p2  # leaf_influence
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m5 $tf $go1 $io2 3 60 $p1  # loo
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m5 $tf $go2 $io0 3 60 $p1
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m6 $tf $go1 $io2 3 60 $p1  # dshap
+./jobs/roar/primer.sh $sk $d6 $tt $nt6 $md6 $m6 $tf $go1 $io0 3 60 $p1

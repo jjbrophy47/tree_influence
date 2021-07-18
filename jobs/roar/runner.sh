@@ -16,7 +16,7 @@ trunc_frac=$8
 global_op=$9
 
 python3 scripts/experiments/roar.py \
-  --skip $skip
+  --skip $skip \
   --dataset $dataset \
   --tree_type $tree_type \
   --n_estimators $n_estimators \
