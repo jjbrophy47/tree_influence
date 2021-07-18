@@ -68,7 +68,7 @@ def experiment(args, logger, params, out_dir):
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
 
     if args.inf_obj == 'global':
-        influence = explainer.get_global_influence()
+        influence = explainer.get_global_influence(X=X_test, y=y_test)
 
     else:
         assert args.inf_obj == 'local'
