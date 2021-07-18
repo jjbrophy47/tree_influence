@@ -147,11 +147,6 @@ def main(args):
                           inf_type,
                           f'{args.method}_{hash_str}')
 
-    # exit if results already exist
-    if args.skip and os.path.exists(os.path.join(in_dir, 'results.npy')):
-        print('results present, skipping...')
-        exit(0)
-
     # create output dir
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
@@ -159,6 +154,12 @@ def main(args):
                            f'rs_{args.random_state}',
                            inf_type,
                            f'{args.method}_{hash_str}')
+
+    # exit if results already exist
+    if args.skip and os.path.exists(os.path.join(out_dir, 'results.npy')):
+        fp = os.path.exists(os.path.join(out_dir, 'results.npy'))
+        print('results present, skipping {fp}...')
+        exit(0)
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
