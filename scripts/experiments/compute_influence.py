@@ -103,7 +103,7 @@ def experiment(args, logger, params, out_dir):
     result = {}
     result['influence'] = influence
     result['test_idxs'] = test_idxs if args.inf_obj != 'global' else ''
-    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB
+    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['compute_time'] = compute_time
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()

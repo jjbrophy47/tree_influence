@@ -47,14 +47,15 @@ def create_csv(args, out_dir, logger):
 
     experiment_settings = list(product(*[args.method, args.use_leaf, args.update_set,
                                          args.kernel, args.target, args.lmbd, args.n_epoch,
-                                         args.use_alpha, args.trunc_frac, args.check_every]))
+                                         args.use_alpha, args.trunc_frac, args.check_every, args.global_op]))
 
     visited = set()
     results = []
 
     for items in tqdm(experiment_settings):
 
-        method, use_leaf, update_set, kernel, target, lmbd, n_epoch, use_alpha, trunc_frac, check_every = items
+        method, use_leaf, update_set, kernel, target, lmbd, n_epoch, use_alpha,\
+            trunc_frac, check_every, global_op = items
 
         template = {'method': method,
                     'use_leaf': use_leaf,
@@ -67,7 +68,8 @@ def create_csv(args, out_dir, logger):
                     'trunc_frac': trunc_frac,
                     'check_every': check_every,
                     'random_state': args.random_state,
-                    'n_jobs': args.n_jobs}
+                    'n_jobs': args.n_jobs,
+                    'global_op': global_op}
 
         _, hash_str = util.explainer_params_to_dict(method, template)
 
@@ -90,14 +92,20 @@ def create_csv(args, out_dir, logger):
 
             result = get_result(template, exp_dir)
             if result is not None:
-                results.append((method, result))
+                results.append((method_id, result))
 
     # plot results
-    color = {'random': 'blue', 'boostin': 'orange', 'trex': 'green', 'loo': 'red',
-             'dshap': 'brown', 'leaf_influence': 'purple'}
+    color = {'random_': 'blue'}
+    color['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'orange'
+    color['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'green'
+    color['trex_64dcaa531524d834d04164d896f4ce84'] = 'green'
+    color['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'green'
 
-    line = {'random': 'blue', 'boostin': 'orange', 'trex': 'green', 'loo': 'red',
-            'dshap': 'brown', 'leaf_influence': 'purple'}
+    line = {'random_': '-'}
+    line['boostin_c4ca4238a0b923820dcc509a6f75849b'] = '-'
+    line['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = '-'
+    line['trex_64dcaa531524d834d04164d896f4ce84'] = '--'
+    line['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = ':'
 
     if args.inf_obj == 'global':
         fig, axs = plt.subplots(1, 3, figsize=(12, 4))
@@ -110,7 +118,7 @@ def create_csv(args, out_dir, logger):
                 x, y = res['remove_frac'] * 100, res[metric]
                 if args.zoom:
                     x, y = x[:20], y[:20]
-                ax.plot(x, y, label=method, color=color[method], alpha=0.75)
+                ax.plot(x, y, label=method[:10], color=color[method], linestyle=line[method], alpha=0.75)
                 ax.set_xlabel('Train data removed (%)')
                 ax.set_ylabel(f'Test {metric}')
                 ax.legend(fontsize=6)
@@ -123,7 +131,8 @@ def create_csv(args, out_dir, logger):
             y_err = sem(res['loss'], axis=0)
             if args.zoom:
                 x, y, y_err = x[:20], y[:20], y_err[:20]
-            ax.errorbar(x, y, yerr=y_err if args.std_err else None, label=method, color=color[method], alpha=0.75)
+            y_err = y_err if args.std_err else None
+            ax.errorbar(x, y, yerr=y_err, label=method[:10], color=color[method], linestyle=line[method], alpha=0.75)
             ax.set_title(f'{args.dataset}')
             ax.set_xlabel('Train data removed (%)')
             ax.set_ylabel(f'Avg. example test loss')
@@ -180,8 +189,10 @@ if __name__ == '__main__':
     parser.add_argument('--n_epoch', type=str, nargs='+', default=[3000])  # Trex
     parser.add_argument('--use_alpha', type=int, nargs='+', default=[0, 1])  # Trex
 
-    parser.add_argument('--trunc_frac', type=float, nargs='+', default=[0.25, 0.5])  # DShap
+    parser.add_argument('--trunc_frac', type=float, nargs='+', default=[0.25])  # DShap
     parser.add_argument('--check_every', type=int, nargs='+', default=[100])  # DShap
+
+    parser.add_argument('--global_op', type=str, default=['self', 'global', 'alpha'])  # TREX, LOO, and DShap
 
     # result settings
     parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'acc', 'auc'])

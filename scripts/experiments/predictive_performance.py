@@ -187,7 +187,7 @@ def experiment(args, logger, out_dir):
     result['acc'] = res['acc']
     result['tune_time'] = tune_time
     result['train_time'] = train_time
-    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB
+    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['tune_frac'] = args.tune_frac
     np.save(os.path.join(out_dir, 'results.npy'), result)
 

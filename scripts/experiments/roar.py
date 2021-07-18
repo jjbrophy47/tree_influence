@@ -120,7 +120,7 @@ def experiment(args, logger, params, in_dir, out_dir):
     roar_time = time.time() - start
     logger.info(f'ROAR time: {roar_time:.5f}s')
 
-    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB
+    result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['total_time'] = time.time() - begin
 
     # save results
@@ -146,6 +146,11 @@ def main(args):
                           f'rs_{args.random_state}',
                           inf_type,
                           f'{args.method}_{hash_str}')
+
+    # exit if results already exist
+    if args.skip and os.path.exists(os.path.join(in_dir, 'results.npy')):
+        print('results present, skipping...')
+        exit(0)
 
     # create output dir
     out_dir = os.path.join(args.out_dir,
@@ -203,6 +208,7 @@ if __name__ == '__main__':
     parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
 
     # Experiment settings
+    parser.add_argument('--skip', type=int, default=0)
     parser.add_argument('--inf_obj', type=str, default='global')
     parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--remove_frac', type=float, default=0.5)

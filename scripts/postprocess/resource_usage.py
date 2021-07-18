@@ -23,14 +23,14 @@ def get_result(in_dir, logger):
         fp = os.path.join(in_dir, name)
 
         if os.path.isdir(fp):
-            get_result(fp)
+            get_result(fp, logger)
 
         elif name == 'results.npy':
             res = np.load(fp, allow_pickle=True)[()]
             mem = res['max_rss_MB']
             time_str = datetime.timedelta(seconds=res['compute_time'])
 
-            logger.info(f'\n{fp}, Mem. (MB): {mem:.1f}, compute time: {time_str}')
+            logger.info(f'{fp:<110}: {mem:>5.1f} GB, {time_str}s')
 
 
 def main(args):
@@ -43,9 +43,10 @@ def main(args):
 
     logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
-    logger.info(datetime.datetime.now())
+    logger.info(f'\ntimestamp: {datetime.datetime.now()}')
+    logger.info('\n[NOTE] Memory is MB if results are from OSX, GB if Linux\n')
 
-    experiment(args, logger, in_dir1, in_dir2, out_dir)
+    get_result(args.in_dir, logger)
 
 
 if __name__ == '__main__':
