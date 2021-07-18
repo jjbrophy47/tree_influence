@@ -102,7 +102,10 @@ class DShap(Explainer):
         else:
             assert self.global_op == 'self'
             batch = False
-        return self._run_tmc_shapley(X_test=X, y_test=y, batch=batch)
+        
+        influence = self._run_tmc_shapley(X_test=X, y_test=y, batch=batch, inf='global')  # shape=(no. train, 1)
+
+        return influence[:, 0]  # shape=(no. train,)
 
     def get_local_influence(self, X, y):
         """
@@ -116,13 +119,10 @@ class DShap(Explainer):
             - 2d array of shape=(no. train, X.shape[0]).
                 * Arrays are returned in the same order as the training data.
         """
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]))
-        for test_idx in range(X.shape[0]):
-            influence[:, test_idx] = self._run_tmc_shapley(X_test=X[[test_idx]], y_test=y[[test_idx]])
-        return influence
+        return self._run_tmc_shapley(X_test=X, y_test=y, inf='local')
 
     # private
-    def _run_tmc_shapley(self, X_test=None, y_test=None, batch=False, stability_tol=0.1, n_run=100):
+    def _run_tmc_shapley(self, X_test=None, y_test=None, batch=False, inf='global', stability_tol=0.1):
         """
         - Run the TMC-Shapley algorithm until marginal contributions converge.
 
@@ -158,41 +158,59 @@ class DShap(Explainer):
 
         # run TMC-Shapley alg. until convergence
         with joblib.Parallel(n_jobs=n_jobs) as parallel:
-            marginals = np.zeros((0, self.X_train_.shape[0]), dtype=np.float32)  # result container
+
+            # result container
+            if inf == 'local':
+                marginals = np.zeros((0, self.X_train_.shape[0], X_test.shape[0]), dtype=np.float32)
+            
+            else:
+                assert inf == 'global'
+                marginals = np.zeros((0, self.X_train_.shape[0], 1), dtype=np.float32)  # shape=(no. train, 1)
+
             iteration = 0
 
             while True:
 
+                # shape=(check_every, no. train, 1 or no. test)
                 results = parallel(joblib.delayed(_run_iteration)
-                                                 (original_model, X_train, y_train, loss_fn, random_loss,
-                                                  truncation_frac, objective, n_class, random_state,
-                                                  iteration, i, X_test, y_test, batch) for i in range(check_every))
+                                                 (original_model, X_train, y_train, loss_fn,
+                                                  random_loss, truncation_frac, objective, n_class,
+                                                  random_state, iteration, i, X_test, y_test,
+                                                  batch, inf) for i in range(check_every))
                 iteration += check_every
 
                 # synchronization barrier
-                marginals = np.vstack([marginals, results])  # shape=(iteration, no. train)
+                marginals = np.vstack([marginals, results])  # shape=(check_every + (1), no. train, 1 or X.shape[0])
 
-                # add up all marginals using axis=0, then divide by their iteration
-                all_vals = (np.cumsum(marginals, axis=0) / np.arange(1, len(marginals) + 1).reshape(-1, 1))[-n_run:]
+                # check convergence
+                #   - add up all marginals using axis=0, then divide by their iteration
+                #   - diff. between last `check_every` runs and last run, divide by last run, average over all points
+                errors = np.zeros(marginals.shape[2], dtype=np.float32)  # shape=(X.shape[0],)
 
-                # diff. between last `n_run` runs and last run, divide by last run, average over all points
-                errors = np.mean(np.abs(all_vals[-n_run:] - all_vals[-1:]) / (np.abs(all_vals[-1:]) + 1e-12), axis=-1)
+                for i in range(marginals.shape[2]):
+                    divisor = np.arange(1, iteration + 1)[-check_every:].reshape(-1, 1)  # shape=(iteration, 1)
+                    v = (np.cumsum(marginals[:, :, i], axis=0)[-check_every:] / divisor)  # (check_every, no. train)
+                    errors[i] = np.max(np.mean(np.abs(v - v[-1:]) / (np.abs(v[-1:]) + 1e-12), axis=1))
 
                 # TEMP
                 cum_time = time.time() - start
-                print(f'[INFO] Iter. {iteration:,}, stability: {np.max(errors):.3f}, '
-                      f'cum. time: {cum_time:.3f}s')
+                print(f'[INFO] Iter. {iteration:,}, stability: {errors}, cum. time: {cum_time:.3f}s')
 
                 if self.logger:
                     cum_time = time.time() - start
-                    self.logger.info(f'[INFO] Iter. {iteration:,}, stability: {np.max(errors):.3f}, '
-                                     f'cum. time: {cum_time:.3f}s')
+                    self.logger.info(f'[INFO] Iter. {iteration:,}, stability: {errors}, cum. time: {cum_time:.3f}s')
 
-                # check convergence
-                if np.max(errors) < stability_tol:
+                # save last cum. sum of marginals without saving entire history
+                marginals = np.cumsum(marginals, axis=0)[-1:]
+
+                # marginals have converged
+                if np.all(errors < stability_tol):
                     break
 
-        influence = marginals.mean(axis=0)  # shape=(no. train,)
+        print('converged', marginals.shape)
+
+        # compute average marginals
+        influence = marginals[-1] / iteration  # shape=(no. train, 1 or X.shape[0])
 
         return influence
 
@@ -219,12 +237,13 @@ class DShap(Explainer):
 
 def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
                    truncation_frac, objective, n_class, finished_iterations,
-                   cur_iter, random_state, X_test=None, y_test=None, batch=False):
+                   cur_iter, random_state, X_test=None, y_test=None, batch=False, inf='global'):
     """
     - Run one iteration of the TMC-Shapley algorithm.
 
     Return
-        - 1d array of marginals, shape=(no. train,).
+        - 1d array of marginals, shape=(no. train, 1) if global influence,
+            otherwise shape=(no. train, X_test.shape[0]).
 
     Note
         - Parallelizable method.
@@ -236,7 +255,11 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
     train_idxs = train_idxs[:int(len(train_idxs) * truncation_frac)]  # truncate examples
 
     # result container
-    marginals = np.zeros(X_train.shape[0])  # shape=(no. train,)
+    if inf == 'local':
+        marginals = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=np.float32)
+
+    else:  # global influence
+        marginals = np.zeros((X_train.shape[0], 1), dtype=np.float32)  # shape=(no. train, 1)
 
     # empty containers
     X_batch = np.zeros((0,) + (X_train.shape[1],), dtype=np.float32)  # shape=(0, no. feature)
@@ -266,20 +289,20 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
         model = clone(original_model).fit(X_batch, y_batch)
 
         # local influence
-        if X_test is not None and not batch:
-            loss = _get_loss(loss_fn, model, objective, X=X_test, y=y_test)[0]
-            marginals[train_idx] = old_loss - loss  # loss(x_t) w/o x_i - loss(x_t) w/ x_i
+        if inf == 'local':
+            loss = _get_loss(loss_fn, model, objective, X=X_test, y=y_test)  # shape=(X_test.shape[0],)
+            marginals[train_idx, :] = old_loss - loss  # loss(x_t) w/o x_i - loss(x_t) w/ x_i
             old_loss = loss
 
         # global influence
-        if X_test is not None and batch:
+        elif inf == 'global' and X_test is not None and batch:
             loss = _get_loss(loss_fn, model, objective, X=X_test, y=y_test, batch=batch)
-            marginals[train_idx] = old_loss - loss  # loss(X_test) w/o x_i - loss(X_test) w/ x_i
+            marginals[train_idx, 0] = old_loss - loss  # loss(X_test) w/o x_i - loss(X_test) w/ x_i
             old_loss = loss
 
         # self influence
         else:
-            assert not batch
+            assert inf == 'global' and not batch
 
             X_temp = X_train[[train_idx]]
             y_temp = y_train[[train_idx]]
@@ -291,7 +314,7 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
                 old_loss = _get_loss(loss_fn, old_model, objective, X=X_temp, y=y_temp)
 
             loss = _get_loss(loss_fn, model, objective, X=X_temp, y=y_temp)[0]
-            marginals[train_idx] = old_loss - loss  # loss(x_i) w/o x_i - loss(x_i) w/ x_i
+            marginals[train_idx, 0] = old_loss - loss  # loss(x_i) w/o x_i - loss(x_i) w/ x_i
 
             old_model = model
 

@@ -105,7 +105,7 @@ def test_local_influence_regression(args, explainer_cls, explainer_str, kwargs):
     for i, test_idx in enumerate(test_ids):
 
         influence = influences[:, i]
-        s_ids = np.argsort(np.abs(influence))[::-1]
+        s_ids = np.argsort(influence)[::-1]
 
         test_pred = tree.predict(X_train[[test_idx]])[0]
         test_label = y_train[test_idx]
@@ -135,7 +135,7 @@ def test_local_influence_binary(args, explainer_cls, explainer_str, kwargs):
     for i, test_idx in enumerate(test_ids):
 
         influence = influences[:, i]
-        s_ids = np.argsort(np.abs(influence))[::-1]
+        s_ids = np.argsort(influence)[::-1]
 
         test_pred = tree.predict_proba(X_train[[test_idx]])[0]
         test_label = y_train[test_idx]
@@ -166,7 +166,7 @@ def test_local_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     for i, test_idx in enumerate(test_ids):
 
         influence = influences[:, i]
-        s_ids = np.argsort(np.abs(influence))[::-1]
+        s_ids = np.argsort(influence)[::-1]
 
         test_pred = tree.predict_proba(X_train[[test_idx]])[0]
         test_label = y_train[test_idx]
