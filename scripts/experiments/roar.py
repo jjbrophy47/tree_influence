@@ -158,7 +158,7 @@ def main(args):
     # exit if results already exist
     if args.skip and os.path.exists(os.path.join(out_dir, 'results.npy')):
         fp = os.path.exists(os.path.join(out_dir, 'results.npy'))
-        print('results present, skipping {fp}...')
+        print(f'results present, skipping {fp}...')
         exit(0)
 
     # create output directory and clear previous contents
