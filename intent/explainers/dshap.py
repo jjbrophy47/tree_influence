@@ -165,10 +165,14 @@ class DShap(Explainer):
             # result container
             if inf == 'local':
                 marginals = np.zeros((0, self.X_train_.shape[0], X_test.shape[0]), dtype=np.float32)
-            
+                result = np.zeros((self.X_train_.shape[0], X_test.shape[0]), dtype=np.float32)
+                stable = np.zeros(X_test.shape[0], dtype=np.float32)
+
             else:
                 assert inf == 'global'
                 marginals = np.zeros((0, self.X_train_.shape[0], 1), dtype=np.float32)  # shape=(no. train, 1)
+                result = np.zeros((self.X_train_.shape[0], 1), dtype=np.float32)
+                stable = np.zeros(1, dtype=np.float32)
 
             iteration = 0
 
@@ -203,13 +207,19 @@ class DShap(Explainer):
                 marginals = np.cumsum(marginals, axis=0)[-1:]
 
                 # marginals have converged
-                if np.all(errors < stability_tol):
-                    break
+                idxs = np.where(errors < stability_tol)[0]  # shape=(1 or X_test.shape[0],)
 
-        # compute average marginals
-        influence = marginals[-1] / iteration  # shape=(no. train, 1 or X.shape[0])
+                if len(idxs) > 0:
+                    stable[idxs] = 1.0
 
-        return influence
+                    # update results
+                    influence = marginals[-1] / iteration
+                    result[:, idxs] = influence[:, idxs]  # shape=(len(idxs), 1 or X_test.shape[0])
+
+                    if np.all(stable):
+                        break
+
+        return result
 
     def _get_random_loss(self):
         """
