@@ -80,8 +80,8 @@ io2=2
 ./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m3 $tf $go2 $io0 15 60    $p1
 ./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m3 $tf $go3 $io0 3  60    $p1
 ./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m4 $tf $go1 $io2 3  4320  $p2  # leaf_influence
-./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m5 $tf $go1 $io2 3  600   $p1  # loo
-./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m5 $tf $go2 $io0 3  600   $p1
+./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m5 $tf $go1 $io2 6  600   $p1  # loo
+./jobs/ci/primer.sh $d4 $tt $nt4 $md4 $m5 $tf $go2 $io0 6  600   $p1
 ./jobs/ci/primer_multi_cpu.sh $d4 $tt $nt4 $md4 $m6 $tf $go1 $io2 28 1440 $p1  # dshap
 ./jobs/ci/primer_multi_cpu.sh $d4 $tt $nt4 $md4 $m6 $tf $go2 $io0 28 1440 $p1
 
@@ -98,9 +98,9 @@ io2=2
 
 ./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m1 $tf $go1 $io2 3  60    $p1  # random
 ./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m2 $tf $go1 $io2 3  60    $p1  # boostin
-./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go1 $io2 6  60    $p1  # trex
-./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go2 $io0 25 60    $p1
-./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go3 $io0 6  60    $p1
+./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go1 $io2 6  600   $p1  # trex
+./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go2 $io0 25 600   $p1
+./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m3 $tf $go3 $io0 6  600   $p1
 ./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m4 $tf $go1 $io2 3  10080 $p2  # leaf_influence
 ./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m5 $tf $go1 $io2 6  600   $p1  # loo
 ./jobs/ci/primer.sh $d6 $tt $nt6 $md6 $m5 $tf $go2 $io0 6  600   $p1

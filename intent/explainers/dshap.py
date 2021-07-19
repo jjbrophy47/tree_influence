@@ -98,7 +98,9 @@ class DShap(Explainer):
         """
         if self.global_op == 'global':
             assert X is not None and y is not None
+            X, y = util.check_data(X, y, objective=self.model_.objective)
             batch = True
+
         else:
             assert self.global_op == 'self'
             batch = False
@@ -119,6 +121,7 @@ class DShap(Explainer):
             - 2d array of shape=(no. train, X.shape[0]).
                 * Arrays are returned in the same order as the training data.
         """
+        X, y = util.check_data(X, y, objective=self.model_.objective)
         return self._run_tmc_shapley(X_test=X, y_test=y, inf='local')
 
     # private
@@ -127,7 +130,7 @@ class DShap(Explainer):
         - Run the TMC-Shapley algorithm until marginal contributions converge.
 
         Return
-            - 1d array of average marginals, shape=(no. train,).
+            - 2d array of average marginals, shape=(no. train, 1 or X_test.shape[0]).
                 * Arrays are returned in the same order as the traing data.
         """
 

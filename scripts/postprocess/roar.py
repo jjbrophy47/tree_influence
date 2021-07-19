@@ -100,12 +100,20 @@ def create_csv(args, out_dir, logger):
     color['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'green'
     color['trex_64dcaa531524d834d04164d896f4ce84'] = 'green'
     color['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'green'
+    color['loo_590f53e8699817c6fa498cc11a4cbe63'] = 'red'
+    color['loo_9c70933aff6b2a6d08c687a6cbb6b765'] = 'red'
+    color['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'purple'
+    color['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
 
     line = {'random_': '-'}
     line['boostin_c4ca4238a0b923820dcc509a6f75849b'] = '-'
     line['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = '-'
     line['trex_64dcaa531524d834d04164d896f4ce84'] = '--'
     line['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = ':'
+    line['loo_590f53e8699817c6fa498cc11a4cbe63'] = '-'
+    line['loo_9c70933aff6b2a6d08c687a6cbb6b765'] = '--'
+    line['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = '-'
+    line['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
 
     if args.inf_obj == 'global':
         fig, axs = plt.subplots(1, 3, figsize=(12, 4))

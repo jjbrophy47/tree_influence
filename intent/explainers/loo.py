@@ -63,6 +63,7 @@ class LOO(Explainer):
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
         self.X_train_ = X.copy()
         self.y_train_ = y.copy()
+        self.objective_ = self.model_.objective
 
         # select no. processes to run in parallel
         if self.n_jobs == -1:
@@ -72,39 +73,7 @@ class LOO(Explainer):
             assert self.n_jobs >= 1
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
-        # result container
-        models = np.zeros(0, dtype=np.object)
-
-        # trackers
-        fits_completed = 0
-        fits_remaining = X.shape[0]
-
-        start = time.time()
-        if self.logger:
-            self.logger.info('\n[INFO] computing LOO values...')
-            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
-
-        # fit each model in parallel
-        with joblib.Parallel(n_jobs=n_jobs) as parallel:
-
-            # get number of fits to perform for this iteration
-            while fits_remaining > 0:
-                n = min(100, fits_remaining)
-
-                results = parallel(joblib.delayed(_fit_LOO_model)
-                                                 (model, X, y, train_idx) for train_idx in range(fits_completed,
-                                                                                                 fits_completed + n))
-                fits_completed += n
-                fits_remaining -= n
-
-                # synchronization barrier
-                models = np.concatenate([models, np.array(results, dtype=np.object)])
-
-                if self.logger:
-                    cum_time = time.time() - start
-                    self.logger.info(f'[INFO] fits: {fits_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
-
-        self.models_ = models
+        self.n_jobs_ = n_jobs
         self.original_model_ = model
 
         return self
@@ -121,38 +90,28 @@ class LOO(Explainer):
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
         """
-        influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)  # shape=(no. train,)
 
         # compute influence of each train example on the test set loss
         if self.global_op == 'global':
             assert X is not None and y is not None
             X, y = util.check_data(X, y, objective=self.model_.objective)
-
-            original_loss = self._get_losses(self.original_model_, X, y, batch=True)  # single float
-
-            for train_idx in range(self.models_.shape[0]):
-                loss = self._get_losses(self.models_[train_idx], X, y, batch=True)  # single float
-                influence[train_idx] = loss - original_loss  # single float
+            batch = True
 
         # compute influence of each train example on itself
         else:
             assert self.global_op == 'self'
-            X, y = self.X_train_, self.y_train_
+            batch = False
 
-            original_losses = self._get_losses(self.original_model_, X, y)  # shape=(X.shape[0],)
+        influence = self._run_loo(X_test=X, y_test=y, batch=batch, inf='global')  # shape=(no. train, 1)
 
-            for train_idx in range(self.models_.shape[0]):
-                losses = self._get_losses(self.models_[train_idx], X[[train_idx]], y[[train_idx]])  # shape=(1,)
-                influence[train_idx] = losses[0] - original_losses[train_idx]  # shape=(X.shape[0],)
-
-        return influence
+        return influence[:, 0]  # shape=(no. train,)
 
     def get_local_influence(self, X, y):
         """
-        - Compute influence of each training instance on test prediction(s) or loss(es).
+        - Compute influence of each training instance on each test loss.
 
         Input
-            X: 2d array of test examples.
+            X: 2d array of test data.
             y: 1d array of test targets
 
         Return
@@ -160,45 +119,129 @@ class LOO(Explainer):
                 * Arrays are returned in the same order as the training data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
+        return self._run_loo(X_test=X, y_test=y, inf='local')
 
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
+    # private
+    def _run_loo(self, X_test=None, y_test=None, batch=False, inf='global'):
+        """
+        - Retrain model for each tain example and measure change in train/test loss.
 
-        original_losses = self._get_losses(self.original_model_, X, y)  # shape=(X.shape[0],)
+        Return
+            - 2d array of average marginals, shape=(no. train, 1 or X_test.shape[0]).
+                * Arrays are returned in the same order as the traing data.
+        """
+        X_train = self.X_train_
+        y_train = self.y_train_
+        loss_fn = self.loss_fn_
+        n_jobs = self.n_jobs_
+        original_model = self.original_model_
+        objective = self.objective_
 
-        for remove_idx in range(self.models_.shape[0]):
-            losses = self._get_losses(self.models_[remove_idx], X, y)
-            influence[remove_idx, :] = losses - original_losses  # shape=(X.shape[0],)
+        start = time.time()
+        if self.logger:
+            self.logger.info('\n[INFO] computing LOO values...')
+            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
+
+        # fit each model in parallel
+        with joblib.Parallel(n_jobs=n_jobs) as parallel:
+
+            # result container
+            if inf == 'local':
+                original_loss = _get_loss(loss_fn, original_model, objective, X=X_test, y=y_test)  # (X_test.shape[0],)
+                influence = np.zeros((0, X_test.shape[0]), dtype=np.float32)
+
+            elif inf == 'global' and X_test is not None and batch:  # global expected influence
+                original_loss = _get_loss(loss_fn, original_model, objective, X=X_test, y=y_test, batch=batch)  # float
+                influence = np.zeros((0, 1), dtype=np.float32)
+
+            else:
+                assert inf == 'global' and not batch
+                original_loss = _get_loss(loss_fn, original_model, objective, X=X_train, y=y_train)  # (no. train,)
+                influence = np.zeros((0, 1), dtype=np.float32)
+
+            # trackers
+            fits_completed = 0
+            fits_remaining = X_train.shape[0]
+
+            # get number of fits to perform for this iteration
+            while fits_remaining > 0:
+                n = min(100, fits_remaining)
+
+                results = parallel(joblib.delayed(_run_iteration)
+                                                 (original_model, X_train, y_train, train_idx, X_test, y_test,
+                                                  loss_fn, objective, original_loss,
+                                                  batch, inf) for train_idx in range(fits_completed,
+                                                                                     fits_completed + n))
+
+                # synchronization barrier
+                results = np.vstack(results)  # shape=(n, 1 or X_test.shape[0])
+                influence = np.vstack([influence, results])
+
+                fits_completed += n
+                fits_remaining -= n
+
+                if self.logger:
+                    cum_time = time.time() - start
+                    self.logger.info(f'[INFO] fits: {fits_completed:,} / {X_train.shape[0]:,}'
+                                     f', cum. time: {cum_time:.3f}s')
 
         return influence
 
-    def _get_losses(self, model, X, y, batch=False):
-        """
-        Return
-            - 1d array of individual losses of shape=(X.shape[0],),
-                unless batch=True, then return a single float.
-        """
-        if self.model_.objective == 'regression':
-            y_pred = model.predict(X)  # shape=(X.shape[0])
 
-        elif self.model_.objective == 'binary':
-            y_pred = model.predict_proba(X)[:, 1]  # 1d arry of pos. probabilities
-
-        else:
-            assert self.model_.objective == 'multiclass'
-            y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
-
-        result = self.loss_fn_(y, y_pred, raw=False, batch=batch)  # shape(X.shape[0],) or single float
-
-        return result
-
-
-def _fit_LOO_model(model, X, y, train_idx):
+def _run_iteration(model, X_train, y_train, train_idx, X_test, y_test,
+                   loss_fn, objective, original_loss, batch, inf):
     """
     Fit model after leaving out the specified `train_idx` train example.
+
+    Return
+        - 1d array of shape=(X_test.shape[0],) or single float.
 
     Note
         - Parallelizable method.
     """
-    new_X = np.delete(X, train_idx, axis=0)
-    new_y = np.delete(y, train_idx)
-    return clone(model).fit(new_X, new_y)
+    new_X = np.delete(X_train, train_idx, axis=0)
+    new_y = np.delete(y_train, train_idx)
+    new_model = clone(model).fit(new_X, new_y)
+
+    if inf == 'local':
+        loss = _get_loss(loss_fn, new_model, objective, X=X_test, y=y_test)  # shape=(X_test.shape[0],)
+        influence = loss - original_loss
+
+    elif inf == 'global' and X_test is not None and batch:
+        loss = _get_loss(loss_fn, new_model, objective, X=X_test, y=y_test, batch=True)  # single float
+        influence = np.array([loss - original_loss])
+
+    else:
+        assert inf == 'global' and not batch
+
+        X_temp = X_train[[train_idx]]
+        y_temp = y_train[[train_idx]]
+
+        loss = _get_loss(loss_fn, new_model, objective, X=X_temp, y=y_temp)  # shape=(1,)
+        influence = loss - original_loss[train_idx]
+
+    return influence
+
+
+def _get_loss(loss_fn, model, objective, X, y, batch=False):
+    """
+    Return
+        - 1d array of individual losses of shape=(X.shape[0],),
+            unless batch=True, then return a single float.
+
+    Note
+        - Parallelizable method.
+    """
+    if objective == 'regression':
+        y_pred = model.predict(X)  # shape=(X.shape[0])
+
+    elif objective == 'binary':
+        y_pred = model.predict_proba(X)[:, 1]  # 1d arry of pos. probabilities
+
+    else:
+        assert objective == 'multiclass'
+        y_pred = model.predict_proba(X)  # shape=(X.shape[0], no. class)
+
+    result = loss_fn(y, y_pred, raw=False, batch=batch)  # shape(X.shape[0],) or single float
+
+    return result
