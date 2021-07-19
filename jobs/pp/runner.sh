@@ -8,6 +8,6 @@ conda activate jbrophy-20210713
 dataset=$1
 model=$2
 
-python3 scripts/experiments/predictive_performance.py \
+python3 scripts/experiments/pp.py \
   --dataset $dataset \
   --model $model \

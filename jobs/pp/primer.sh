@@ -10,6 +10,6 @@ sbatch --mem=${mem}G \
        --time=$time \
        --partition=$partition \
        --job-name=$job_name \
-       --output=jobs/logs/predictive_performance/$job_name \
-       --error=jobs/errors/predictive_performance/$job_name \
-       jobs/predictive_performance/runner.sh $dataset $model
+       --output=jobs/logs/pp/$job_name \
+       --error=jobs/errors/pp/$job_name \
+       jobs/pp/runner.sh $dataset $model
