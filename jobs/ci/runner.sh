@@ -12,7 +12,8 @@ max_depth=$4
 method=$5
 inf_obj=$6
 trunc_frac=$7
-global_op=$8
+update_set=$8
+global_op=$9
 
 python3 scripts/experiments/compute_influence.py \
   --dataset $dataset \
@@ -22,4 +23,5 @@ python3 scripts/experiments/compute_influence.py \
   --method $method \
   --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
+  --update_set $update_set \
   --global_op $global_op \
