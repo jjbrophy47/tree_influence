@@ -101,8 +101,9 @@ def create_csv(args, out_dir, logger):
     color['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'green'
     color['loo_590f53e8699817c6fa498cc11a4cbe63'] = 'red'
     color['loo_9c70933aff6b2a6d08c687a6cbb6b765'] = 'red'
-    color['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'purple'
+    color['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'magenta'
     color['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
+    color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
 
     line = {'random_': '-'}
     line['boostin_c4ca4238a0b923820dcc509a6f75849b'] = '-'
@@ -113,6 +114,7 @@ def create_csv(args, out_dir, logger):
     line['loo_9c70933aff6b2a6d08c687a6cbb6b765'] = '--'
     line['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = '-'
     line['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
+    line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
 
     label = {'random_': 'Random'}
     label['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'BoostIn'
@@ -121,8 +123,9 @@ def create_csv(args, out_dir, logger):
     label['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'TREX_alpha'
     label['loo_590f53e8699817c6fa498cc11a4cbe63'] = 'LOO'
     label['loo_9c70933aff6b2a6d08c687a6cbb6b765'] = 'LOO_exp'
-    label['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'DShap_self'
+    label['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'DShap'
     label['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafInf'
+    label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
 
     if args.inf_obj == 'global':
         fig, axs = plt.subplots(1, 3, figsize=(12, 4))
@@ -214,7 +217,7 @@ if __name__ == '__main__':
     parser.add_argument('--trunc_frac', type=float, nargs='+', default=[0.25])  # DShap
     parser.add_argument('--check_every', type=int, nargs='+', default=[100])  # DShap
 
-    parser.add_argument('--global_op', type=str, default=['self', 'global', 'alpha'])  # TREX, LOO, and DShap
+    parser.add_argument('--global_op', type=str, nargs='+', default=['self', 'global', 'alpha'])  # TREX, LOO, DShap
 
     # result settings
     parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'acc', 'auc'])

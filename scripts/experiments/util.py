@@ -113,7 +113,8 @@ def get_data(data_dir, dataset):
     # get objective for the given dataset
     d = {}
     d['regression'] = ['synth_regression', 'casp', 'obesity']
-    d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine']
+    d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
+                   'diabetes', 'flight_delays']
     d['multiclass'] = ['synth_multiclass']
 
     objective = ''
@@ -121,6 +122,9 @@ def get_data(data_dir, dataset):
         if dataset in d[k]:
             objective = k
             break
+
+    if objective == '':
+        raise ValueError(f'No objetive for dataset: {dataset}')
 
     return X_train, X_test, y_train, y_test, objective
 
