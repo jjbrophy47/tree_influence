@@ -92,7 +92,7 @@ class LOO(Explainer):
         """
 
         # compute influence of each train example on the test set loss
-        if self.global_op == 'global':
+        if self.global_op == 'expected':
             assert X is not None and y is not None
             X, y = util.check_data(X, y, objective=self.model_.objective)
             batch = True

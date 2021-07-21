@@ -96,7 +96,7 @@ class DShap(Explainer):
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
         """
-        if self.global_op == 'global':
+        if self.global_op == 'expected':
             assert X is not None and y is not None
             X, y = util.check_data(X, y, objective=self.model_.objective)
             batch = True

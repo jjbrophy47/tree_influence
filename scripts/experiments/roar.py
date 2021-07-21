@@ -194,7 +194,6 @@ if __name__ == '__main__':
     parser.add_argument('--target', type=str, default='actual')  # Trex
     parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
     parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-    parser.add_argument('--use_alpha', type=int, default=0)  # Trex
 
     parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
     parser.add_argument('--check_every', type=int, default=100)  # DShap

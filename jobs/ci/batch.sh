@@ -30,7 +30,7 @@ iol='local'
 iob='both'
 
 gos='self'  # global_op
-gog='global'  # TREX, LOO, and DShap
+gog='expected'  # TREX, LOO, and DShap
 goa='alpha'  # TREX only
 
 # surgical

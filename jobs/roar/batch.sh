@@ -32,22 +32,22 @@ iol='local'
 iob='both'
 
 gos='self'  # global_op
-gog='global'  # TREX, LOO, and DShap
+gog='expected'  # TREX, LOO, and DShap
 goa='alpha'  # TREX only
 
 # surgical
-./jobs/roar/primer.sh $ds $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
-./jobs/roar/primer.sh $ds $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
-./jobs/roar/primer.sh $ds $tt $mbi $tf $us1 $iob $gos 3 120 $ps  # boostin
-./jobs/roar/primer.sh $ds $tt $mtx $tf $us1 $iob $gos 3 120 $ps  # trex
-./jobs/roar/primer.sh $ds $tt $mtx $tf $us1 $iog $gog 3 120 $ps
-./jobs/roar/primer.sh $ds $tt $mtx $tf $us1 $iog $goa 3 120 $ps
-# ./jobs/roar/primer.sh $ds $tt $mli $tf $us1 $iob $gos 3 120 $p2  # leaf_influence
-./jobs/roar/primer.sh $ds $tt $mli $tf $us0 $iob $gos 3 120 $ps
-./jobs/roar/primer.sh $ds $tt $mlo $tf $us1 $iob $gos 3 120 $ps  # loo
-./jobs/roar/primer.sh $ds $tt $mlo $tf $us1 $iog $gog 3 120 $ps
-./jobs/roar/primer.sh $ds $tt $mds $tf $us1 $iob $gos 3 120 $ps  # dshap
-./jobs/roar/primer.sh $ds $tt $mds $tf $us1 $iog $gog 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
+./jobs/roar/primer.sh $sk $ds $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iob $gos 3 120 $ps  # boostin
+./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iob $gos 3 120 $ps  # trex
+./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iog $gog 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iog $goa 3 120 $ps
+# ./jobs/roar/primer.sh $sk $ds $tt $mli $tf $us1 $iob $gos 3 120 $p2  # leaf_influence
+./jobs/roar/primer.sh $sk $ds $tt $mli $tf $us0 $iob $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mlo $tf $us1 $iob $gos 3 120 $ps  # loo
+./jobs/roar/primer.sh $sk $ds $tt $mlo $tf $us1 $iog $gog 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iob $gos 3 120 $ps  # dshap
+./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iog $gog 3 120 $ps
 
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m1 $tf $us1 $go1 $io2 3 60 $p1  # random
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m2 $tf $us1 $go1 $io2 3 60 $p1  # boostin

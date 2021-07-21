@@ -71,7 +71,7 @@ class Trex(Explainer):
         """
         assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
         assert target in ['actual', 'predicted']
-        assert global_op in ['alpha', 'global', 'self']
+        assert global_op in ['alpha', 'expected', 'self']
         assert isinstance(lmbd, float)
         self.kernel = kernel
         self.target = target
@@ -144,7 +144,7 @@ class Trex(Explainer):
             influence = np.abs(self.alpha_).sum(axis=1)  # sum over classes
 
         # compute influence of each train example on the test set loss
-        elif self.global_op == 'global':
+        elif self.global_op == 'expected':
             assert X is not None and y is not None
             X, y = util.check_data(X, y, objective=self.model_.objective)
 

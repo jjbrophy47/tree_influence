@@ -1,14 +1,14 @@
 # C extensions
-cython
+cython==0.29.23
 
 # data processors
-numpy
-scikit-learn
-catboost
-lightgbm
-xgboost
-torch
+numpy==1.21.0
+scikit-learn==0.24.2
+catboost==0.26
+lightgbm==3.2.1
+xgboost==1.4.0
+torch==1.9.0
 
 # visualizers
-tqdm
-matplotlib
+tqdm==4.61.2
+matplotlib==3.4.2

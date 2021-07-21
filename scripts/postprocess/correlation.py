@@ -69,6 +69,7 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
 
     # compute correlation for increasing lengths of the influence values
     elif args.n_sample > 1:
+        exit('does not make sense, influence values are not sorted!')
         frac_list = np.linspace(0, 1.0, args.n_sample + 1)[1:]
 
         frac_arr = np.zeros(len(frac_list))
@@ -105,29 +106,24 @@ def main(args):
     _, hash_str1 = util.explainer_params_to_dict(args.method1, vars(args))
     _, hash_str2 = util.explainer_params_to_dict(args.method2, vars(args))
 
-    # get str for influence objective
-    inf_type = 'global'
-    if args.inf_obj == 'local':
-        inf_type = f'local_{args.test_select}'
-
     # method1 dir
     in_dir1 = os.path.join(args.in_dir,
                            args.dataset,
                            args.tree_type,
                            f'rs_{args.random_state}',
-                           inf_type,
+                           args.inf_obj,
                            f'{args.method1}_{hash_str1}')
 
     in_dir2 = os.path.join(args.in_dir,
                            args.dataset,
                            args.tree_type,
                            f'rs_{args.random_state}',
-                           inf_type,
+                           args.inf_obj,
                            f'{args.method2}_{hash_str2}')
 
     # create output dir
     out_dir = os.path.join(args.out_dir,
-                           inf_type,
+                           args.inf_obj,
                            args.dataset)
 
     # create output directory and clear previous contents
@@ -153,8 +149,6 @@ if __name__ == '__main__':
 
     # Tree-ensemble settings
     parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--n_estimators', type=int, default=100)
-    parser.add_argument('--max_depth', type=int, default=5)
 
     # Explainer settings
     parser.add_argument('--use_leaf', type=int, default=1)  # BoostIn
@@ -165,7 +159,6 @@ if __name__ == '__main__':
     parser.add_argument('--target', type=str, default='actual')  # Trex
     parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
     parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-    parser.add_argument('--use_alpha', type=int, default=0)  # Trex
 
     parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
     parser.add_argument('--check_every', type=int, default=100)  # DShap
@@ -174,11 +167,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--verbose', type=int, default=1)  # BoostIn, LeafInfluence, Trex, LOO, DShap
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
-    parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
     parser.add_argument('--frac', type=float, default=1.0)

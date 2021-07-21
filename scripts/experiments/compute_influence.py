@@ -118,10 +118,8 @@ def experiment(args, logger, params, out_dir):
     result = {}
     result['influence'] = influence
     result['test_idxs'] = test_idxs if args.inf_obj != 'global' else ''
-    result['y_train'] = y_train if args.inf_obj != 'global' else ''
-    result['y_train_pred'] = y_train if args.inf_obj != 'global' else ''
-    result['y_test'] = y_test if args.inf_obj != 'global' else ''
-    result['y_test_pred'] = y_test_pred if args.inf_obj != 'global' else ''
+    result['y_train_pred'] = y_train_pred
+    result['y_test_pred'] = y_test_pred
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['compute_time'] = compute_time
     result['total_time'] = time.time() - begin
