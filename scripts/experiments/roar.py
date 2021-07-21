@@ -24,7 +24,7 @@ def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test,
     eval_fn = util.eval_pred if args.inf_obj == 'global' else util.eval_loss
 
     # pre-removal performance
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:.2f}%')
+    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
 
     # get list of remove fractions
     remove_frac_arr = np.linspace(0, args.remove_frac, args.n_ckpt + 1)[1:]
@@ -53,7 +53,8 @@ def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test,
 
         else:
             new_tree = clone(tree).fit(new_X_train, new_y_train)
-            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'{i + 1:>5}: {remove_frac * 100:.2f}%')
+            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.2f}%'
+            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
 
             # add to results
             result['remove_frac'][i + 1] = remove_frac
@@ -79,7 +80,7 @@ def experiment(args, logger, params, in_dir, out_dir):
     logger.info(f'no. features: {X_train.shape[1]:,}\n')
 
     # train tree-ensemble
-    tree = util.get_model(args.tree_type, objective, args.n_estimators, args.max_depth, args.random_state)
+    tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
     tree.set_params(**inf_res['tree_params'])
     tree = tree.fit(X_train, y_train)
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
@@ -98,9 +99,10 @@ def experiment(args, logger, params, in_dir, out_dir):
         result.update(res)  # add ROAR results to result object
 
     else:
-        assert args.inf_obj == 'local'
+        assert 'local' in args.inf_obj
         test_idxs = inf_res['test_idxs']
 
+        # evaluate influence for each test example
         res_list = []
         for i, test_idx in enumerate(test_idxs):
             logger.info(f'\nNo. {i}, test_idx {test_idx}, target {y_test[test_idx]}:')
@@ -108,7 +110,7 @@ def experiment(args, logger, params, in_dir, out_dir):
             y_temp = y_test[[test_idx]]
 
             ranking = np.argsort(influence[:, i])
-            ranking = ranking if args.test_select == 'incorrect' else ranking[::-1]
+            ranking = ranking if args.inf_obj == 'local_incorrect' else ranking[::-1]
 
             res = remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_temp, y_temp, logger)
             res_list.append(res)
@@ -134,17 +136,12 @@ def main(args):
     # get method params and unique settings hash
     params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
-    # get str for influence objective
-    inf_type = 'global'
-    if args.inf_obj == 'local':
-        inf_type = f'local_{args.test_select}'
-
     # influence dir
     in_dir = os.path.join(args.in_dir,
                           args.dataset,
                           args.tree_type,
                           f'rs_{args.random_state}',
-                          inf_type,
+                          args.inf_obj,
                           f'{args.method}_{hash_str}')
 
     # create output dir
@@ -152,7 +149,7 @@ def main(args):
                            args.dataset,
                            args.tree_type,
                            f'rs_{args.random_state}',
-                           inf_type,
+                           args.inf_obj,
                            f'{args.method}_{hash_str}')
 
     # exit if results already exist
@@ -185,8 +182,6 @@ if __name__ == '__main__':
 
     # Tree-ensemble settings
     parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--n_estimators', type=int, default=100)
-    parser.add_argument('--max_depth', type=int, default=5)
 
     # Explainer settings
     parser.add_argument('--method', type=str, default='random')
@@ -211,7 +206,6 @@ if __name__ == '__main__':
     # Experiment settings
     parser.add_argument('--skip', type=int, default=0)
     parser.add_argument('--inf_obj', type=str, default='global')
-    parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--remove_frac', type=float, default=0.5)
     parser.add_argument('--n_ckpt', type=int, default=100)
 

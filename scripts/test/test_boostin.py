@@ -11,7 +11,7 @@ from intent.explainers import BoostIn
 def main(args):
 
     # explainer arguments
-    kwargs = {'use_leaf': args.use_leaf, 'verbose': args.verbose}
+    kwargs = {'use_leaf': args.use_leaf}
 
     # tests
     test_util.test_global_influence_regression(args, BoostIn, 'boostin', kwargs)
@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
     # tree-ensemble settings
     parser.add_argument('--n_tree', type=int, default=100)
+    parser.add_argument('--n_leaf', type=int, default=31)
     parser.add_argument('--max_depth', type=int, default=7)
     parser.add_argument('--tree_type', type=str, default='lgb')
     parser.add_argument('--model_type', type=str, default='dummy')

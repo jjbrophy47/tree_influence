@@ -28,6 +28,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import log_loss
 
 
 # public
@@ -115,7 +116,7 @@ def get_data(data_dir, dataset):
     d['regression'] = ['synth_regression', 'casp', 'obesity', 'life']
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
                    'diabetes', 'flight_delays']
-    d['multiclass'] = ['synth_multiclass']
+    d['multiclass'] = ['synth_multiclass', 'poker']
 
     objective = ''
     for k in d.keys():
@@ -179,7 +180,8 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
 
     elif tree_type == 'lgb':
         class_fn = LGBMRegressor if objective == 'regression' else LGBMClassifier
-        tree = class_fn(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
+        tree = class_fn(n_estimators=n_tree, max_depth=max_depth, num_leaves=2**max_depth,
+                        random_state=random_state)
 
     elif tree_type == 'skgbm':
         class_fn = GradientBoostingRegressor if objective == 'regression' else GradientBoostingClassifier
@@ -212,11 +214,11 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
     return tree
 
 
-def eval_pred(objective, model, X, y, logger, prefix=''):
+def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
     """
     Evaluate the predictive performance of the model on X and y.
     """
-    result = {'mse': -1, 'acc': -1, 'auc': -1}
+    result = {'mse': -1, 'acc': -1, 'auc': -1, 'loss': -1}
 
     if objective == 'regression':
         pred = model.predict(X)
@@ -227,14 +229,18 @@ def eval_pred(objective, model, X, y, logger, prefix=''):
         proba = model.predict_proba(X)[:, 1]
         result['acc'] = accuracy_score(y, pred)
         result['auc'] = roc_auc_score(y, proba)
+        result['loss'] = log_loss(y, proba)
 
     elif objective == 'multiclass':
         pred = model.predict(X)
+        proba = model.predict_proba(X)
         result['acc'] = accuracy_score(y, pred)
+        result['loss'] = log_loss(y, proba)
 
     logger.info(f"[{prefix}] mse: {result['mse']:>10.3f}, "
                 f"acc.: {result['acc']:>10.3f}, "
-                f"AUC: {result['auc']:>10.3f}")
+                f"AUC: {result['auc']:>10.3f}, "
+                f"loss: {result['loss']:>10.3f}")
 
     return result
 
@@ -334,6 +340,32 @@ def explainer_params_to_dict(explainer, exp_params):
     hash_str = dict_to_hash(params)
 
     return params, hash_str
+
+
+def get_hyperparams(tree_type, dataset):
+    """
+    Input
+        tree_type: str, Tree-ensemble type.
+        dataset: str, dataset.
+
+    Return
+        - Dict of selected hyperparameters for the inputs.
+    """
+    lgb = {}
+    lgb['surgical'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
+    lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
+    lgb['adult'] = {'n_estimators': 100, 'num_leaves': 31, 'max_depth': -1}
+    lgb['bank_marketing'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
+    lgb['diaetes'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
+    lgb['flight_delays'] = {'n_estimators': 100, 'num_leaves': 91, 'max_depth': -1}
+    lgb['casp'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
+
+    hp = {}
+    hp['lgb'] = lgb
+
+    return hp[tree_type][dataset]
 
 
 # private

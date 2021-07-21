@@ -58,7 +58,9 @@ def experiment(args, logger, params, out_dir):
     logger.info(f'no. features: {X_train.shape[1]:,}\n')
 
     # train tree-ensemble
-    tree = util.get_model(args.tree_type, objective, args.n_estimators, args.max_depth, args.random_state)
+    hp = util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
+    tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
+    tree.set_params(**hp)
     tree = tree.fit(X_train, y_train)
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
 
@@ -71,27 +73,40 @@ def experiment(args, logger, params, out_dir):
         influence = explainer.get_global_influence(X=X_test, y=y_test)
 
     else:
-        assert args.inf_obj == 'local'
 
         # randomly select test instances to compute influence values for
-        if args.test_select == 'random':
+        if args.inf_obj == 'local':
             avail_idxs = np.arange(X_test.shape[0])
             test_idxs = select_elements(avail_idxs, rng, n=args.n_test)
 
-        elif args.test_select == 'correct' and objective != 'regression':
+        elif args.inf_obj == 'local_correct' and objective != 'regression':
             y_pred = tree.predict(X_test)
             correct_idxs = np.where(y_pred == y_test)[0]
             n_test = min(args.n_test, len(correct_idxs))
             test_idxs = select_elements(correct_idxs, rng, n=n_test)
 
         else:
-            assert args.test_select == 'incorrect' and objective != 'regression'
+            assert args.inf_obj == 'local_incorrect' and objective != 'regression'
             y_pred = tree.predict(X_test)
             incorrect_idxs = np.where(y_pred != y_test)[0]
             n_test = min(args.n_test, len(incorrect_idxs))
             test_idxs = select_elements(incorrect_idxs, rng, n=n_test)
 
         influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
+
+    # store ALL train and test predictions
+    if objective == 'regression':
+        y_train_pred = tree.predict(X_train).reshape(-1, 1)
+        y_test_pred = tree.predict(X_test).reshape(-1, 1)
+
+    elif objective == 'binary':
+        y_test_pred = tree.predict_proba(X_test)[:, 1].reshape(-1, 1)
+        y_train_pred = tree.predict_proba(X_train)[:, 1].reshape(-1, 1)
+
+    else:
+        assert objective == 'multiclass'
+        y_test_pred = tree.predict_proba(X_test)
+        y_train_pred = tree.predict_proba(X_train)
 
     # display influence
     logger.info(f'\ninfluence: {influence}, shape: {influence.shape}')
@@ -103,6 +118,10 @@ def experiment(args, logger, params, out_dir):
     result = {}
     result['influence'] = influence
     result['test_idxs'] = test_idxs if args.inf_obj != 'global' else ''
+    result['y_train'] = y_train if args.inf_obj != 'global' else ''
+    result['y_train_pred'] = y_train if args.inf_obj != 'global' else ''
+    result['y_test'] = y_test if args.inf_obj != 'global' else ''
+    result['y_test_pred'] = y_test_pred if args.inf_obj != 'global' else ''
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['compute_time'] = compute_time
     result['total_time'] = time.time() - begin
@@ -117,17 +136,12 @@ def main(args):
     # get method params and unique settings hash
     params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
-    # get str for influence objective
-    inf_type = 'global'
-    if args.inf_obj == 'local':
-        inf_type = f'local_{args.test_select}'
-
     # create output dir
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
                            args.tree_type,
                            f'rs_{args.random_state}',
-                           inf_type,
+                           args.inf_obj,
                            f'{args.method}_{hash_str}')
 
     # create output directory and clear previous contents
@@ -153,8 +167,6 @@ if __name__ == '__main__':
 
     # Tree-ensemble settings
     parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--n_estimators', type=int, default=100)
-    parser.add_argument('--max_depth', type=int, default=5)
 
     # Explainer settings
     parser.add_argument('--method', type=str, default='random')
@@ -177,9 +189,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
-
     parser.add_argument('--n_test', type=int, default=50)  # local
-    parser.add_argument('--test_select', type=str, default='random')  # local
 
     args = parser.parse_args()
     main(args)

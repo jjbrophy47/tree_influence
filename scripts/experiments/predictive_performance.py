@@ -47,6 +47,10 @@ def get_model(args, objective):
                              random_state=args.random_state)
         params = {'n_estimators': [10, 25, 50, 100, 200], 'max_depth': [2, 3, 5, 7]}
 
+        if args.model == 'lgb':
+            params['max_depth'] = [-1]
+            params['num_leaves'] = [15, 31, 61, 91]
+
     elif args.model == 'dt':
         if objective == 'regression':
             clf = DecisionTreeRegressor(random_state=args.random_state)

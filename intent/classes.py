@@ -4,6 +4,7 @@ from .explainers import LeafInfluence
 from .explainers import LOO
 from .explainers import DShap
 from .explainers import Random
+from .explainers import Minority
 
 
 class TreeExplainer(object):
@@ -24,6 +25,7 @@ class TreeExplainer(object):
         - LOO
         - Appox. data Shapley
         - Random
+        - Random Minority
     """
     def __init__(self, method='boostin', params={}, logger=None):
 
@@ -44,6 +46,9 @@ class TreeExplainer(object):
 
         elif method == 'random':
             self.explainer = Random(**params, logger=logger)
+
+        elif method == 'minority':
+            self.explainer = Minority(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')

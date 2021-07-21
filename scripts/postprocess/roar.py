@@ -94,7 +94,7 @@ def create_csv(args, out_dir, logger):
                 results.append((method_id, result))
 
     # plot results
-    color = {'random_': 'blue'}
+    color = {'random_': 'blue', 'minority_': 'cyan'}
     color['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'orange'
     color['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'green'
     color['trex_64dcaa531524d834d04164d896f4ce84'] = 'green'
@@ -105,7 +105,7 @@ def create_csv(args, out_dir, logger):
     color['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
     color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
 
-    line = {'random_': '-'}
+    line = {'random_': '-', 'minority_': '-'}
     line['boostin_c4ca4238a0b923820dcc509a6f75849b'] = '-'
     line['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = '-'
     line['trex_64dcaa531524d834d04164d896f4ce84'] = '--'
@@ -116,7 +116,7 @@ def create_csv(args, out_dir, logger):
     line['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
     line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
 
-    label = {'random_': 'Random'}
+    label = {'random_': 'Random', 'minority_': 'Minority'}
     label['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'BoostIn'
     label['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'TREX'
     label['trex_64dcaa531524d834d04164d896f4ce84'] = 'TREX_exp'
@@ -128,7 +128,7 @@ def create_csv(args, out_dir, logger):
     label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
 
     if args.inf_obj == 'global':
-        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
+        fig, axs = plt.subplots(1, 4, figsize=(16, 4))
         for i, metric in enumerate(args.metric):
             ax = axs[i]
             if i == 1:
@@ -136,8 +136,10 @@ def create_csv(args, out_dir, logger):
 
             for method, res in results:
                 x, y = res['remove_frac'] * 100, res[metric]
-                if args.zoom:
-                    x, y = x[:20], y[:20]
+
+                if args.zoom > 0.0 and args.zoom < 1.0:
+                    n = int(len(x) * args.zoom)
+                    x, y = x[:n], y[:n]
 
                 ax.plot(x, y, label=label[method], color=color[method],
                         linestyle=line[method], alpha=0.75)
@@ -154,9 +156,12 @@ def create_csv(args, out_dir, logger):
         for method, res in results:
             x, y = res['remove_frac'].mean(axis=0) * 100, res['loss'].mean(axis=0)
             y_err = sem(res['loss'], axis=0)
-            if args.zoom:
-                x, y, y_err = x[:20], y[:20], y_err[:20]
             y_err = y_err if args.std_err else None
+
+            if args.zoom > 0.0 and args.zoom < 1.0:
+                n = int(len(x) * args.zoom)
+                x, y, y_err = x[:n], y[:n], y_err[:n]
+
             ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
                         linestyle=line[method], alpha=0.75)
             ax.set_title(f'{args.dataset}')
@@ -165,7 +170,7 @@ def create_csv(args, out_dir, logger):
             ax.legend(fontsize=6)
 
     plt_dir = os.path.join(args.out_dir, args.inf_obj)
-    if args.zoom:
+    if args.zoom > 0.0 and args.zoom < 1.0:
         plt_dir = os.path.join(plt_dir, 'zoom')
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')
@@ -205,7 +210,7 @@ if __name__ == '__main__':
 
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'boostin', 'trex', 'leaf_influence', 'loo', 'dshap'])
+                        default=['random', 'minority', 'boostin', 'trex', 'leaf_influence', 'loo', 'dshap'])
     parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
 
@@ -220,9 +225,9 @@ if __name__ == '__main__':
     parser.add_argument('--global_op', type=str, nargs='+', default=['self', 'global', 'alpha'])  # TREX, LOO, DShap
 
     # result settings
-    parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'acc', 'auc'])
+    parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'loss', 'acc', 'auc'])
     parser.add_argument('--std_err', type=int, default=0)
-    parser.add_argument('--zoom', type=int, default=0)
+    parser.add_argument('--zoom', type=float, default=1.0)
 
     args = parser.parse_args()
     main(args)

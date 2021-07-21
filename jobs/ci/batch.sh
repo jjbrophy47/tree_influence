@@ -1,60 +1,51 @@
 tt='lgb'
 
-d1='adult'
-d2='bank_marketing'
-d3='surgical'
-d4='vaccine'
-d5='casp'
-d6='obesity'
+da='adult'
+dbm='bank_marketing'
+dc='casp'
+dd='diabetes'
+dfd='flight_delays'
+dl='life'
+do='obesity'
+ds='surgical'
 
-nt1=200
-nt2=50
-nt3=50
-nt4=200
-nt5=200
-nt6=200
+mr='random'
+mm='minority'
+mbi='boostin'
+mtx='trex'
+mli='leaf_influence'
+mlo='loo'
+mds='dshap'
 
-md1=5
-md2=5
-md3=7
-md4=3
-md5=7
-md6=7
-
-m1='random'
-m2='boostin'
-m3='trex'
-m4='leaf_influence'
-m5='loo'
-m6='dshap'
-
-p1='short'
-p2='long'
+ps='short'
+pl='long'
 
 tf=0.25  # trunc_frac
 
 us0=0  # update set
 us1=-1
 
-go1='self'  # global_op
-go2='global'  # global_op: TREX, LOO, and DShap
-go3='alpha'  # global_op: TREX only\
+iog='global'  # inf_obj
+iol='local'
+iob='both'
 
-io0=0  # 0 - global, 1 - local, 2 - both
-io1=1
-io2=2
+gos='self'  # global_op
+gog='global'  # TREX, LOO, and DShap
+goa='alpha'  # TREX only
 
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m3 $tf $us1 $go1 $io2 3  60    $p1  # trex
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m3 $tf $us1 $go2 $io0 15 60    $p1
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m3 $tf $us1 $go3 $io0 3  60    $p1
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m4 $tf $us1 $go1 $io2 3  10080 $p2  # leaf_influence
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m4 $tf $us0 $go1 $io2 3  1440  $p1
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m5 $tf $us1 $go1 $io2 6  600   $p1  # loo
-./jobs/ci/primer.sh $d1 $tt $nt1 $md1 $m5 $tf $us1 $go2 $io0 6  600   $p1
-./jobs/ci/primer_multi_cpu.sh $d1 $tt $nt1 $md1 $m6 $tf $us1 $go1 $io1 28 1440 $p1  # dshap
-./jobs/ci/primer_multi_cpu.sh $d1 $tt $nt1 $md1 $m6 $tf $us1 $go2 $io0 28 1440 $p1
+# surgical
+./jobs/ci/primer.sh     $ds $tt $mr  $tf $us1 $iob $gos 3  60    $ps  # random
+./jobs/ci/primer.sh     $ds $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
+./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
+./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iob $gos 3  60    $ps  # trex
+./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iog $gog 6  60    $ps
+./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iog $goa 3  60    $ps
+# ./jobs/ci/primer.sh     $ds $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh     $ds $tt $mli $tf $us0 $iob $gos 3  1440  $ps
+./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
+./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iog $gog 28 600   $ps
+./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
+./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iog $gog 28 1440  $ps
 
 ./jobs/ci/primer.sh $d2 $tt $nt2 $md2 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
 ./jobs/ci/primer.sh $d2 $tt $nt2 $md2 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
@@ -116,22 +107,38 @@ io2=2
 ./jobs/ci/primer_multi_cpu.sh $d6 $tt $nt6 $md6 $m6 $tf $us1 $go1 $io1 28 1440 $p1  # dshap
 ./jobs/ci/primer_multi_cpu.sh $d6 $tt $nt6 $md6 $m6 $tf $us1 $go2 $io0 28 1440 $p1
 
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m3 $tf $us1 $go1 $io2 6  600   $p1  # trex
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m3 $tf $us1 $go2 $io0 25 600   $p1
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m3 $tf $us1 $go3 $io0 6  600   $p1
+# ./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m4 $tf $us1 $go1 $io2 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m4 $tf $us0 $go1 $io2 3  1440  $p1
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m5 $tf $us1 $go1 $io2 6  900   $p1  # loo
+./jobs/ci/primer.sh $d7 $tt $nt7 $md7 $m5 $tf $us1 $go2 $io0 6  900   $p1
+./jobs/ci/primer_multi_cpu.sh $d7 $tt $nt7 $md7 $m6 $tf $us1 $go1 $io1 28 1440 $p1  # dshap
+./jobs/ci/primer_multi_cpu.sh $d7 $tt $nt7 $md7 $m6 $tf $us1 $go2 $io0 28 1440 $p1
 
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m3 $tf $us1 $go1 $io2 6  600   $p1  # trex
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m3 $tf $us1 $go2 $io0 25 600   $p1
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m3 $tf $us1 $go3 $io0 6  600   $p1
+# ./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m4 $tf $us1 $go1 $io2 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m4 $tf $us0 $go1 $io2 3  1440  $p1
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m5 $tf $us1 $go1 $io2 6  900   $p1  # loo
+./jobs/ci/primer.sh $d8 $tt $nt8 $md8 $m5 $tf $us1 $go2 $io0 6  900   $p1
+./jobs/ci/primer_multi_cpu.sh $d8 $tt $nt8 $md8 $m6 $tf $us1 $go1 $io1 28 1440 $p1  # dshap
+./jobs/ci/primer_multi_cpu.sh $d8 $tt $nt8 $md8 $m6 $tf $us1 $go2 $io0 28 1440 $p1
 
-# ./jobs/ci/primer.sh 'synth_binary' 'lgb' 100 7 'random'         7  60  'short'
-# ./jobs/ci/primer.sh 'synth_binary' 'lgb' 100 7 'boostin'        7  60  'short'
-# ./jobs/ci/primer.sh 'synth_binary' 'lgb' 100 7 'trex'           7  60  'short'
-# ./jobs/ci/primer.sh 'synth_binary' 'lgb' 100 7 'leaf_influence' 7  300 'short'
-# ./jobs/ci/primer.sh 'synth_binary' 'lgb' 100 7 'loo'            7  300 'short'
-
-# ./jobs/ci/primer.sh 'synth_regression' 'lgb' 10 2 'random'         3  60  'short'
-# ./jobs/ci/primer.sh 'synth_regression' 'lgb' 10 2 'boostin'        3  60  'short'
-# ./jobs/ci/primer.sh 'synth_regression' 'lgb' 10 2 'trex'           3  60  'short'
-# ./jobs/ci/primer.sh 'synth_regression' 'lgb' 10 2 'leaf_influence' 7  300 'short'
-# ./jobs/ci/primer.sh 'synth_regression' 'lgb' 10 2 'loo'            7  300 'short'
-
-# ./jobs/ci/primer.sh 'synth_multiclass' 'lgb' 200 7 'random'         7  60   'short'
-# ./jobs/ci/primer.sh 'synth_multiclass' 'lgb' 200 7 'boostin'        7  60   'short'
-# ./jobs/ci/primer.sh 'synth_multiclass' 'lgb' 200 7 'trex'           7  60   'short'
-# ./jobs/ci/primer.sh 'synth_multiclass' 'lgb' 200 7 'leaf_influence' 7  1880 'short'
-# ./jobs/ci/primer.sh 'synth_multiclass' 'lgb' 200 7 'loo'            7  300  'short'
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m3 $tf $us1 $go1 $io2 6  600   $p1  # trex
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m3 $tf $us1 $go2 $io0 7  600   $p1
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m3 $tf $us1 $go3 $io0 6  600   $p1
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m4 $tf $us1 $go1 $io2 3  2880  $p2  # leaf_influence
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m4 $tf $us0 $go1 $io2 3  1440  $p1
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m5 $tf $us1 $go1 $io2 6  900   $p1  # loo
+./jobs/ci/primer.sh $d9 $tt $nt9 $md9 $m5 $tf $us1 $go2 $io0 6  900   $p1
+./jobs/ci/primer_multi_cpu.sh $d9 $tt $nt9 $md9 $m6 $tf $us1 $go1 $io1 28 1440 $p1  # dshap
+./jobs/ci/primer_multi_cpu.sh $d9 $tt $nt9 $md9 $m6 $tf $us1 $go2 $io0 28 1440 $p1

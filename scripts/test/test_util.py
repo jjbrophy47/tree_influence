@@ -142,9 +142,9 @@ def test_local_influence_binary(args, explainer_cls, explainer_str, kwargs):
 
         print(f'\nexplain y_train {test_idx}, pred: {test_pred}, target: {test_label}\n')
 
-        print('sorted indices    (head):', s_ids[:5])
-        print('y_train   (head, sorted):', y_train[s_ids][:5])
-        print('influence (head, sorted):', influence[s_ids][:5])
+        print('sorted indices    (head):', s_ids[:10])
+        print('y_train   (head, sorted):', y_train[s_ids][:10])
+        print('influence (head, sorted):', influence[s_ids][:10])
 
     status = 'passed' if influences.shape == (X_train.shape[0], test_ids.shape[0]) else 'failed'
     print(f'\n{status}')
@@ -216,7 +216,7 @@ def _get_model(args):
 
     elif args.tree_type == 'lgb':
         class_fn = LGBMRegressor if args.model_type == 'regressor' else LGBMClassifier
-        tree = class_fn(n_estimators=args.n_tree, max_depth=args.max_depth, random_state=args.rs)
+        tree = class_fn(n_estimators=args.n_tree, num_leaves=args.n_leaf, random_state=args.rs)
 
     elif args.tree_type == 'skgbm':
         class_fn = GradientBoostingRegressor if args.model_type == 'regressor' else GradientBoostingClassifier

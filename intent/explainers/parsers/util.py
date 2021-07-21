@@ -391,7 +391,7 @@ class SoftmaxLoss(object):
 
         Returns 2d array of gradients w.r.t. the prediction; shape=(no. examples, no. classes).
         """
-        y = self._check_y(y)
+        y = self._check_y(y, y_raw)
         y_hat = softmax(y_raw)
         return y_hat - y
 
@@ -403,7 +403,7 @@ class SoftmaxLoss(object):
 
         Returns 1d array of second-order gradients w.r.t. the prediction; shape=(no. examples, no. classes).
         """
-        y = self._check_y(y)
+        y = self._check_y(y, y_raw)
         y_hat = softmax(y_raw)
         return y_hat * (1 - y_hat) * self.factor
 
@@ -415,7 +415,7 @@ class SoftmaxLoss(object):
 
         Returns 2d array of third-order gradients w.r.t. the prediction; shape=(no. examples, no. classses).
         """
-        y = self._check_y(y)
+        y = self._check_y(y, y_raw)
         y_hat = softmax(y_raw)
         return y_hat * (1 - y_hat) * (1 - 2 * y_hat) * self.factor
 

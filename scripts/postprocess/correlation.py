@@ -37,8 +37,20 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
     inf1 = inf_res1['influence']
     inf2 = inf_res2['influence']
 
-    # shape=(no. train,)
-    if args.inf_obj == 'global':
+    # average influence values over all test examples
+    if args.inf_obj == 'local':
+        inf1 = inf1.mean(axis=1)
+        inf2 = inf2.mean(axis=1)
+
+    # compute correlation for the entire length of influence values
+    if args.n_sample == 1:
+
+        if args.frac > 0.0 and args.frac < 1.0:
+            n = int(len(inf1) * args.frac)
+            inf1 = inf1[:n]
+            inf2 = inf2[:n]
+
+        # shape=(no. train,)
         pearson = pearsonr(inf1, inf2)[0]
         spearman = spearmanr(inf1, inf2)[0]
         r2score = r2_score(inf1, inf2)
@@ -46,32 +58,45 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
         fig, ax = plt.subplots()
         label = f'p: {pearson:.3f}\ns: {spearman:.3f}\nr^2: {r2score:.3f}'
         ax.scatter(inf1, inf2, label=label)
+        ax.set_title(f'{args.dataset}, {args.inf_obj}')
         ax.set_xlabel(args.method1)
         ax.set_ylabel(args.method2)
         ax.legend(fontsize=6)
 
-    # shape=(no. train, no. test)
-    else:  # compute correlation over all test examples
-        assert args.inf_obj == 'local'
+        plt.tight_layout()
+        plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
+        plt.show()
 
-        inf1 = inf1.mean(axis=1)
-        inf2 = inf2.mean(axis=1)
+    # compute correlation for increasing lengths of the influence values
+    elif args.n_sample > 1:
+        frac_list = np.linspace(0, 1.0, args.n_sample + 1)[1:]
 
-        pearson = pearsonr(inf1, inf2)[0]
-        spearman = spearmanr(inf1, inf2)[0]
-        r2score = r2_score(inf1, inf2)
+        frac_arr = np.zeros(len(frac_list))
+        p_arr = np.zeros(len(frac_list))
+        s_arr = np.zeros(len(frac_list))
+        r2_arr = np.zeros(len(frac_list))
 
-        fig, ax = plt.subplots()
-        ax.scatter(inf1, inf2, label=f'p: {pearson:.3f}\ns: {spearman:.3f}\nr^2: {r2score:.3f}')
-        ax.set_xlabel(args.method1)
-        ax.set_ylabel(args.method2)
-        ax.legend(fontsize=6)
+        for i, frac in enumerate(frac_list):
+            n = int(len(inf1) * frac)
 
-    ax.set_title(f'{args.dataset}, {args.inf_obj}')
+            inf_a = inf1[:n]
+            inf_b = inf2[:n]
 
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
-    plt.show()
+            p_arr[i] = pearsonr(inf_a, inf_b)[0]
+            s_arr[i] = spearmanr(inf_a, inf_b)[0]
+            r2_arr[i] = r2_score(inf_a, inf_b)
+            frac_arr[i] = frac
+
+        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
+
+        for i, (arr, name) in enumerate([(p_arr, 'pearson'), (s_arr, 'spearman'), (r2_arr, 'r2')]):
+            ax = axs[i]
+            ax.plot(frac_arr * 100, arr)
+            ax.set_xlabel('% influence values')
+            ax.set_ylabel(name)
+
+        plt.tight_layout()
+        plt.show()
 
 
 def main(args):
@@ -156,6 +181,8 @@ if __name__ == '__main__':
     parser.add_argument('--test_select', type=str, default='random')  # local
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
+    parser.add_argument('--frac', type=float, default=1.0)
+    parser.add_argument('--n_sample', type=int, default=1)
 
     args = parser.parse_args()
     main(args)

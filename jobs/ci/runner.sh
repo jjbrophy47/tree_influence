@@ -7,19 +7,15 @@ conda activate jbrophy-20210713
 
 dataset=$1
 tree_type=$2
-n_estimators=$3
-max_depth=$4
-method=$5
-inf_obj=$6
-trunc_frac=$7
-update_set=$8
-global_op=$9
+method=$3
+inf_obj=$4
+trunc_frac=$5
+update_set=$6
+global_op=$7
 
 python3 scripts/experiments/compute_influence.py \
   --dataset $dataset \
   --tree_type $tree_type \
-  --n_estimators $n_estimators \
-  --max_depth $max_depth \
   --method $method \
   --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
