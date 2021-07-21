@@ -5,7 +5,7 @@ trunc_frac=$4
 update_set=$5
 inf_obj=$6
 global_op=$7
-mem=$8
+ncpu=$8
 time=$9
 partition=${10}
 
