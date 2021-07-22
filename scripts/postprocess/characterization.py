@@ -11,10 +11,7 @@ from datetime import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.base import clone
-from sklearn.metrics import r2_score
-from scipy.stats import pearsonr
-from scipy.stats import spearmanr
+from sklearn.metrics import log_loss
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
@@ -37,16 +34,19 @@ def experiment(args, logger, out_dir):
     if args.inf_obj == 'global':
         assert objective == 'binary'
 
-        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
         frac_arr = np.linspace(0, 0.5, args.n_sample + 1)[1:]
 
         for method, res in results:
+
             inf = res['influence']
+            pred = res['y_train_pred'].flatten()
             ranking = np.argsort(inf)[::-1]
 
             # result containers
             frac_pos_remove_arr = np.zeros(len(frac_arr), dtype=np.float32)
             frac_pos_total_arr = np.zeros(len(frac_arr), dtype=np.float32)
+            loss_arr = np.zeros(len(frac_arr), dtype=np.float32)
 
             for i, frac in enumerate(frac_arr):
                 n = int(len(inf) * frac)
@@ -54,6 +54,7 @@ def experiment(args, logger, out_dir):
                 train_idxs = ranking[:n]
                 frac_pos_remove_arr[i] = np.mean(y_train[train_idxs])
                 frac_pos_total_arr[i] = np.sum(y_train[train_idxs]) / np.sum(y_train)
+                loss_arr[i] = log_loss(y_train[train_idxs], pred[train_idxs], labels=[0, 1])
 
             # plot
             for i in range(len(axs)):
@@ -79,17 +80,27 @@ def experiment(args, logger, out_dir):
                             linestyle=line[method], label=label[method])
                     ax.set_xlabel('% train data removed')
                     ax.set_ylabel('Overall % pos. examples removed')
+
+                elif i == 2:
+                    x, y = frac_arr * 100, loss_arr
+                    if args.zoom > 0.0 and args.zoom < 1.0:
+                        n = int(len(x) * args.zoom)
+                        x, y = x[:n], y[:n]
+
+                    ax.plot(x, y, color=color[method], linestyle=line[method], label=label[method])
+                    ax.set_xlabel('% train data removed')
+                    ax.set_ylabel('Log loss of removed examples')
                     ax.legend(fontsize=6)
 
+
     plt_dir = os.path.join(args.out_dir, args.inf_obj)
-    if args.zoom > 0.0 and args.zoom < 1.0:
-        plt_dir = os.path.join(plt_dir, 'zoom')
+    suffix = '_zoom' if args.zoom > 0.0 and args.zoom < 1.0 else ''
 
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')
 
     plt.tight_layout()
-    plt.savefig(fp + '.png', bbox_inches='tight')
+    plt.savefig(fp + suffix + '.png', bbox_inches='tight')
     plt.show()
 
 

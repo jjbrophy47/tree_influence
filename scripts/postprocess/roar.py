@@ -25,55 +25,86 @@ def process(args, out_dir, logger):
     color, line, label = pp_util.get_plot_dicts()
 
     if args.inf_obj == 'global':
-        fig, axs = plt.subplots(1, 4, figsize=(16, 4))
+        n_row = 2 if args.zoom > 0.0 and args.zoom < 1.0 else 1
+        height = 8 if args.zoom > 0.0 and args.zoom < 1.0 else 4
+
+        fig, axs = plt.subplots(n_row, 4, figsize=(16, height))
+        axs = axs.flatten()
+
         for i, metric in enumerate(args.metric):
-            ax = axs[i]
-            if i == 1:
-                ax.set_title(f'{args.dataset}')
 
             for method, res in results:
-                x, y = res['remove_frac'] * 100, res[metric]
+                ax = axs[i]
 
-                if args.zoom > 0.0 and args.zoom < 1.0:
-                    n = int(len(x) * args.zoom)
-                    x, y = x[:n], y[:n]
+                x, y = res['remove_frac'] * 100, res[metric]
 
                 ax.plot(x, y, label=label[method], color=color[method],
                         linestyle=line[method], alpha=0.75)
                 ax.set_xlabel('Train data removed (%)')
                 ax.set_ylabel(f'Test {metric}')
-                ax.legend(fontsize=6)
+
+                # plot zoomed version
+                if args.zoom > 0.0 and args.zoom < 1.0:
+                    ax = axs[i + 4]
+
+                    n = int(len(x) * args.zoom)
+                    x, y = x[:n], y[:n]
+
+                    ax.plot(x, y, label=label[method], color=color[method],
+                            linestyle=line[method], alpha=0.75)
+                    ax.set_xlabel('Train data removed (%)')
+                    ax.set_ylabel(f'Test {metric}')
 
             if y[0] == -1:
-                fig.delaxes(ax)
+                fig.delaxes(ax=axs[i])
+
+                if args.zoom > 0.0 and args.zoom < 1.0:
+                    fig.delaxes(ax=axs[i + 4])
+
+            elif i == 0 or i == 2:
+                axs[i].legend(fontsize=6)
 
     # local
     else:
-        fig, ax = plt.subplots()
+        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+
         for method, res in results:
+            ax = axs[0]
+
             x, y = res['remove_frac'].mean(axis=0) * 100, res['loss'].mean(axis=0)
             y_err = sem(res['loss'], axis=0)
             y_err = y_err if args.std_err else None
 
-            if args.zoom > 0.0 and args.zoom < 1.0:
-                n = int(len(x) * args.zoom)
-                x, y, y_err = x[:n], y[:n], y_err[:n]
-
             ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
                         linestyle=line[method], alpha=0.75)
-            ax.set_title(f'{args.dataset}')
             ax.set_xlabel('Train data removed (%)')
             ax.set_ylabel(f'Avg. example test loss')
             ax.legend(fontsize=6)
 
+            if args.zoom > 0.0 and args.zoom < 1.0:
+                ax = axs[1]
+
+                n = int(len(x) * args.zoom)
+                x, y = x[:n], y[:n]
+
+                if y_err is not None:
+                    y_err = y_err[:n]
+
+                ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
+                            linestyle=line[method], alpha=0.75)
+                ax.set_xlabel('Train data removed (%)')
+                ax.set_ylabel(f'Avg. example test loss')
+
+        if args.zoom <= 0.0 or args.zoom >= 1.0:
+            fig.delaxes(axs[1])
+
     plt_dir = os.path.join(args.out_dir, args.inf_obj)
-    if args.zoom > 0.0 and args.zoom < 1.0:
-        plt_dir = os.path.join(plt_dir, 'zoom')
+    suffix = ''
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')
 
     plt.tight_layout()
-    plt.savefig(fp + '.png', bbox_inches='tight')
+    plt.savefig(fp + suffix + '.png', bbox_inches='tight')
     plt.show()
 
 

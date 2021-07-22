@@ -301,7 +301,7 @@ class LeafInfluenceGBDT(Explainer):
         influence = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=np.float32)
 
         if self.logger:
-            logger.info('\n[INFO] computing influence for each test example...')
+            self.logger.info('\n[INFO] computing influence for each test example...')
 
         # compute influence of each training example on the test example
         for remove_idx in range(self.X_train_.shape[0]):

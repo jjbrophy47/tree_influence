@@ -30,7 +30,7 @@ iol='local'
 iob='both'
 
 gos='self'  # global_op
-gog='expected'  # TREX, LOO, and DShap
+goe='expected'  # TREX, LOO, and DShap
 goa='alpha'  # TREX only
 
 # surgical
@@ -38,14 +38,28 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $ds $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iob $gos 3  60    $ps  # trex
-./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iog $gog 6  60    $ps
+./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iog $goe 6  60    $ps
 ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iog $goa 3  60    $ps
 # ./jobs/ci/primer.sh     $ds $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
 ./jobs/ci/primer.sh     $ds $tt $mli $tf $us0 $iob $gos 3  1440  $ps
 ./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
-./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iog $gog 28 600   $ps
+./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iog $goe 28 600   $ps
 ./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
-./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iog $gog 28 1440  $ps
+./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iog $goe 28 1440  $ps
+
+# bank_marketing
+./jobs/ci/primer.sh     $dbm $tt $mr  $tf $us1 $iob $gos 3  60    $ps  # random
+./jobs/ci/primer.sh     $dbm $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
+./jobs/ci/primer.sh     $dbm $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
+./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iob $gos 3  60    $ps  # trex
+./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iog $gog 6  60    $ps
+./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iog $goa 3  60    $ps
+# ./jobs/ci/primer.sh     $dbm $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh     $dbm $tt $mli $tf $us0 $iob $gos 3  1440  $ps
+./jobs/ci/primer_mcu.sh $dbm $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
+./jobs/ci/primer_mcu.sh $dbm $tt $mlo $tf $us1 $iog $gog 28 600   $ps
+./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
+./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iog $gog 28 1440  $ps
 
 ./jobs/ci/primer.sh $d2 $tt $nt2 $md2 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
 ./jobs/ci/primer.sh $d2 $tt $nt2 $md2 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
