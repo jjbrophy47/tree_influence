@@ -34,7 +34,12 @@ def experiment(args, logger, out_dir):
     if args.inf_obj == 'global':
         assert objective == 'binary'
 
-        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
+        n_row = 2 if args.zoom > 0.0 and args.zoom < 1.0 else 1
+        height = 8 if args.zoom > 0.0 and args.zoom < 1.0 else 4
+
+        fig, axs = plt.subplots(n_row, 3, figsize=(12, height))
+        axs = axs.flatten()
+
         frac_arr = np.linspace(0, 0.5, args.n_sample + 1)[1:]
 
         for method, res in results:
@@ -57,44 +62,57 @@ def experiment(args, logger, out_dir):
                 loss_arr[i] = log_loss(y_train[train_idxs], pred[train_idxs], labels=[0, 1])
 
             # plot
-            for i in range(len(axs)):
+            for i in range(3):
                 ax = axs[i]
 
                 if i == 0:
                     x, y = frac_arr * 100, frac_pos_remove_arr * 100
-                    if args.zoom > 0.0 and args.zoom < 1.0:
-                        n = int(len(x) * args.zoom)
-                        x, y = x[:n], y[:n]
-
                     ax.plot(x, y, color=color[method], linestyle=line[method], label=label[method])
                     ax.set_xlabel('% train data removed')
                     ax.set_ylabel('% pos. examples in removed set')
 
-                elif i == 1:
-                    x, y = frac_arr * 100, frac_pos_total_arr * 100
                     if args.zoom > 0.0 and args.zoom < 1.0:
+                        ax = axs[i + 3]
                         n = int(len(x) * args.zoom)
                         x, y = x[:n], y[:n]
+                        ax.plot(x, y, color=color[method], linestyle=line[method], label=label[method])
+                        ax.set_xlabel('% train data removed')
+                        ax.set_ylabel('% pos. examples in removed set')
 
+                elif i == 1:
+                    x, y = frac_arr * 100, frac_pos_total_arr * 100
                     ax.plot(x, y, color=color[method],
                             linestyle=line[method], label=label[method])
                     ax.set_xlabel('% train data removed')
                     ax.set_ylabel('Overall % pos. examples removed')
 
-                elif i == 2:
-                    x, y = frac_arr * 100, loss_arr
                     if args.zoom > 0.0 and args.zoom < 1.0:
+                        ax = axs[i + 3]
                         n = int(len(x) * args.zoom)
                         x, y = x[:n], y[:n]
+                        ax.plot(x, y, color=color[method],
+                                linestyle=line[method], label=label[method])
+                        ax.set_xlabel('% train data removed')
+                        ax.set_ylabel('Overall % pos. examples removed')
 
+                elif i == 2:
+                    x, y = frac_arr * 100, loss_arr
                     ax.plot(x, y, color=color[method], linestyle=line[method], label=label[method])
                     ax.set_xlabel('% train data removed')
                     ax.set_ylabel('Log loss of removed examples')
                     ax.legend(fontsize=6)
 
+                    if args.zoom > 0.0 and args.zoom < 1.0:
+                        ax = axs[i + 3]
+                        n = int(len(x) * args.zoom)
+                        x, y = x[:n], y[:n]
+                        ax.plot(x, y, color=color[method], linestyle=line[method], label=label[method])
+                        ax.set_xlabel('% train data removed')
+                        ax.set_ylabel('Log loss of removed examples')
+
 
     plt_dir = os.path.join(args.out_dir, args.inf_obj)
-    suffix = '_zoom' if args.zoom > 0.0 and args.zoom < 1.0 else ''
+    suffix = ''
 
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')

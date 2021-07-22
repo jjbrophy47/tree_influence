@@ -356,7 +356,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['adult'] = {'n_estimators': 100, 'num_leaves': 31, 'max_depth': -1}
     lgb['bank_marketing'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
-    lgb['diaetes'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
+    lgb['diabetes'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
     lgb['flight_delays'] = {'n_estimators': 100, 'num_leaves': 91, 'max_depth': -1}
     lgb['casp'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}

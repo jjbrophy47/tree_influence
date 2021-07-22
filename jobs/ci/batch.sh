@@ -8,6 +8,7 @@ dfd='flight_delays'
 dl='life'
 do='obesity'
 ds='surgical'
+dv='vaccine'
 
 mr='random'
 mm='minority'
@@ -52,14 +53,56 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dbm $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
 ./jobs/ci/primer.sh     $dbm $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iob $gos 3  60    $ps  # trex
-./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iog $gog 6  60    $ps
+./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iog $goe 6  60    $ps
 ./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iog $goa 3  60    $ps
 # ./jobs/ci/primer.sh     $dbm $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
 ./jobs/ci/primer.sh     $dbm $tt $mli $tf $us0 $iob $gos 3  1440  $ps
 ./jobs/ci/primer_mcu.sh $dbm $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
-./jobs/ci/primer_mcu.sh $dbm $tt $mlo $tf $us1 $iog $gog 28 600   $ps
+./jobs/ci/primer_mcu.sh $dbm $tt $mlo $tf $us1 $iog $goe 28 600   $ps
 ./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
-./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iog $gog 28 1440  $ps
+./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iog $goe 28 1440  $ps
+
+# vaccine
+./jobs/ci/primer.sh     $dv $tt $mr  $tf $us1 $iob $gos 3  60    $ps  # random
+./jobs/ci/primer.sh     $dv $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
+./jobs/ci/primer.sh     $dv $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
+./jobs/ci/primer.sh     $dv $tt $mtx $tf $us1 $iob $gos 3  60    $ps  # trex
+./jobs/ci/primer.sh     $dv $tt $mtx $tf $us1 $iog $goe 6  60    $ps
+./jobs/ci/primer.sh     $dv $tt $mtx $tf $us1 $iog $goa 3  60    $ps
+# ./jobs/ci/primer.sh     $dv $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh     $dv $tt $mli $tf $us0 $iob $gos 3  1440  $ps
+./jobs/ci/primer_mcu.sh $dv $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
+./jobs/ci/primer_mcu.sh $dv $tt $mlo $tf $us1 $iog $goe 28 600   $ps
+./jobs/ci/primer_mcu.sh $dv $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
+./jobs/ci/primer_mcu.sh $dv $tt $mds $tf $us1 $iog $goe 28 1440  $ps
+
+# adult
+./jobs/ci/primer.sh     $da $tt $mr  $tf $us1 $iob $gos 3  60    $ps  # random
+./jobs/ci/primer.sh     $da $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
+./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
+./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iob $gos 6  60    $ps  # trex
+./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iog $goe 15 60    $ps
+./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iog $goa 6  60    $ps
+# ./jobs/ci/primer.sh     $da $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh     $da $tt $mli $tf $us0 $iob $gos 6  1440  $ps
+./jobs/ci/primer_mcu.sh $da $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
+./jobs/ci/primer_mcu.sh $da $tt $mlo $tf $us1 $iog $goe 28 600   $ps
+./jobs/ci/primer_mcu.sh $da $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
+./jobs/ci/primer_mcu.sh $da $tt $mds $tf $us1 $iog $goe 28 1440  $ps
+
+# diabetes
+./jobs/ci/primer.sh     $dd $tt $mr  $tf $us1 $iob $gos 3  60    $ps  # random
+./jobs/ci/primer.sh     $dd $tt $mm  $tf $us1 $iob $gos 3  60    $ps  # minority
+./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iob $gos 3  60    $ps  # boostin
+./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iob $gos 6  60    $ps  # trex
+./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iog $goe 15 60    $ps
+./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iog $goa 6  60    $ps
+# ./jobs/ci/primer.sh     $dd $tt $mli $tf $us1 $iob $gos 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh     $dd $tt $mli $tf $us0 $iob $gos 6  1440  $ps
+./jobs/ci/primer_mcu.sh $dd $tt $mlo $tf $us1 $iob $gos 28 600   $ps  # loo
+./jobs/ci/primer_mcu.sh $dd $tt $mlo $tf $us1 $iog $goe 28 600   $ps
+# ./jobs/ci/primer_mcu.sh $dd $tt $mds $tf $us1 $iob $gos 28 1440  $ps  # dshap
+# ./jobs/ci/primer_mcu.sh $dd $tt $mds $tf $us1 $iog $goe 28 1440  $ps
 
 ./jobs/ci/primer.sh $d2 $tt $nt2 $md2 $m1 $tf $us1 $go1 $io2 3  60    $p1  # random
 ./jobs/ci/primer.sh $d2 $tt $nt2 $md2 $m2 $tf $us1 $go1 $io2 3  60    $p1  # boostin
