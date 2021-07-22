@@ -49,7 +49,6 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iob $gos 3 120 $ps  # dshap
 ./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iog $gog 3 120 $ps
 
-
 # bank_marketing
 ./jobs/roar/primer.sh $sk $dbm $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $dbm $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
