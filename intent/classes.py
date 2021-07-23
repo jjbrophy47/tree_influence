@@ -5,6 +5,8 @@ from .explainers import LOO
 from .explainers import DShap
 from .explainers import Random
 from .explainers import Minority
+from .explainers import Loss
+from .explainers import Similarity
 
 
 class TreeExplainer(object):
@@ -26,6 +28,8 @@ class TreeExplainer(object):
         - Appox. data Shapley
         - Random
         - Random Minority
+        - Loss
+        - Similarity
     """
     def __init__(self, method='boostin', params={}, logger=None):
 
@@ -49,6 +53,12 @@ class TreeExplainer(object):
 
         elif method == 'minority':
             self.explainer = Minority(**params, logger=logger)
+
+        elif method == 'loss':
+            self.explainer = Loss(**params, logger=logger)
+
+        elif method == 'similarity':
+            self.explainer = Similarity(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')

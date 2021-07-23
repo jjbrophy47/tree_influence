@@ -21,7 +21,7 @@ def get_results(args, logger=None):
 
     experiment_settings = list(product(*[args.method, args.use_leaf, args.update_set,
                                          args.kernel, args.target, args.lmbd, args.n_epoch,
-                                         args.trunc_frac, args.check_every, args.global_op]))
+                                         args.trunc_frac, args.check_every, args.global_op, args.similarity]))
 
     visited = set()
     results = []
@@ -29,7 +29,7 @@ def get_results(args, logger=None):
     for items in tqdm(experiment_settings):
 
         method, use_leaf, update_set, kernel, target, lmbd, n_epoch,\
-            trunc_frac, check_every, global_op = items
+            trunc_frac, check_every, global_op, similarity = items
 
         template = {'method': method,
                     'use_leaf': use_leaf,
@@ -37,12 +37,14 @@ def get_results(args, logger=None):
                     'kernel': kernel,
                     'target': target,
                     'lmbd': lmbd,
+                    'similarity': similarity,
                     'n_epoch': n_epoch,
                     'trunc_frac': trunc_frac,
                     'check_every': check_every,
                     'random_state': args.random_state,
                     'n_jobs': args.n_jobs,
-                    'global_op': global_op}
+                    'global_op': global_op,
+                    'similarity': similarity}
 
         _, hash_str = exp_util.explainer_params_to_dict(method, template)
 
@@ -74,7 +76,7 @@ def get_plot_dicts():
     """
     Return dict for color, line, and labels for each method.
     """
-    color = {'random_': 'blue', 'minority_': 'cyan'}
+    color = {'random_': 'blue', 'minority_': 'cyan', 'loss_': 'purple'}
     color['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'orange'
     color['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'green'
     color['trex_c026a1d65c79084fe50ec2a8524b2533'] = 'green'
@@ -84,8 +86,9 @@ def get_plot_dicts():
     color['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'magenta'
     color['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
     color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
+    color['similarity_da2995ca8d4801840027a5128211b2d0'] = 'yellow'
 
-    line = {'random_': '-', 'minority_': '-'}
+    line = {'random_': '-', 'minority_': '-', 'loss_': '-'}
     line['boostin_c4ca4238a0b923820dcc509a6f75849b'] = '-'
     line['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = '-'
     line['trex_c026a1d65c79084fe50ec2a8524b2533'] = '--'
@@ -95,8 +98,9 @@ def get_plot_dicts():
     line['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = '-'
     line['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
     line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
+    line['similarity_da2995ca8d4801840027a5128211b2d0'] = '-'
 
-    label = {'random_': 'Random', 'minority_': 'Minority'}
+    label = {'random_': 'Random', 'minority_': 'Minority', 'loss_': 'Loss'}
     label['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'BoostIn'
     label['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'TREX'
     label['trex_c026a1d65c79084fe50ec2a8524b2533'] = 'TREX_exp'
@@ -106,6 +110,7 @@ def get_plot_dicts():
     label['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'DShap'
     label['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafInf'
     label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
+    label['similarity_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'
 
     return color, line, label
 

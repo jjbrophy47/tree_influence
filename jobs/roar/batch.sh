@@ -92,6 +92,20 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $da $tt $mds $tf $us1 $iob $gos 3 120 $ps  # dshap
 ./jobs/roar/primer.sh $sk $da $tt $mds $tf $us1 $iog $goe 3 120 $ps
 
+# diabetes
+./jobs/roar/primer.sh $sk $dd $tt $mr  $tf $us1 $iob $gos 3 300 $ps  # random
+./jobs/roar/primer.sh $sk $dd $tt $mm  $tf $us1 $iob $gos 3 300 $ps  # minority
+./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iob $gos 3 300 $ps  # boostin
+./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iob $gos 3 300 $ps  # trex
+./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iog $goe 3 300 $ps
+./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iog $goa 3 300 $ps
+# ./jobs/roar/primer.sh $sk $dd $tt $mli $tf $us1 $iob $gos 3 300 $p2  # leaf_influence
+./jobs/roar/primer.sh $sk $dd $tt $mli $tf $us0 $iob $gos 3 300 $ps
+./jobs/roar/primer.sh $sk $dd $tt $mlo $tf $us1 $iob $gos 3 300 $ps  # loo
+./jobs/roar/primer.sh $sk $dd $tt $mlo $tf $us1 $iog $goe 3 300 $ps
+# ./jobs/roar/primer.sh $sk $dd $tt $mds $tf $us1 $iob $gos 3 300 $ps  # dshap
+# ./jobs/roar/primer.sh $sk $dd $tt $mds $tf $us1 $iog $goe 3 300 $ps
+
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m1 $tf $us1 $go1 $io2 3 60 $p1  # random
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m2 $tf $us1 $go1 $io2 3 60 $p1  # boostin
 ./jobs/roar/primer.sh $sk $d1 $tt $nt1 $md1 $m3 $tf $us1 $go1 $io2 3 60 $p1  # trex

@@ -5,3 +5,5 @@ from .loo import LOO
 from .dshap import DShap
 from .random import Random
 from .minority import Minority
+from .loss import Loss
+from .similarity import Similarity

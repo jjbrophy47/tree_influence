@@ -336,6 +336,10 @@ def explainer_params_to_dict(explainer, exp_params):
     elif explainer == 'random':
         params['random_state'] = exp_params['random_state']
 
+    elif explainer == 'similarity':
+        params['similarity'] = exp_params['similarity']
+        params['kernel'] = exp_params['kernel']
+
     # create hash string based on the chosen hyperparameters
     hash_str = dict_to_hash(params)
 

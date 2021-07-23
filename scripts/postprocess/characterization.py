@@ -156,11 +156,14 @@ if __name__ == '__main__':
 
     # Method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'minority', 'boostin', 'trex', 'leaf_influence', 'loo', 'dshap'])
+                        default=['random', 'minority', 'loss', 'boostin', 'trex',
+                                 'leaf_influence', 'loo', 'dshap'])
     parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
 
-    parser.add_argument('--kernel', type=str, nargs='+', default=['lpw'])  # Trex
+    parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
+
+    parser.add_argument('--kernel', type=str, nargs='+', default=['lpw'])  # Trex & Similarity
     parser.add_argument('--target', type=str, nargs='+', default=['actual'])  # Trex
     parser.add_argument('--lmbd', type=float, nargs='+', default=[0.003])  # Trex
     parser.add_argument('--n_epoch', type=str, nargs='+', default=[3000])  # Trex

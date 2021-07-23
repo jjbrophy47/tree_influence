@@ -5,21 +5,18 @@ import argparse
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import BoostIn
+from intent.explainers import Similarity
 
 
 def main(args):
 
     # explainer arguments
-    kwargs = {'use_leaf': args.use_leaf}
+    kwargs = {'similarity': args.similarity, 'kernel': args.kernel}
 
     # tests
-    test_util.test_global_influence_regression(args, BoostIn, 'boostin', kwargs)
-    test_util.test_global_influence_binary(args, BoostIn, 'boostin', kwargs)
-    test_util.test_global_influence_multiclass(args, BoostIn, 'boostin', kwargs)
-    test_util.test_local_influence_regression(args, BoostIn, 'boostin', kwargs)
-    test_util.test_local_influence_binary(args, BoostIn, 'boostin', kwargs)
-    test_util.test_local_influence_multiclass(args, BoostIn, 'boostin', kwargs)
+    test_util.test_local_influence_regression(args, Similarity, 'similarity', kwargs)
+    test_util.test_local_influence_binary(args, Similarity, 'similarity', kwargs)
+    test_util.test_local_influence_multiclass(args, Similarity, 'similarity', kwargs)
 
 
 if __name__ == '__main__':
@@ -41,7 +38,8 @@ if __name__ == '__main__':
     parser.add_argument('--rs', type=int, default=1)
 
     # explainer settings
-    parser.add_argument('--use_leaf', type=int, default=0)
+    parser.add_argument('--similarity', type=str, default='dot_prod')
+    parser.add_argument('--kernel', type=str, default='lpw')
 
     args = parser.parse_args()
 

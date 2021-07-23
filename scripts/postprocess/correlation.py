@@ -155,7 +155,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--update_set', type=int, default=-1)  # LeafInfluence
 
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex
+    parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
+
+    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & Similarity
     parser.add_argument('--target', type=str, default='actual')  # Trex
     parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
     parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
