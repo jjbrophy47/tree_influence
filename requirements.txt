@@ -2,6 +2,7 @@
 cython==0.29.23
 
 # data processors
+xlrd==2.0.1  # reading excel
 numpy==1.21.0
 scikit-learn==0.24.2
 catboost==0.26

@@ -19,6 +19,8 @@ mtx='trex'
 mli='leaf_influence'
 mlo='loo'
 mds='dshap'
+ms='similarity'
+ml='loss'
 
 ps='short'
 pl='long'
@@ -39,6 +41,7 @@ goa='alpha'  # TREX only
 # surgical
 ./jobs/roar/primer.sh $sk $ds $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $ds $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
+./jobs/roar/primer.sh $sk $ds $tt $ms  $tf $us1 $iol $gos 3 120 $ps  # similarity
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iob $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iob $gos 3 120 $ps  # trex
 ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iog $goe 3 120 $ps
@@ -53,6 +56,7 @@ goa='alpha'  # TREX only
 # bank_marketing
 ./jobs/roar/primer.sh $sk $dbm $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $dbm $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
+./jobs/roar/primer.sh $sk $dbm $tt $ms  $tf $us1 $iol $gos 3 120 $ps  # similarity
 ./jobs/roar/primer.sh $sk $dbm $tt $mbi $tf $us1 $iob $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dbm $tt $mtx $tf $us1 $iob $gos 3 120 $ps  # trex
 ./jobs/roar/primer.sh $sk $dbm $tt $mtx $tf $us1 $iog $goe 3 120 $ps
@@ -67,6 +71,7 @@ goa='alpha'  # TREX only
 # vaccine
 ./jobs/roar/primer.sh $sk $dv $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $dv $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
+./jobs/roar/primer.sh $sk $dv $tt $ms  $tf $us1 $iol $gos 3 120 $ps  # similarity
 ./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iob $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dv $tt $mtx $tf $us1 $iob $gos 3 120 $ps  # trex
 ./jobs/roar/primer.sh $sk $dv $tt $mtx $tf $us1 $iog $goe 3 120 $ps
@@ -81,6 +86,7 @@ goa='alpha'  # TREX only
 # adult
 ./jobs/roar/primer.sh $sk $da $tt $mr  $tf $us1 $iob $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $da $tt $mm  $tf $us1 $iob $gos 3 120 $ps  # minority
+./jobs/roar/primer.sh $sk $da $tt $ms  $tf $us1 $iol $gos 3 120 $ps  # similarity
 ./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iob $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $da $tt $mtx $tf $us1 $iob $gos 3 120 $ps  # trex
 ./jobs/roar/primer.sh $sk $da $tt $mtx $tf $us1 $iog $goe 3 120 $ps
@@ -95,6 +101,7 @@ goa='alpha'  # TREX only
 # diabetes
 ./jobs/roar/primer.sh $sk $dd $tt $mr  $tf $us1 $iob $gos 3 300 $ps  # random
 ./jobs/roar/primer.sh $sk $dd $tt $mm  $tf $us1 $iob $gos 3 300 $ps  # minority
+./jobs/roar/primer.sh $sk $da $tt $ms  $tf $us1 $iol $gos 3 120 $ps  # similarity
 ./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iob $gos 3 300 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iob $gos 3 300 $ps  # trex
 ./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iog $goe 3 300 $ps

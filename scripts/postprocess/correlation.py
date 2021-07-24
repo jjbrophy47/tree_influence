@@ -45,8 +45,8 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
     # compute correlation for the entire length of influence values
     if args.n_sample == 1:
 
-        if args.frac > 0.0 and args.frac < 1.0:
-            n = int(len(inf1) * args.frac)
+        if args.zoom > 0.0 and args.zoom < 1.0:
+            n = int(len(inf1) * args.zoom)
             inf1 = inf1[:n]
             inf2 = inf2[:n]
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--update_set', type=int, default=-1)  # LeafInfluence
 
-    parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
+    parser.add_argument('--similarity', type=str, nargs='+', default='dot_prod')  # Similarity
 
     parser.add_argument('--kernel', type=str, default='lpw')  # Trex & Similarity
     parser.add_argument('--target', type=str, default='actual')  # Trex
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     parser.add_argument('--inf_obj', type=str, default='global')
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
-    parser.add_argument('--frac', type=float, default=1.0)
+    parser.add_argument('--zoom', type=float, default=1.0)
     parser.add_argument('--n_sample', type=int, default=1)
 
     args = parser.parse_args()

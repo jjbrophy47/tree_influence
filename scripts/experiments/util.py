@@ -113,9 +113,10 @@ def get_data(data_dir, dataset):
 
     # get objective for the given dataset
     d = {}
-    d['regression'] = ['synth_regression', 'casp', 'obesity', 'life']
+    d['regression'] = ['synth_regression', 'casp', 'obesity', 'life', 'online_news']
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
-                   'diabetes', 'flight_delays']
+                   'diabetes', 'flight_delays', 'compas', 'credit_card', 'spambase',
+                   'german_credit']
     d['multiclass'] = ['synth_multiclass', 'poker']
 
     objective = ''
@@ -356,15 +357,24 @@ def get_hyperparams(tree_type, dataset):
         - Dict of selected hyperparameters for the inputs.
     """
     lgb = {}
-    lgb['surgical'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
-    lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['adult'] = {'n_estimators': 100, 'num_leaves': 31, 'max_depth': -1}
     lgb['bank_marketing'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
+    lgb['casp'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['compas'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
+    lgb['credit_card'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
     lgb['diabetes'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
     lgb['flight_delays'] = {'n_estimators': 100, 'num_leaves': 91, 'max_depth': -1}
-    lgb['casp'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
-    lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['german_credit'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
     lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
+    lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['online_news'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
+    lgb['poker'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
+    lgb['spambase'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
+    lgb['surgical'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
+    lgb['synth_binary'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['synth_multiclass'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['synth_regression'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
+    lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
 
     hp = {}
     hp['lgb'] = lgb
