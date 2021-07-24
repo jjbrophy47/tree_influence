@@ -292,7 +292,7 @@ def dict_to_hash(my_dict):
     d = my_dict.copy()
 
     # remove keys not desired in the hash string
-    for key in ['n_jobs', 'random_state']:
+    for key in ['n_jobs', 'random_state', 'atol']:
         if key in d:
             del d[key]
 

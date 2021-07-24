@@ -40,16 +40,18 @@ class LeafInfluence(Explainer):
     Note
         - Supports both GBDTs and RFs.
     """
-    def __init__(self, update_set=-1, logger=None):
+    def __init__(self, update_set=-1, atol=1e-5, logger=None):
         """
         Input
             update_set (GBDT only): int, No. neighboring leaf values to use for approximating leaf influence.
                 0: Use no other leaves, influence is computed independent of other trees.
                 -1: Use all other trees, most accurate but also most computationally expensive.
                 1+: Trade-off between accuracy and computational resources.
+            atol: float, Tolerance between actual and predicted leaf values.
             logger: object, If not None, output to logger.
         """
         self.update_set = update_set
+        self.atol = atol
         self.logger = logger
 
     def fit(self, model, X, y):
@@ -59,7 +61,7 @@ class LeafInfluence(Explainer):
         super().fit(model, X, y)
 
         if self.model_.tree_type == 'gbdt':
-            explainer = LeafInfluenceGBDT(update_set=self.update_set, logger=self.logger)
+            explainer = LeafInfluenceGBDT(update_set=self.update_set, atol=self.atol, logger=self.logger)
 
         else:
             assert self.model_.tree_type == 'rf'
@@ -98,17 +100,19 @@ class LeafInfluenceGBDT(Explainer):
     """
     LeafInfluence method designed specifically for GBDTs.
     """
-    def __init__(self, update_set=-1, logger=None):
+    def __init__(self, update_set=-1, atol=1e-5, logger=None):
         """
         Input
             update_set: int, No. neighboring leaf values to use for approximating leaf influence.
                 0: Use no other leaves, influence is computed independent of other trees.
                 -1: Use all other trees, most accurate but also most computationally expensive.
                 1+: Trade-off between accuracy and computational resources.
+            atol: float, Tolerance between actual and predicted leaf values.
             logger: object, If not None, output to logger.
         """
         assert update_set >= -1
         self.update_set = update_set
+        self.atol = atol
         self.logger = logger
 
     def fit(self, model, X, y):
@@ -193,7 +197,7 @@ class LeafInfluenceGBDT(Explainer):
                     leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
 
                     # compare leaf values to actual leaf values
-                    assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=1e-5)
+                    assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=self.atol)
 
                     # store statistics
                     denominator[n_prev_leaves + leaf_idx] = leaf_denominator

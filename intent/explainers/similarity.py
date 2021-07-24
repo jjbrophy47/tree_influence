@@ -115,10 +115,12 @@ class Similarity(Explainer):
 
             else:  # if train and test targets both on same side of median target, then pos. influence
                 assert self.objective_ == 'regression'
-                med = np.median(self.y_train_)
-                test_sgn = 1.0 if y[test_idx] >= med else -1.0
-                train_sgn = np.where(self.y_train_ >= med, 1.0, -1.0)  # shape=(no. train,)
-                sgn = np.where(train_sgn == test_sgn, 1.0, -1.0)
+                pred = self.original_model_.predict(X[[test_idx]])
+                test_sgn = 1.0 if pred >= y[test_idx] else -1.0
+                # med = np.median(self.y_train_)
+                # test_sgn = 1.0 if y[test_idx] >= med else -1.0
+                train_sgn = np.where(self.y_train_ >= pred, 1.0, -1.0)  # shape=(no. train,)
+                sgn = np.where(train_sgn != test_sgn, 1.0, -1.0)
 
             # compute influence
             influence[:, test_idx] = sim * sgn
