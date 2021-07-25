@@ -31,14 +31,18 @@ class BoostIn(Explainer):
             the signs of the gradients differ.
         - Only support GBDTs.
     """
-    def __init__(self, use_leaf=0, logger=0):
+    def __init__(self, use_leaf=0, local_op='normal', logger=0):
         """
         Input
             use_leaf: bool, If True, only add attribution to examples
                 ONLY if those examples share the same leaf as the test example.
+            local_op: str, Configures how the local influence is computed. 
             logger: object, If not None, output to logger.
         """
+        assert use_leaf in [0, 1]
+        assert local_op in ['normal', 'sign', 'sim']
         self.use_leaf = use_leaf
+        self.local_op = local_op
         self.logger = logger
 
     def fit(self, model, X, y):
@@ -115,8 +119,13 @@ class BoostIn(Explainer):
             test_leaves = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
             leaf_weights = 1.0 / self.model_.get_leaf_counts()  # shape=(no. boost, no. class)
 
+        # use sign of gradients instead of their sign + magnitude.
+        if self.local_op in ['sign', 'sim']:
+            train_gradients = np.sign(train_gradients)
+            test_gradients = np.sign(test_gradients)
+
         # result container, shape=(X.shape[0], no. train, no. class)
-        influence = np.zeros((X.shape[0], self.n_train_, self.n_class_), dtype=np.float32)
+        influence = np.zeros((self.n_train_, X.shape[0]), dtype=np.float32)
 
         # compute attributions for each test example
         for i in range(X.shape[0]):
@@ -124,14 +133,16 @@ class BoostIn(Explainer):
             if self.use_leaf:
                 mask = np.where(train_leaves == test_leaves[i], 1, 0)  # shape=(no. train, no. boost, no. class)
                 weighted_mask = mask * leaf_weights  # shape=(no. train, no. boost, no. class)
-                influence[i, :, :] = np.sum(train_gradients * weighted_mask * test_gradients[i], axis=1) * lr
+                prod = train_gradients * weighted_mask * test_gradients[i] * lr
+                influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+
+                if self.local_op == 'sim':
+                    sim = np.square(train_gradients * weighted_mask * test_gradients[i])  # (n_train, n_boost, n_class)
+                    influence[:, i] = np.sum(sim, axis=(1, 2))  # shape=(no. train,)
 
             else:
-                influence[i, :, :] = np.sum(train_gradients * test_gradients[i] * weight, axis=1) * lr
-
-        # reshape influences
-        influence = influence.transpose(1, 0, 2)  # shape=(no. train, X.shape[0], no. class)
-        influence = influence.sum(axis=2)  # sum over classes
+                prod = train_gradients * weight * test_gradients[i] * lr
+                influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
 
         return influence
 

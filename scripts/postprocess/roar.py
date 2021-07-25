@@ -140,6 +140,7 @@ if __name__ == '__main__':
                         default=['random', 'minority', 'similarity', 'loss', 'boostin', 'trex',
                                  'leaf_influence', 'loo', 'dshap'])
     parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
+    parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sim'])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
 
     parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity

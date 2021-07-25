@@ -311,6 +311,7 @@ def explainer_params_to_dict(explainer, exp_params):
 
     if explainer == 'boostin':
         params['use_leaf'] = exp_params['use_leaf']
+        params['local_op'] = exp_params['local_op']
 
     elif explainer == 'leaf_influence':
         params['update_set'] = exp_params['update_set']

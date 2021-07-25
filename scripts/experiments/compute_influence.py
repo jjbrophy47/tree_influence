@@ -68,9 +68,12 @@ def experiment(args, logger, params, out_dir):
     start = time.time()
 
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
+    fit_time = time.time() - start
 
     if args.inf_obj == 'global':
+        start2 = time.time()
         influence = explainer.get_global_influence(X=X_test, y=y_test)
+        inf_time = time.time() - start2
 
     else:
 
@@ -92,7 +95,9 @@ def experiment(args, logger, params, out_dir):
             n_test = min(args.n_test, len(incorrect_idxs))
             test_idxs = select_elements(incorrect_idxs, rng, n=n_test)
 
+        start2 = time.time()
         influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
+        inf_time = time.time() - start2
 
     # store ALL train and test predictions
     if objective == 'regression':
@@ -111,8 +116,8 @@ def experiment(args, logger, params, out_dir):
     # display influence
     logger.info(f'\ninfluence: {influence}, shape: {influence.shape}')
 
-    compute_time = time.time() - start
-    logger.info(f'compute time: {compute_time:.5f}s')
+    logger.info(f'fit time: {fit_time:.5f}s')
+    logger.info(f'compute time: {inf_time:.5f}s')
 
     # save results
     result = {}
@@ -121,7 +126,8 @@ def experiment(args, logger, params, out_dir):
     result['y_train_pred'] = y_train_pred
     result['y_test_pred'] = y_test_pred
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
-    result['compute_time'] = compute_time
+    result['fit_time'] = fit_time
+    result['inf_time'] = inf_time
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
     logger.info('\nResults:\n{}'.format(result))
@@ -174,6 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('--method', type=str, default='random')
 
     parser.add_argument('--use_leaf', type=int, default=1)  # BoostIn
+    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
 
     parser.add_argument('--update_set', type=int, default=-1)  # LeafInfluence
 

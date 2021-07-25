@@ -12,7 +12,8 @@ method=$4
 inf_obj=$5
 trunc_frac=$6
 update_set=$7
-global_op=$8
+local_op=$8
+global_op=$9
 
 python3 scripts/experiments/roar.py \
   --skip $skip \
@@ -22,4 +23,5 @@ python3 scripts/experiments/roar.py \
   --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
   --update_set $update_set \
+  --local_op $local_op \
   --global_op $global_op \

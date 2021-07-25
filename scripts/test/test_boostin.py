@@ -11,7 +11,7 @@ from intent.explainers import BoostIn
 def main(args):
 
     # explainer arguments
-    kwargs = {'use_leaf': args.use_leaf}
+    kwargs = {'use_leaf': args.use_leaf, 'local_op': args.local_op}
 
     # tests
     test_util.test_global_influence_regression(args, BoostIn, 'boostin', kwargs)
@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--use_leaf', type=int, default=0)
+    parser.add_argument('--local_op', type=str, default='normal')
 
     args = parser.parse_args()
 

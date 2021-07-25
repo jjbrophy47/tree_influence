@@ -5,10 +5,11 @@ method=$4
 trunc_frac=$5
 update_set=$6
 inf_obj=$7
-global_op=$8
-mem=$9
-time=${10}
-partition=${11}
+local_op=$8
+global_op=$9
+mem=${10}
+time=${11}
+partition=${12}
 
 rs_list=(1 2 3 4 5)
 
@@ -24,7 +25,7 @@ fi
 
 for inf_obj in ${inf_obj_list[@]}; do
 
-    job_name=RR_${dataset}_${tree_type}_${method}_${inf_obj}_${global_op}
+    job_name=RR_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
 
     sbatch --mem=${mem}G \
            --time=$time \
@@ -33,6 +34,6 @@ for inf_obj in ${inf_obj_list[@]}; do
            --output=jobs/logs/roar/$job_name \
            --error=jobs/errors/roar/$job_name \
            jobs/roar/runner.sh $skip $dataset $tree_type $method \
-           $inf_obj $trunc_frac $update_set $global_op
+           $inf_obj $trunc_frac $update_set $local_op $global_op
 
 done

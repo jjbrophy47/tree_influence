@@ -11,7 +11,8 @@ method=$3
 inf_obj=$4
 trunc_frac=$5
 update_set=$6
-global_op=$7
+local_op=$7
+global_op=$8
 
 python3 scripts/experiments/compute_influence.py \
   --dataset $dataset \
@@ -20,4 +21,5 @@ python3 scripts/experiments/compute_influence.py \
   --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
   --update_set $update_set \
+  --local_op $local_op \
   --global_op $global_op \
