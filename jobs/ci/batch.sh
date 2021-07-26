@@ -150,9 +150,9 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dfd $tt $mr  $tf $us1 $iol $lon $gos 3  60    $ps  # random
 ./jobs/ci/primer.sh     $dfd $tt $mm  $tf $us1 $iol $lon $gos 3  60    $ps  # minority
 ./jobs/ci/primer.sh     $dfd $tt $ms  $tf $us1 $iol $lon $gos 15 60    $ps  # similarity
-./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
-./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
-./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $lon $gos 7  60    $ps  # boostin
+./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $log $gos 7  60    $ps
+./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $los $gos 7  60    $ps
 ./jobs/ci/primer.sh     $dfd $tt $mtx $tf $us1 $iol $lon $gos 15 60    $ps  # trex
 # ./jobs/ci/primer.sh     $dfd $tt $mtx $tf $us1 $iol $lon $goe 30 60    $ps
 # ./jobs/ci/primer.sh     $dfd $tt $mtx $tf $us1 $iol $lon $goa 15 60    $ps
