@@ -20,8 +20,8 @@ def get_results(args, logger=None):
         logger.info('\nGathering results...')
 
     experiment_settings = list(product(*[args.method, args.use_leaf, args.update_set,
-                                         args.kernel, args.target, args.lmbd, args.n_epoch,
-                                         args.trunc_frac, args.check_every, args.global_op, args.similarity]))
+                                         args.kernel, args.target, args.lmbd, args.n_epoch, args.trunc_frac,
+                                         args.check_every, args.global_op, args.local_op, args.similarity]))
 
     visited = set()
     results = []
@@ -29,7 +29,7 @@ def get_results(args, logger=None):
     for items in tqdm(experiment_settings):
 
         method, use_leaf, update_set, kernel, target, lmbd, n_epoch,\
-            trunc_frac, check_every, global_op, similarity = items
+            trunc_frac, check_every, global_op, local_op, similarity = items
 
         template = {'method': method,
                     'use_leaf': use_leaf,
@@ -44,6 +44,7 @@ def get_results(args, logger=None):
                     'random_state': args.random_state,
                     'n_jobs': args.n_jobs,
                     'global_op': global_op,
+                    'local_op': local_op,
                     'similarity': similarity}
 
         _, hash_str = exp_util.explainer_params_to_dict(method, template)
@@ -78,6 +79,9 @@ def get_plot_dicts():
     """
     color = {'random_': 'blue', 'minority_': 'cyan', 'loss_': 'purple'}
     color['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'orange'
+    color['boostin_a13c8d352d437d05a9ea0fa682414bd0'] = 'orange'
+    color['boostin_9e7293ec2e335fc18664e45dc2434f0c'] = 'orange'
+    color['boostin_089c2ebe4906b715923c1ccf354f6bf7'] = 'orange'
     color['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'green'
     color['trex_c026a1d65c79084fe50ec2a8524b2533'] = 'green'
     color['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'green'
@@ -90,6 +94,9 @@ def get_plot_dicts():
 
     line = {'random_': '-', 'minority_': '-', 'loss_': '-'}
     line['boostin_c4ca4238a0b923820dcc509a6f75849b'] = '-'
+    line['boostin_a13c8d352d437d05a9ea0fa682414bd0'] = '-'
+    line['boostin_9e7293ec2e335fc18664e45dc2434f0c'] = '--'
+    line['boostin_089c2ebe4906b715923c1ccf354f6bf7'] = ':'
     line['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = '-'
     line['trex_c026a1d65c79084fe50ec2a8524b2533'] = '--'
     line['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = ':'
@@ -102,6 +109,9 @@ def get_plot_dicts():
 
     label = {'random_': 'Random', 'minority_': 'Minority', 'loss_': 'Loss'}
     label['boostin_c4ca4238a0b923820dcc509a6f75849b'] = 'BoostIn'
+    label['boostin_a13c8d352d437d05a9ea0fa682414bd0'] = 'BoostIn'
+    label['boostin_9e7293ec2e335fc18664e45dc2434f0c'] = 'BoostIn_SGN'
+    label['boostin_089c2ebe4906b715923c1ccf354f6bf7'] = 'BoostIn_SIM'
     label['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'TREX'
     label['trex_c026a1d65c79084fe50ec2a8524b2533'] = 'TREX_exp'
     label['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'TREX_alpha'

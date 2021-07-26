@@ -31,7 +31,7 @@ class BoostIn(Explainer):
             the signs of the gradients differ.
         - Only support GBDTs.
     """
-    def __init__(self, use_leaf=0, local_op='normal', logger=0):
+    def __init__(self, use_leaf=1, local_op='normal', logger=0):
         """
         Input
             use_leaf: bool, If True, only add attribution to examples
@@ -68,8 +68,13 @@ class BoostIn(Explainer):
 
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
-        self.train_gradients_ = self._compute_gradients(X, y)
-        self.train_leaves_ = self.model_.apply(X)
+        self.train_gradients_ = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
+
+        if self.use_leaf:
+            self.model_.update_node_count(X)
+            self.train_leaves_ = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
+            self.leaf_counts_ = self.model_.get_leaf_counts()  # shape=(no. boost, no. class)
+            self.leaf_weights_ = self.model_.get_leaf_weights()  # shape=(total no. leaves,)
 
         return self
 
@@ -110,14 +115,19 @@ class BoostIn(Explainer):
 
         train_gradients = self.train_gradients_  # shape=(no. train, no. boost, no. class)
         test_gradients = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
-        weight = 1.0 / self.n_train_
+        
+        uniform_weight = 1.0 / self.n_train_
         lr = self.learning_rate_
 
         # get leaf indices each example arrives in
         if self.use_leaf:
             train_leaves = self.train_leaves_  # shape=(no. train, no. boost, no. class)
+            train_weights = self._get_leaf_weights(train_leaves)  # shape=(no.train, no boost, no. class)
+
             test_leaves = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
-            leaf_weights = 1.0 / self.model_.get_leaf_counts()  # shape=(no. boost, no. class)
+
+            if self.local_op == 'sim':
+                test_weights = self._get_leaf_weights(test_leaves)  # shape=(X.shape[0], no. boost, no. class)
 
         # use sign of gradients instead of their sign + magnitude.
         if self.local_op in ['sign', 'sim']:
@@ -132,24 +142,24 @@ class BoostIn(Explainer):
 
             if self.use_leaf:
                 mask = np.where(train_leaves == test_leaves[i], 1, 0)  # shape=(no. train, no. boost, no. class)
-                weighted_mask = mask * leaf_weights  # shape=(no. train, no. boost, no. class)
-                prod = train_gradients * weighted_mask * test_gradients[i] * lr
-                influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
 
                 if self.local_op == 'sim':
-                    sim = np.square(train_gradients * weighted_mask * test_gradients[i])  # (n_train, n_boost, n_class)
-                    influence[:, i] = np.sum(sim, axis=(1, 2))  # shape=(no. train,)
+                    prod = train_gradients * train_weights * test_gradients[i] * test_weights[i] * mask
+
+                else:  # normal or sign
+                    prod = train_gradients * train_weights * test_gradients[i] * mask * lr
 
             else:
-                prod = train_gradients * weight * test_gradients[i] * lr
-                influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+                prod = train_gradients * uniform_weight * test_gradients[i] * lr
+
+            influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
 
         return influence
 
     # private
     def _compute_gradients(self, X, y):
         """
-        Compute gradients for all train instances across all boosting iterations.
+        - Compute gradients for all train instances across all boosting iterations.
 
         Input
             X: 2d array of train examples.
@@ -177,3 +187,32 @@ class BoostIn(Explainer):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
         return gradients
+
+    def _get_leaf_weights(self, idxs):
+        """
+        Retrieve leaf weights given the leaf indices.
+
+        Input
+            leaf_idxs: Leaf indices, shape=(no. examples, no. boost, no. class)
+
+        Return
+            - 3d array of shape=(no. examples, no. boost, no. class)
+        """
+        leaf_counts = self.leaf_counts_  # shape=(no. boost, no. class)
+        leaf_weights = self.leaf_weights_ # shape=(no. leaves across all trees,)
+
+        # result container
+        weights = np.zeros(idxs.shape, dtype=np.float32) # shape=(no. examples, no. boost, no. class)
+
+        n_prev_leaves = 0
+
+        for b_idx in range(self.n_boost_):
+
+            for c_idx in range(self.n_class_):
+                leaf_count = leaf_counts[b_idx, c_idx]
+
+                weights[:, b_idx, c_idx] = leaf_weights[n_prev_leaves:][idxs[:, b_idx, c_idx]]
+
+                n_prev_leaves += leaf_count
+
+        return weights

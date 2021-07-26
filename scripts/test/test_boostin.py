@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--rs', type=int, default=1)
 
     # explainer settings
-    parser.add_argument('--use_leaf', type=int, default=0)
+    parser.add_argument('--use_leaf', type=int, default=1)
     parser.add_argument('--local_op', type=str, default='normal')
 
     args = parser.parse_args()

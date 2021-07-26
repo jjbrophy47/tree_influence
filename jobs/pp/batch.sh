@@ -5,11 +5,11 @@
 ./jobs/pp/primer.sh 'credit_card' 'svm' 3 1440 'short'
 
 ./jobs/pp/primer.sh 'diabetes' 'knn' 7 600  'short'
-./jobs/pp/primer.sh 'diabetes' 'svm' 7 1440 'short'
+./jobs/pp/primer.sh 'diabetes' 'svm' 7 7200 'long'
 ./jobs/pp/primer.sh 'diabetes' 'mlp' 7 600  'short'
 
 ./jobs/pp/primer.sh 'flight_delays' 'knn' 7 600  'short'
-./jobs/pp/primer.sh 'flight_delays' 'svm' 7 1440 'short'
+./jobs/pp/primer.sh 'flight_delays' 'svm' 7 7200 'long'
 ./jobs/pp/primer.sh 'flight_delays' 'mlp' 7 600  'short'
 
 ./jobs/pp/primer.sh 'surgical' 'svm' 3 300 'short'

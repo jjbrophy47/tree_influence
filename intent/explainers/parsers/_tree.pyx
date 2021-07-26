@@ -135,6 +135,29 @@ cdef class _Tree:
 
         return np.asarray(out)
 
+    cpdef np.ndarray get_leaf_weights(self):
+        """
+        Return 1d array of leaf values in order of their leaf IDs.
+        """
+
+        # result
+        cdef DTYPE_t* leaf_weights = <DTYPE_t *>malloc(self.leaf_count_ * sizeof(DTYPE_t))
+        cdef DTYPE_t[:] out = np.zeros((self.leaf_count_,), dtype=np.float32)
+
+        # incrementer
+        cdef SIZE_t i = 0
+
+        self._get_leaf_weights(self.root_, leaf_weights)
+
+        # copy values to np.ndarray
+        for i in range(self.leaf_count_):
+            out[i] = leaf_weights[i]
+
+        # clean up
+        free(leaf_weights)
+
+        return np.asarray(out)
+
     cpdef void update_node_count(self, float[:, :] X):
         """
         Increment each node count if x in X pass through it.
@@ -313,6 +336,22 @@ cdef class _Tree:
         else:
             self._get_leaf_values(node.left_child, leaf_values)
             self._get_leaf_values(node.right_child, leaf_values)
+
+        return
+
+    cdef void _get_leaf_weights(self,
+                                Node* node,
+                                DTYPE_t* leaf_weights) nogil:
+        """
+        Recursively fill 1d array of leaf weights in order of their leaf IDs.
+        """
+
+        if node.is_leaf:
+            leaf_weights[node.leaf_id] = 1.0 / node.count
+
+        else:
+            self._get_leaf_weights(node.left_child, leaf_weights)
+            self._get_leaf_weights(node.right_child, leaf_weights)
 
         return
 
