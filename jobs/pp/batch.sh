@@ -10,9 +10,9 @@ tf=1.0
 ./jobs/pp/primer.sh 'diabetes' 'svm' 0.1 7 1440 'short'
 ./jobs/pp/primer.sh 'diabetes' 'mlp' $tf 7 600  'short'
 
-./jobs/pp/primer.sh 'flight_delays' 'knn' 7 $tf 600  'short'
-./jobs/pp/primer.sh 'flight_delays' 'svm' 7 0.1 1440 'short'
-./jobs/pp/primer.sh 'flight_delays' 'mlp' 7 $tf 600  'short'
+./jobs/pp/primer.sh 'flight_delays' 'knn' $tf 7 600  'short'
+./jobs/pp/primer.sh 'flight_delays' 'svm' 0.1 7 1440 'short'
+./jobs/pp/primer.sh 'flight_delays' 'mlp' $tf 7 600  'short'
 
 ./jobs/pp/primer.sh 'no_show' 'lr'  $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'no_show' 'dt'  $tf  7 1440 'short'

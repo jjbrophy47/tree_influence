@@ -131,7 +131,7 @@ def experiment(args, logger, out_dir):
         if args.tune_frac < 1.0:
             sss = StratifiedShuffleSplit(n_splits=1, test_size=2,
                                          train_size=args.tune_frac,
-                                         random_state=args.rs)
+                                         random_state=args.random_state)
             tune_indices, _ = list(sss.split(X_train, y_train))[0]
             X_train_sub, y_train_sub = X_train[tune_indices], y_train[tune_indices]
             logger.info('tune instances: {:,}'.format(X_train_sub.shape[0]))
