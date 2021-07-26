@@ -10,12 +10,12 @@ class BoostIn(Explainer):
 
     Global-Influence Semantics
         - Influence of x_i on itself
-        - Inf.(x_i, x_i) = sum of -grad(x_i) * -grad(x_i) * learning_rate over all boosts.
+        - Inf.(x_i, x_i) = sum of grad(x_i) * grad(x_i) * leaf_weight * learning_rate over all boosts.
         - Pos. value means a decrease in loss (a.k.a. proponent, helpful).
         - Neg. value means an increase in loss (a.k.a. opponent, harmful).
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) = sum of -grad(x_i) * -grad(x_t) * learning_rate over all boosts.
+        - Inf.(x_i, x_t) = sum of grad(x_i) * grad(x_t) * leaf_weight * learning_rate over all boosts.
         - Pos. value means a decrease in test loss (a.k.a. proponent, helpful).
         - Neg. value means an increase in test loss (a.k.a. opponent, harmful).
 
@@ -90,9 +90,13 @@ class BoostIn(Explainer):
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
         """
-        # compute self influence, shape=(no. train, no. boost, no. class)
-        influence = self.train_gradients_ * self.train_gradients_ * self.learning_rate_
+        lr = self.learning_rate_
+        train_gradients = self.train_gradients_
+
+        train_weights = self._get_leaf_weights(self.train_leaves_)
+        influence = train_gradients * train_gradients * train_weights * lr  # shape=(no. train, no. boost, no. class)
         influence = influence.sum(axis=(1, 2))  # sum over boosts and classes
+
         return influence
 
     def get_local_influence(self, X, y):
