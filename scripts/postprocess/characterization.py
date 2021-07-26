@@ -1,5 +1,5 @@
 """
-Measure correlation between two influence methods.
+Characterize the examples being deleted.
 """
 import os
 import sys
@@ -10,6 +10,7 @@ import resource
 from datetime import datetime
 
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import log_loss
 
@@ -109,6 +110,69 @@ def experiment(args, logger, out_dir):
                         ax.plot(x, y, color=color[method], linestyle=line[method], label=label[method])
                         ax.set_xlabel('% train data removed')
                         ax.set_ylabel('Log loss of removed examples')
+
+    else:  # local
+
+        fig, ax = plt.subplots()
+        
+        for method, res in results:
+
+            # if method != 'boostin_a13c8d352d437d05a9ea0fa682414bd0':
+            #     continue
+
+            if 'trex' in method:
+                continue
+
+            elif 'minority_' in method:
+                continue
+
+            elif 'boostin_9e' in method:
+                continue
+
+            elif 'boostin_08' in method:
+                continue
+
+            pred = res['pred']
+
+            idxs = np.zeros(pred.shape[0], dtype=np.int32)
+            for idx in range(idxs.shape[0]):
+                init_pred = 1.0 if pred[idx][0] >= 0.5 else 0
+
+                if init_pred == 0:
+                    r = np.where(pred[idx] >= 0.5)[0]
+                else:
+                    r = np.where(pred[idx] < 0.5)[0]
+
+                if len(r) == 0:
+                    idxs[idx] = -1
+                else:
+                    idxs[idx] = r[0]
+
+
+            fracs = res['remove_frac'][0][idxs] * 100
+            print(method, idxs, fracs, fracs.shape)
+
+            fracs = fracs[np.where(fracs <= 5)]  # cutoff
+
+            sns.histplot(fracs, stat='count', cumulative=True, fill=False, element='step', ax=ax,
+                         color=color[method], label=label[method], alpha=0.65)
+
+            # exit(0)
+
+            # if method in ['boostin_a13c8d352d437d05a9ea0fa682414bd0', 'random_']:
+            # inf = res['influence']
+
+            # print(method)
+            # print(res)
+            # exit(0)
+
+            # print(f'[test] no. nonzero: {len(np.where(inf[:, 1] != 0)[0])}')
+
+            # sns.histplot(inf[:, 9], stat='count', log_scale=True,
+            #              ax=ax, color=color[method], label=method)
+
+        ax.legend(fontsize=6)
+        ax.set_xlabel('% train removed to flip pred.')
 
 
     plt_dir = os.path.join(args.out_dir, args.inf_obj)

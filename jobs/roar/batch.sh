@@ -50,7 +50,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $da $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $da $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/roar/primer.sh $sk $da $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iog $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $da $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
@@ -67,7 +67,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dbm $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $dbm $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/roar/primer.sh $sk $dbm $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/roar/primer.sh $sk $dbm $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/roar/primer.sh $sk $dbm $tt $mbi $tf $us1 $iog $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dbm $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $dbm $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $dbm $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
@@ -84,7 +84,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dc $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # random
 ./jobs/roar/primer.sh $sk $dc $tt $mm  $tf $us1 $iol $lon $gos 3 300 $ps  # minority
 ./jobs/roar/primer.sh $sk $dc $tt $ms  $tf $us1 $iol $lon $gos 3 300 $ps  # similarity
-./jobs/roar/primer.sh $sk $dc $tt $mbi $tf $us1 $iol $lon $gos 3 300 $ps  # boostin
+./jobs/roar/primer.sh $sk $dc $tt $mbi $tf $us1 $iog $lon $gos 3 300 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dc $tt $mbi $tf $us1 $iol $log $gos 3 300 $ps
 ./jobs/roar/primer.sh $sk $dc $tt $mbi $tf $us1 $iol $los $gos 3 300 $ps
 ./jobs/roar/primer.sh $sk $dc $tt $mtx $tf $us1 $iol $lon $gos 3 300 $ps  # trex
@@ -101,7 +101,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dco $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # randoms
 ./jobs/roar/primer.sh $sk $dco $tt $mm  $tf $us1 $iol $lon $gos 3 300 $ps  # minority
 ./jobs/roar/primer.sh $sk $dco $tt $ms  $tf $us1 $iol $lon $gos 3 300 $ps  # similarity
-./jobs/roar/primer.sh $sk $dco $tt $mbi $tf $us1 $iol $lon $gos 3 300 $ps  # boostin
+./jobs/roar/primer.sh $sk $dco $tt $mbi $tf $us1 $iog $lon $gos 3 300 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dco $tt $mbi $tf $us1 $iol $log $gos 3 300 $ps
 ./jobs/roar/primer.sh $sk $dco $tt $mbi $tf $us1 $iol $los $gos 3 300 $ps
 ./jobs/roar/primer.sh $sk $dco $tt $mtx $tf $us1 $iol $lon $gos 3 300 $ps  # trex
@@ -118,7 +118,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dcc $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # random
 ./jobs/roar/primer.sh $sk $dcc $tt $mm  $tf $us1 $iol $lon $gos 3 300 $ps  # minority
 ./jobs/roar/primer.sh $sk $dcc $tt $ms  $tf $us1 $iol $lon $gos 3 300 $ps  # similarity
-./jobs/roar/primer.sh $sk $dcc $tt $mbi $tf $us1 $iol $lon $gos 3 300 $ps  # boostin
+./jobs/roar/primer.sh $sk $dcc $tt $mbi $tf $us1 $iog $lon $gos 3 300 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dcc $tt $mbi $tf $us1 $iol $log $gos 3 300 $ps
 ./jobs/roar/primer.sh $sk $dcc $tt $mbi $tf $us1 $iol $los $gos 3 300 $ps
 ./jobs/roar/primer.sh $sk $dcc $tt $mtx $tf $us1 $iol $lon $gos 3 300 $ps  # trex
@@ -135,7 +135,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dd $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 ./jobs/roar/primer.sh $sk $dd $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/roar/primer.sh $sk $dd $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iog $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -152,7 +152,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dfd $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 ./jobs/roar/primer.sh $sk $dfd $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/roar/primer.sh $sk $dfd $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iog $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dfd $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -169,7 +169,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dgc $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 ./jobs/roar/primer.sh $sk $dgc $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/roar/primer.sh $sk $dgc $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/roar/primer.sh $sk $dgc $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $dgc $tt $mbi $tf $us1 $iog $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dgc $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dgc $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dgc $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -186,7 +186,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dl $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 ./jobs/roar/primer.sh $sk $dl $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/roar/primer.sh $sk $dl $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/roar/primer.sh $sk $dl $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $dl $tt $mbi $tf $us1 $iog $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dl $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dl $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dl $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -203,7 +203,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $do $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 ./jobs/roar/primer.sh $sk $do $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/roar/primer.sh $sk $do $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/roar/primer.sh $sk $do $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $do $tt $mbi $tf $us1 $iog $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $do $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $do $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $do $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -220,7 +220,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dsb $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 ./jobs/roar/primer.sh $sk $dsb $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/roar/primer.sh $sk $dsb $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/roar/primer.sh $sk $dsb $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $dsb $tt $mbi $tf $us1 $iog $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dsb $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dsb $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dsb $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -237,7 +237,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $ds $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $ds $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/roar/primer.sh $sk $ds $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iog $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
@@ -254,7 +254,7 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dv $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 ./jobs/roar/primer.sh $sk $dv $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/roar/primer.sh $sk $dv $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iog $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $dv $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex

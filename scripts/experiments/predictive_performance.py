@@ -153,9 +153,18 @@ def experiment(args, logger, out_dir):
         if objective == 'regression':
             skf = args.cv
             scoring = 'neg_mean_squared_error'
+
         else:
-            skf = StratifiedKFold(n_splits=args.cv, shuffle=True, random_state=args.random_state)
             scoring = 'accuracy'
+
+            if objective == 'binary':
+                pct_neg = len(np.where(y_train == 0)[0]) / len(y_train)
+                pct_pos = len(np.where(y_train == 1)[0]) / len(y_train)
+
+                if pct_neg < args.imb_thresh or pct_pos < args.imb_thresh:  # 20% imbalanced or more, use AUC
+                    scoring = 'roc_auc'
+
+            skf = StratifiedKFold(n_splits=args.cv, shuffle=True, random_state=args.random_state)
 
         gs = GridSearchCV(model, param_grid, scoring=scoring, cv=skf, verbose=args.verbose)
         gs = gs.fit(X_train_sub, y_train_sub)
@@ -261,6 +270,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_neighbors', type=int, default=3)
 
     # Extra settings
+    parser.add_argument('--imb_thresh', type=float, default=0.21)
     parser.add_argument('--verbose', type=int, default=2)
 
     args = parser.parse_args()
