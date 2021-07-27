@@ -292,7 +292,7 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dtw $tt $mbi $tf $us1 $iol $lon $gos 11  600    $ps  # boostin
 ./jobs/ci/primer.sh     $dtw $tt $mbi $tf $us1 $iol $log $gos 11  600    $ps
 ./jobs/ci/primer.sh     $dtw $tt $mbi $tf $us1 $iol $los $gos 11  600    $ps
-./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $gos 60  1440   $ps  # trex
+./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $gos 70  1440   $ps  # trex
 # ./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $goe 6   600    $ps
 # ./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $goa 11  600    $ps
 # ./jobs/ci/primer.sh     $dtw $tt $mli $tf $us1 $iol $lon $gos 11  10080 $p2  # leaf_influence
