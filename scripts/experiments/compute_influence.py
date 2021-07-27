@@ -140,8 +140,8 @@ def main(args):
     # get method params and unique settings hash
     params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
-    # special case
-    if args.dataset == 'flight_delays' and  args.method == 'trex':
+    # special cases
+    if args.dataset in ['flight_delays', 'twitter'] and  args.method == 'trex':
         params['atol'] = 1e-1
 
     # create output dir

@@ -135,15 +135,15 @@ goa='alpha'  # TREX only
 # diabetes
 ./jobs/ci/primer.sh     $dd $tt $mr  $tf $us1 $iol $lon $gos 3  60    $ps  # random
 ./jobs/ci/primer.sh     $dd $tt $mm  $tf $us1 $iol $lon $gos 3  60    $ps  # minority
-./jobs/ci/primer.sh     $dd $tt $ms  $tf $us1 $iol $lon $gos 15 60    $ps  # similarity
+./jobs/ci/primer.sh     $dd $tt $ms  $tf $us1 $iol $lon $gos 7  60    $ps  # similarity
 ./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
-./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $gos 15 60    $ps  # trex
+./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $gos 9  60    $ps  # trex
 # ./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $goe 30 60    $ps
 # ./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $goa 15 60    $ps
 # ./jobs/ci/primer.sh     $dd $tt $mli $tf $us1 $iol $lon $gos 3  10080 $p2  # leaf_influence
-./jobs/ci/primer.sh     $dd $tt $mli $tf $us0 $iol $lon $gos 6  1440  $ps
+./jobs/ci/primer.sh     $dd $tt $mli $tf $us0 $iol $lon $gos 7  1440  $ps
 ./jobs/ci/primer_mcu.sh $dd $tt $mlo $tf $us1 $iol $lon $gos 5  1440  $ps  # loo
 # ./jobs/ci/primer_mcu.sh $dd $tt $mlo $tf $us1 $iol $lon $goe 28 600   $ps
 # ./jobs/ci/primer_mcu.sh $dd $tt $mds $tf $us1 $iol $lon $gos 28 1440  $ps  # dshap
@@ -292,12 +292,12 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dtw $tt $mbi $tf $us1 $iol $lon $gos 11  600    $ps  # boostin
 ./jobs/ci/primer.sh     $dtw $tt $mbi $tf $us1 $iol $log $gos 11  600    $ps
 ./jobs/ci/primer.sh     $dtw $tt $mbi $tf $us1 $iol $los $gos 11  600    $ps
-./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $gos 21  600    $ps  # trex
+./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $gos 60  1440   $ps  # trex
 # ./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $goe 6   600    $ps
 # ./jobs/ci/primer.sh     $dtw $tt $mtx $tf $us1 $iol $lon $goa 11  600    $ps
 # ./jobs/ci/primer.sh     $dtw $tt $mli $tf $us1 $iol $lon $gos 11  10080 $p2  # leaf_influence
-./jobs/ci/primer.sh     $dtw $tt $mli $tf $us0 $iol $lon $gos 11  1440  $ps
-./jobs/ci/primer_mcu.sh $dtw $tt $mlo $tf $us1 $iol $lon $gos 10  1440  $ps  # loo
+./jobs/ci/primer.sh     $dtw $tt $mli $tf $us0 $iol $lon $gos 60  1440  $ps
+./jobs/ci/primer_mcu.sh $dtw $tt $mlo $tf $us1 $iol $lon $gos 28  1440  $ps  # loo
 # ./jobs/ci/primer_mcu.sh $dtw $tt $mlo $tf $us1 $iol $lon $goe 28 600   $ps
 # ./jobs/ci/primer_mcu.sh $dtw $tt $mds $tf $us1 $iol $lon $gos 28 1440  $ps  # dshap
 # ./jobs/ci/primer_mcu.sh $dtw $tt $mds $tf $us1 $iol $lon $goe 28 1440  $ps
