@@ -137,8 +137,8 @@ if __name__ == '__main__':
 
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'minority', 'similarity', 'loss', 'boostin', 'trex',
-                                 'leaf_influence', 'loo', 'dshap'])
+                        default=['random', 'target', 'similarity', 'boostin', 'trex',
+                                 'leaf_influence', 'loo', 'dshap'])  # no minority, loss
     parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
     parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sim'])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence

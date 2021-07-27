@@ -117,7 +117,7 @@ def get_data(data_dir, dataset):
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
                    'diabetes', 'flight_delays', 'compas', 'credit_card', 'spambase',
                    'german_credit', 'htru2', 'no_show', 'twitter', 'higgs']
-    d['multiclass'] = ['synth_multiclass', 'poker']
+    d['multiclass'] = ['synth_multiclass', 'poker', 'bean']
 
     objective = ''
     for k in d.keys():
@@ -366,7 +366,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['diabetes'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
     lgb['flight_delays'] = {'n_estimators': 100, 'num_leaves': 91, 'max_depth': -1}
     lgb['german_credit'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
-    lgb['hrtu2'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
+    lgb['htru2'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
     lgb['no_show'] = {'n_estimators': 50, 'num_leaves': 61, 'max_depth': -1}
     lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
