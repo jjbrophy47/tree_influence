@@ -4,6 +4,7 @@ sk=1  # if 1, skip already present results
 
 da='adult'
 dbm='bank_marketing'
+dbn='bean'
 dc='casp'
 dco='compas'
 dcc='credit_card'
@@ -86,6 +87,24 @@ goa='alpha'  # TREX only
 # ./jobs/roar/primer.sh $sk $dbm $tt $mds $tf $us1 $iol $lon $gos 3 120 $ps  # dshap
 # ./jobs/roar/primer.sh $sk $dbm $tt $mds $tf $us1 $iol $lon $goe 3 120 $ps
 
+# bean
+./jobs/roar/primer.sh $sk $dbn $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
+# ./jobs/roar/primer.sh $sk $dbn $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
+./jobs/roar/primer.sh $sk $dbn $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
+./jobs/roar/primer.sh $sk $dbn $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
+./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
+# ./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $goe 3 120 $ps
+# ./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $goa 3 120 $ps
+# ./jobs/roar/primer.sh $sk $dbn $tt $mli $tf $us1 $iol $lon $gos 3 120 $p2  # leaf_influence
+./jobs/roar/primer.sh $sk $dbn $tt $mli $tf $us0 $iol $lon $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mlo $tf $us1 $iol $lon $gos 3 120 $ps  # loo
+# ./jobs/roar/primer.sh $sk $dbn $tt $mlo $tf $us1 $iol $lon $goe 3 120 $ps
+# ./jobs/roar/primer.sh $sk $dbn $tt $mds $tf $us1 $iol $lon $gos 3 120 $ps  # dshap
+# ./jobs/roar/primer.sh $sk $dbn $tt $mds $tf $us1 $iol $lon $goe 3 120 $ps
+
 # casp
 ./jobs/roar/primer.sh $sk $dc $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # random
 # ./jobs/roar/primer.sh $sk $dc $tt $mm  $tf $us1 $iol $lon $gos 3 300 $ps  # minority
@@ -105,7 +124,7 @@ goa='alpha'  # TREX only
 # ./jobs/roar/primer.sh $sk $dc $tt $mds $tf $us1 $iol $lon $goe 3 300 $ps
 
 # compas
-./jobs/roar/primer.sh $sk $dco $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # randoms
+./jobs/roar/primer.sh $sk $dco $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # random
 # ./jobs/roar/primer.sh $sk $dco $tt $mm  $tf $us1 $iol $lon $gos 3 300 $ps  # minority
 ./jobs/roar/primer.sh $sk $dco $tt $mtg $tf $us1 $iol $lon $gos 3 300 $ps  # target
 ./jobs/roar/primer.sh $sk $dco $tt $ms  $tf $us1 $iol $lon $gos 3 300 $ps  # similarity

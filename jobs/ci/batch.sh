@@ -2,6 +2,7 @@ tt='lgb'
 
 da='adult'
 dbm='bank_marketing'
+dbn='bean'
 dc='casp'
 dco='compas'
 dcc='credit_card'
@@ -83,6 +84,24 @@ goa='alpha'  # TREX only
 # ./jobs/ci/primer_mcu.sh $dbm $tt $mlo $tf $us1 $iol $lon $goe 28 600   $ps
 # ./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iol $lon $gos 28 1440  $ps  # dshap
 # ./jobs/ci/primer_mcu.sh $dbm $tt $mds $tf $us1 $iol $lon $goe 28 1440  $ps
+
+# bean
+./jobs/ci/primer.sh     $dbn $tt $mr  $tf $us1 $iol $lon $gos 3  60    $ps  # random
+# ./jobs/ci/primer.sh     $dbn $tt $mm  $tf $us1 $iol $lon $gos 3  60    $ps  # minority
+./jobs/ci/primer.sh     $dbn $tt $mtg $tf $us1 $iol $lon $gos 3  60    $ps  # target
+./jobs/ci/primer.sh     $dbn $tt $ms  $tf $us1 $iol $lon $goe 3  60    $ps  # similarity
+./jobs/ci/primer.sh     $dbn $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
+./jobs/ci/primer.sh     $dbn $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
+./jobs/ci/primer.sh     $dbn $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $dbn $tt $mtx $tf $us1 $iol $lon $gos 3  60    $ps  # trex
+# ./jobs/ci/primer.sh     $dbn $tt $mtx $tf $us1 $iol $lon $goe 6  60    $ps
+# ./jobs/ci/primer.sh     $dbn $tt $mtx $tf $us1 $iol $lon $goa 3  60    $ps
+# ./jobs/ci/primer.sh     $dbn $tt $mli $tf $us1 $iol $lon $gos 3  10080 $p2  # leaf_influence
+./jobs/ci/primer.sh     $dbn $tt $mli $tf $us0 $iol $lon $gos 3  1440  $ps
+./jobs/ci/primer_mcu.sh $dbn $tt $mlo $tf $us1 $iol $lon $gos 5  600   $ps  # loo
+# ./jobs/ci/primer_mcu.sh $dbn $tt $mlo $tf $us1 $iol $lon $goe 28 600   $ps
+# ./jobs/ci/primer_mcu.sh $dbn $tt $mds $tf $us1 $iol $lon $gos 28 1440  $ps  # dshap
+# ./jobs/ci/primer_mcu.sh $dbn $tt $mds $tf $us1 $iol $lon $goe 28 1440  $ps
 
 # casp
 ./jobs/ci/primer.sh     $dc $tt $mr  $tf $us1 $iol $lon $gos 3  60    $ps  # random

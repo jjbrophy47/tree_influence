@@ -116,7 +116,7 @@ def get_data(data_dir, dataset):
     d['regression'] = ['synth_regression', 'casp', 'obesity', 'life', 'online_news']
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
                    'diabetes', 'flight_delays', 'compas', 'credit_card', 'spambase',
-                   'german_credit', 'htru2', 'no_show', 'twitter', 'higgs']
+                   'german_credit', 'htru2', 'no_show', 'twitter', 'higgs', 'uav']
     d['multiclass'] = ['synth_multiclass', 'poker', 'bean']
 
     objective = ''
@@ -360,6 +360,7 @@ def get_hyperparams(tree_type, dataset):
     lgb = {}
     lgb['adult'] = {'n_estimators': 100, 'num_leaves': 31, 'max_depth': -1}
     lgb['bank_marketing'] = {'n_estimators': 50, 'num_leaves': 31, 'max_depth': -1}
+    lgb['bean'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
     lgb['casp'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['compas'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
     lgb['credit_card'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
@@ -378,6 +379,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['synth_multiclass'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['synth_regression'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
     lgb['twitter'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['uav'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
     lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
 
     hp = {}
