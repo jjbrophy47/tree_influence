@@ -182,6 +182,8 @@ class LeafInfluenceGBDT(Explainer):
                 doc2leaf = trees[boost_idx, class_idx].apply(X)
                 leaf2doc = {}
 
+                print(doc2leaf, np.where(doc2leaf < 0)[0])
+
                 # update predictions for this class
                 doc_preds[:, class_idx] = leaf_vals[doc2leaf]
 
@@ -195,6 +197,8 @@ class LeafInfluenceGBDT(Explainer):
                     leaf_enumerator = np.sum(gradient[doc_ids, class_idx])
                     leaf_denominator = np.sum(hessian[doc_ids, class_idx]) + l2_leaf_reg
                     leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
+
+                    print(leaf_idx, len(doc_ids), leaf_enumerator, leaf_denominator, leaf_prediction, leaf_vals[leaf_idx])
 
                     # compare leaf values to actual leaf values
                     assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=self.atol)

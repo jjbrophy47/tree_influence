@@ -7,6 +7,7 @@ from .explainers import Random
 from .explainers import Minority
 from .explainers import Loss
 from .explainers import Similarity
+from .explainers import Target
 
 
 class TreeExplainer(object):
@@ -30,6 +31,7 @@ class TreeExplainer(object):
         - Random Minority
         - Loss
         - Similarity
+        - Target
     """
     def __init__(self, method='boostin', params={}, logger=None):
 
@@ -59,6 +61,9 @@ class TreeExplainer(object):
 
         elif method == 'similarity':
             self.explainer = Similarity(**params, logger=logger)
+
+        elif method == 'target':
+            self.explainer = Target(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')

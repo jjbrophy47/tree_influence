@@ -7,3 +7,4 @@ from .random import Random
 from .minority import Minority
 from .loss import Loss
 from .similarity import Similarity
+from .target import Target

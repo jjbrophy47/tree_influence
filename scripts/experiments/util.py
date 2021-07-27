@@ -377,7 +377,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['synth_binary'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['synth_multiclass'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['synth_regression'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
-    lgb['twitter'] = {'n_estimators ': 200, 'num_leaves': 91, 'max_depth': -1}
+    lgb['twitter'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
 
     hp = {}

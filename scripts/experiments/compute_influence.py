@@ -141,8 +141,11 @@ def main(args):
     params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
     # special cases
-    if args.dataset in ['flight_delays', 'twitter'] and  args.method == 'leaf_influence':
-        params['atol'] = 1e-1
+    if args.method == 'leaf_influence':
+        if args.dataset == 'flight_delays':
+            params['atol'] = 1e-1
+        elif args.dataset == 'twitter':
+            params['atol'] = 1e-0
 
     # create output dir
     out_dir = os.path.join(args.out_dir,
