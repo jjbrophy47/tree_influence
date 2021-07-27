@@ -7,7 +7,7 @@ update_set=$6
 inf_obj=$7
 local_op=$8
 global_op=$9
-mem=${10}
+ncpu=${10}
 time=${11}
 partition=${12}
 
@@ -27,7 +27,7 @@ for inf_obj in ${inf_obj_list[@]}; do
 
     job_name=RR_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
 
-    sbatch --mem=${mem}G \
+    sbatch --cpus-per-task=$ncpu \
            --time=$time \
            --partition=$partition \
            --job-name=$job_name \

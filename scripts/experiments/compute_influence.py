@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='global')
-    parser.add_argument('--n_test', type=int, default=50)  # local
+    parser.add_argument('--n_test', type=int, default=100)  # local
 
     args = parser.parse_args()
     main(args)

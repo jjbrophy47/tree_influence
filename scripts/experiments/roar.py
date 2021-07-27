@@ -4,6 +4,7 @@ Evaluate influence value ranking via remove and retrain.
 import os
 import sys
 import time
+import joblib
 import hashlib
 import argparse
 import resource
@@ -18,16 +19,17 @@ import intent
 import util
 
 
-def remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test, y_test, logger):
+def remove_and_retrain(inf_obj, objective, ranking, tree, X_train, y_train,
+                       X_test, y_test, remove_frac, n_ckpt, logger):
 
     # get appropriate evaluation function
-    eval_fn = util.eval_pred if args.inf_obj == 'global' else util.eval_loss
+    eval_fn = util.eval_pred if inf_obj == 'global' else util.eval_loss
 
     # pre-removal performance
     res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
 
     # get list of remove fractions
-    remove_frac_arr = np.linspace(0, args.remove_frac, args.n_ckpt + 1)[1:]
+    remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)[1:]
 
     # result container
     result = {}
@@ -95,29 +97,55 @@ def experiment(args, logger, params, in_dir, out_dir):
     # sort influence starting from most pos. to most neg.
     if args.inf_obj == 'global':
         ranking = np.argsort(influence)[::-1]
-        res = remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_test, y_test, logger)
+        res = remove_and_retrain(args.inf_obj, objective, ranking, tree, X_train, y_train,
+                                 X_test, y_test, args.remove_frac, args.n_ckpt, logger)
         result.update(res)  # add ROAR results to result object
 
     else:
-        assert 'local' in args.inf_obj
+        assert args.inf_obj == 'local', 'only local supported!'
+
         test_idxs = inf_res['test_idxs']
 
-        # evaluate influence for each test example
-        res_list = []
-        for i, test_idx in enumerate(test_idxs):
-            logger.info(f'\nNo. {i}, test_idx {test_idx}, target {y_test[test_idx]}:')
-            X_temp = X_test[[test_idx]]
-            y_temp = y_test[[test_idx]]
+        # get no. jobs to run in parallel
+        if args.n_jobs == -1:
+            n_jobs = joblib.cpu_count()
 
-            ranking = np.argsort(influence[:, i])
-            ranking = ranking if args.inf_obj == 'local_incorrect' else ranking[::-1]
+        else:
+            assert args.n_jobs >= 1
+            n_jobs = min(args.n_jobs, joblib.cpu_count())
 
-            res = remove_and_retrain(args, objective, ranking, tree, X_train, y_train, X_temp, y_temp, logger)
-            res_list.append(res)
+        logger.info(f'[INFO] no. jobs: {n_jobs:,}')
 
-        # combine results from each test example
-        for key in res.keys():
-            result[key] = np.vstack([r[key] for r in res_list])  # shape=(no. test, no. completed ckpts)
+        with joblib.Parallel(n_jobs=n_jobs) as parallel:
+
+            n_finish = 0
+            n_remain = len(test_idxs)
+
+            res_list = []
+
+            while n_remain > 0:
+                n = min(min(10, n_jobs), n_remain)
+
+                results = parallel(joblib.delayed(remove_and_retrain)
+                                                 (args.inf_obj, objective,
+                                                  np.argsort(influence[:, n_finish + i])[::-1],
+                                                  tree, X_train, y_train, X_test[[idx]], y_test[[idx]],
+                                                  args.remove_frac, args.n_ckpt, logger)
+                                                  for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
+
+                # synchronization barrier
+                res_list += results
+
+                n_finish += n
+                n_remain -= n
+
+                cum_time = time.time() - start
+                logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
+                            f', cum. time: {cum_time:.3f}s')
+
+            # combine results from each test example
+            for key in res_list[0].keys():
+                result[key] = np.vstack([r[key] for r in res_list])  # shape=(no. test, no. completed ckpts)
 
     roar_time = time.time() - start
     logger.info(f'ROAR time: {roar_time:.5f}s')
@@ -201,7 +229,6 @@ if __name__ == '__main__':
     parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
     parser.add_argument('--check_every', type=int, default=100)  # DShap
 
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
     parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
 
@@ -209,7 +236,8 @@ if __name__ == '__main__':
     parser.add_argument('--skip', type=int, default=0)
     parser.add_argument('--inf_obj', type=str, default='global')
     parser.add_argument('--remove_frac', type=float, default=0.5)
-    parser.add_argument('--n_ckpt', type=int, default=100)
+    parser.add_argument('--n_ckpt', type=int, default=200)
+    parser.add_argument('--n_jobs', type=int, default=-1)
 
     args = parser.parse_args()
     main(args)
