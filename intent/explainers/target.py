@@ -70,7 +70,7 @@ class Target(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=util.dtype_t)
 
         for i in range(X.shape[0]):
             influence[:, i] = self._get_influence(target=y[i], seed=i + 1)
@@ -89,7 +89,7 @@ class Target(Explainer):
         """
         rng = np.random.default_rng(self.random_state + seed)
 
-        influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)
+        influence = np.zeros(self.X_train_.shape[0], dtype=util.dtype_t)
 
         if self.objective_ in ['binary', 'multiclass']:
             target_idxs = np.where(self.y_train_ == target)[0]

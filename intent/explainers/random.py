@@ -50,7 +50,7 @@ class Random(Explainer):
             - 1d array of shape=(no. train,).
                 * Arrays are returned in the same order as the traing data.
         """
-        influence = self.rng_.standard_normal(size=self.n_train_, dtype=np.float32)
+        influence = self.rng_.standard_normal(size=self.n_train_, dtype=util.dtype_t)
         return influence
 
     def get_local_influence(self, X, y):
@@ -64,5 +64,5 @@ class Random(Explainer):
                 * Array is returned in the same order as the training data.
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
-        influence = self.rng_.standard_normal(size=(self.n_train_, X.shape[0]), dtype=np.float32)
+        influence = self.rng_.standard_normal(size=(self.n_train_, X.shape[0]), dtype=util.dtype_t)
         return influence

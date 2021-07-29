@@ -1,3 +1,4 @@
+import time
 from abc import abstractmethod
 
 from .parsers import parse_model
@@ -21,9 +22,11 @@ class Explainer(object):
             X: training data.
             y: training targets.
         """
+        start = time.time()
         self.model_ = parse_model(model, X, y)
         assert self.model_.tree_type in ['rf', 'gbdt']
         assert self.model_.objective in ['regression', 'binary', 'multiclass']
+        self.parse_time_ = time.time() - start
 
     @abstractmethod
     def get_global_influence(self, X=None, y=None):

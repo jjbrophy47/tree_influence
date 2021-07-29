@@ -1,6 +1,9 @@
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
+# constants
+dtype_t = np.float64
+
 
 def check_data(X, y=None, objective='regression'):
     """
@@ -32,11 +35,11 @@ def check_data(X, y=None, objective='regression'):
 
 def check_input_data(X):
     """
-    Makes sure data is of np.float32 type.
+    Makes sure data is of dtype_t type.
     """
     assert X.ndim == 2
-    if X.dtype != np.float32:
-        X = X.astype(np.float32)
+    if X.dtype != dtype_t:
+        X = X.astype(dtype_t)
     return X
 
 
@@ -65,11 +68,11 @@ def check_multiclass_targets(y):
 
 def check_regression_targets(y):
     """
-    Makes sure regression targets are of np.float32 type.
+    Makes sure regression targets are of dtype_t type.
     """
     assert y.ndim == 1
-    if y.dtype != np.float32:
-        y = y.astype(np.float32)
+    if y.dtype != dtype_t:
+        y = y.astype(dtype_t)
     return y
 
 
@@ -90,7 +93,7 @@ def softmax(z):
     Returns 2d array of probability distributions of shape=z.shape.
     """
     if type(z) == list:
-        z = np.array(z, dtype=np.float32)
+        z = np.array(z, dtype=dtype_t)
     if z.ndim == 1:
         z = z.reshape(1, -1)  # shape=(1, len(z))
     centered_exponent = np.exp(z - np.max(z, axis=1, keepdims=True))
@@ -437,6 +440,6 @@ class SoftmaxLoss(object):
         if y.ndim == 1:
             class_cat = [np.arange(self.n_class).tolist()]
             y = y.reshape(-1, 1)
-            y = OneHotEncoder(categories=class_cat, sparse=False, dtype=np.float32).fit_transform(y)
+            y = OneHotEncoder(categories=class_cat, sparse=False, dtype=dtype_t).fit_transform(y)
 
         return y

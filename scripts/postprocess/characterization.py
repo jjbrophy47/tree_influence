@@ -12,6 +12,7 @@ from datetime import datetime
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import sem
 from sklearn.metrics import log_loss
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -111,25 +112,22 @@ def experiment(args, logger, out_dir):
                         ax.set_xlabel('% train data removed')
                         ax.set_ylabel('Log loss of removed examples')
 
+    # TODO: add support for multiclass
+    # TODO: add support for regression
     else:  # local
 
-        fig, ax = plt.subplots()
+        assert objective == 'binary'
+
+        fig, axs = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
         
         for method, res in results:
 
-            # if method != 'boostin_a13c8d352d437d05a9ea0fa682414bd0':
-            #     continue
-
-            if 'trex' in method:
-                continue
-
-            elif 'minority_' in method:
-                continue
-
-            elif 'boostin_9e' in method:
-                continue
-
-            elif 'boostin_08' in method:
+            include = True
+            for skip in args.skip:
+                if skip in method:
+                    include = False
+                    break
+            if not include:
                 continue
 
             pred = res['pred']
@@ -150,29 +148,27 @@ def experiment(args, logger, out_dir):
 
 
             fracs = res['remove_frac'][0][idxs] * 100
-            print(method, idxs, fracs, fracs.shape)
+            fracs_zoom = fracs[np.where(fracs <= args.zoom)]  # cutoff
 
-            fracs = fracs[np.where(fracs <= 5)]  # cutoff
+            f_mean, f_std = fracs.mean(), sem(fracs)
+            fz_mean, fz_std = fracs_zoom.mean(), sem(fracs_zoom)
 
-            sns.histplot(fracs, stat='count', cumulative=True, fill=False, element='step', ax=ax,
-                         color=color[method], label=label[method], alpha=0.65)
+            sns.histplot(fracs, stat='count', cumulative=True, fill=False, element='step', ax=axs[0],
+                         color=color[method], linestyle=line[method], alpha=0.65,
+                         label=f'{label[method]}: {f_mean:.2f} +/- {f_std:.2f}')
 
-            # exit(0)
+            sns.histplot(fracs_zoom, stat='count', cumulative=True, fill=False, element='step', ax=axs[1],
+                         color=color[method], linestyle=line[method], alpha=0.65,
+                         label=f'{label[method]} ({len(fracs_zoom)}): {fz_mean:>5.2f} +/- {fz_std:>5.2f}')
 
-            # if method in ['boostin_a13c8d352d437d05a9ea0fa682414bd0', 'random_']:
-            # inf = res['influence']
+        legend = axs[0].legend(fontsize=6, title='Avg. % Rem.')
+        legend = axs[1].legend(fontsize=6, title='Avg. % Rem.')
 
-            # print(method)
-            # print(res)
-            # exit(0)
+        axs[0].set_xlabel('% train removed to flip pred.')
+        axs[1].set_xlabel('% train removed to flip pred.')
 
-            # print(f'[test] no. nonzero: {len(np.where(inf[:, 1] != 0)[0])}')
-
-            # sns.histplot(inf[:, 9], stat='count', log_scale=True,
-            #              ax=ax, color=color[method], label=method)
-
-        ax.legend(fontsize=6)
-        ax.set_xlabel('% train removed to flip pred.')
+        axs[0].set_ylabel('Cumulative no. test examples')
+        axs[1].set_ylabel('Cumulative no. test examples')
 
 
     plt_dir = os.path.join(args.out_dir, args.inf_obj)
@@ -220,8 +216,10 @@ if __name__ == '__main__':
 
     # Method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'minority', 'loss', 'boostin', 'trex',
+                        default=['random', 'target', 'boostin', 'trex', 'similarity',
                                  'leaf_influence', 'loo', 'dshap'])
+    parser.add_argument('--skip', type=str, nargs='+',
+                        default=['minority', 'loss', 'boostin_9e', 'boostin_08'])
     parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
     parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sim'])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
@@ -242,8 +240,8 @@ if __name__ == '__main__':
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
 
     # Experiment settings
-    parser.add_argument('--inf_obj', type=str, default='global')
-    parser.add_argument('--zoom', type=float, default=1.0)
+    parser.add_argument('--inf_obj', type=str, default='local')
+    parser.add_argument('--zoom', type=float, default=2.0)
     parser.add_argument('--n_sample', type=int, default=100)
 
     args = parser.parse_args()

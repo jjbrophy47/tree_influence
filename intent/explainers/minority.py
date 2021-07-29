@@ -71,7 +71,7 @@ class Minority(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=util.dtype_t)
 
         for i in range(X.shape[0]):
             influence[:, i] = self._get_influence(seed=i + 1)
@@ -90,7 +90,7 @@ class Minority(Explainer):
         """
         rng = np.random.default_rng(self.random_state + seed)
 
-        influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)
+        influence = np.zeros(self.X_train_.shape[0], dtype=util.dtype_t)
 
         if self.objective_ in ['binary', 'multiclass']:
             classes, counts = np.unique(self.y_train_, return_counts=True)

@@ -1,7 +1,7 @@
 import numpy as np
 cimport numpy as np
 
-ctypedef np.npy_float32 DTYPE_t          # Type of X
+ctypedef np.npy_float64 DTYPE_t          # Type of X
 ctypedef np.npy_intp    SIZE_t           # Type for indices and counters
 ctypedef np.npy_int32   INT32_t          # Signed 32 bit integer
 ctypedef np.npy_uint32  UINT32_t         # Unsigned 32 bit integer
@@ -46,13 +46,14 @@ cdef class _Tree:
     cdef SIZE_t     leaf_count_
 
     # Python API
-    cpdef np.ndarray predict(self, float[:, :] X)
-    cpdef np.ndarray apply(self, float[:, :] X)
+    cpdef np.ndarray predict(self, DTYPE_t[:, :] X)
+    cpdef np.ndarray apply(self, DTYPE_t[:, :] X)
     cpdef np.ndarray get_leaf_values(self)
     cpdef np.ndarray get_leaf_weights(self)
-    cpdef void       update_node_count(self, float[:, :] X)
-    cpdef np.ndarray leaf_path(self, float[:, :] X, bint output, bint weighted)
-    cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted)
+    cpdef void       update_node_count(self, DTYPE_t[:, :] X)
+    cpdef np.ndarray leaf_path(self, DTYPE_t[:, :] X, bint output, bint weighted)
+    cpdef np.ndarray feature_path(self, DTYPE_t[:, :] X, bint output, bint weighted)
+    cpdef str        tree_str(self)
 
     # C API
     cdef Node* _add_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
@@ -60,3 +61,4 @@ cdef class _Tree:
     cdef void  _get_leaf_values(self, Node* node, DTYPE_t* leaf_values) nogil
     cdef void  _get_leaf_weights(self, Node* node, DTYPE_t* leaf_weights) nogil
     cdef void  _dealloc(self, Node *node) nogil
+    cdef str   _tree_str(self, Node* node, str s)

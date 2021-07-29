@@ -66,9 +66,8 @@ def experiment(args, logger, params, out_dir):
 
     # compute infuence
     start = time.time()
-
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
-    fit_time = time.time() - start
+    fit_time = time.time() - start - explainer.parse_time_
 
     if args.inf_obj == 'global':
         start2 = time.time()
@@ -144,8 +143,6 @@ def main(args):
     if args.method == 'leaf_influence':
         if args.dataset == 'flight_delays':
             params['atol'] = 1e-1
-        elif args.dataset == 'twitter':
-            params['atol'] = 1e-0
 
     # create output dir
     out_dir = os.path.join(args.out_dir,

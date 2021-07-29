@@ -58,14 +58,12 @@ class LeafInfluence(Explainer):
         """
         Call the appropriate fit method.
         """
-        super().fit(model, X, y)
 
-        if self.model_.tree_type == 'gbdt':
-            explainer = LeafInfluenceGBDT(update_set=self.update_set, atol=self.atol, logger=self.logger)
+        if 'RandomForest' in str(model):
+            explainer = LeafInfluenceRF(logger=self.logger)
 
         else:
-            assert self.model_.tree_type == 'rf'
-            explainer = LeafInfluenceRF(logger=self.logger)
+            explainer = LeafInfluenceGBDT(update_set=self.update_set, atol=self.atol, logger=self.logger)
 
         explainer.fit(model, X, y)
 
@@ -94,6 +92,10 @@ class LeafInfluence(Explainer):
             - 2d array of local influence values of shape=(no. train, X.shape[0]).
         """
         return self.explainer_.get_local_influence(X, y)
+
+    @property
+    def model_(self):
+        return self.explainer_.model_
 
 
 class LeafInfluenceGBDT(Explainer):
@@ -152,19 +154,21 @@ class LeafInfluenceGBDT(Explainer):
         leaf_counts = self.model_.get_leaf_counts()  # shape=(no. boost, no. class)
 
         # intermediate containers
-        current_approx = np.tile(bias, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
+        current_approx = np.tile(bias, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
         leaf2docs = []  # list of leaf_idx -> doc_ids dicts
         n_prev_leaves = 0
 
         # result containers
-        naive_gradient_addendum = np.zeros((X.shape[0], n_boost, n_class), dtype=np.float32)
-        da_vector_multiplier = np.zeros((X.shape[0], n_boost, n_class), dtype=np.float32)
-        denominator = np.zeros(np.sum(leaf_counts), dtype=np.float32)  # shape=(total no. leaves,)
-        leaf_values = np.zeros(np.sum(leaf_counts), dtype=np.float32)  # shape=(total no. leaves,)
+        naive_gradient_addendum = np.zeros((X.shape[0], n_boost, n_class), dtype=util.dtype_t)
+        da_vector_multiplier = np.zeros((X.shape[0], n_boost, n_class), dtype=util.dtype_t)
+        denominator = np.zeros(np.sum(leaf_counts), dtype=util.dtype_t)  # shape=(total no. leaves,)
+        leaf_values = np.zeros(np.sum(leaf_counts), dtype=util.dtype_t)  # shape=(total no. leaves,)
+        n_not_close = 0
+        max_diff = 0
 
         # save gradient information of leaf values for each tree
         for boost_idx in range(n_boost):
-            doc_preds = np.zeros((X.shape[0], n_class), dtype=np.float32)
+            doc_preds = np.zeros((X.shape[0], n_class), dtype=util.dtype_t)
 
             # precompute gradient statistics
             gradient = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
@@ -182,8 +186,6 @@ class LeafInfluenceGBDT(Explainer):
                 doc2leaf = trees[boost_idx, class_idx].apply(X)
                 leaf2doc = {}
 
-                print(doc2leaf, np.where(doc2leaf < 0)[0])
-
                 # update predictions for this class
                 doc_preds[:, class_idx] = leaf_vals[doc2leaf]
 
@@ -198,10 +200,17 @@ class LeafInfluenceGBDT(Explainer):
                     leaf_denominator = np.sum(hessian[doc_ids, class_idx]) + l2_leaf_reg
                     leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
 
-                    print(leaf_idx, len(doc_ids), leaf_enumerator, leaf_denominator, leaf_prediction, leaf_vals[leaf_idx])
+                    # print(boost_idx, class_idx, leaf_idx, len(np.where(doc2leaf == leaf_idx)[0]),
+                    #       leaf_prediction, leaf_vals[leaf_idx])
+
+                    # if boost_idx == 21 and class_idx == 0 and leaf_idx == 41:
+                    #     idxs = np.where(doc2leaf == leaf_idx)[0]
 
                     # compare leaf values to actual leaf values
-                    assert np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=self.atol)
+                    # isclose = np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=self.atol)
+                    if not np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=1e-5):
+                        n_not_close += 1
+                        max_diff = max(max_diff, abs(leaf_prediction - leaf_vals[leaf_idx]))
 
                     # store statistics
                     denominator[n_prev_leaves + leaf_idx] = leaf_denominator
@@ -214,12 +223,18 @@ class LeafInfluenceGBDT(Explainer):
             current_approx += doc_preds  # update approximation
 
         # result container
-        leaf_derivatives = np.zeros((X.shape[0], np.sum(leaf_counts)), dtype=np.float32)
+        leaf_derivatives = np.zeros((X.shape[0], np.sum(leaf_counts)), dtype=util.dtype_t)
 
         # copy and compute new leaf values resulting from the removal of each x in X.
         start = time.time()
         if self.logger:
+            self.logger.info(f'\n[INFO] no. leaf vals not within {self.atol} tol.: {n_not_close:,}, '
+                             f'max. diff.: {max_diff:.5f}')
             self.logger.info(f'\n[INFO] computing alternate leaf values...')
+
+        # check predicted leaf values do not differ too much from actual model
+        if max_diff > self.atol:
+            raise ValueError(f'{max_diff:.5f} (max. diff.) > {self.atol} (tolerance)')
 
         for remove_idx in range(X.shape[0]):
 
@@ -229,7 +244,7 @@ class LeafInfluenceGBDT(Explainer):
                 self.logger.info(f'[INFO] {remove_idx + 1:,} / {X.shape[0]:,}: cum. time: {cum_time:.3f}s')
 
             # intermediate containers
-            da = np.zeros((X.shape[0], n_class), dtype=np.float32)
+            da = np.zeros((X.shape[0], n_class), dtype=util.dtype_t)
             tree_idx = 0
             n_prev_leaves = 0
 
@@ -283,7 +298,7 @@ class LeafInfluenceGBDT(Explainer):
             - 1d array of shape=(no. train,).
                 * Array is returned in the same order as the traing data.
         """
-        influence = np.zeros((self.X_train_.shape[0], 1, self.n_class_), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], 1, self.n_class_), dtype=util.dtype_t)
 
         # compute influence of each training example on itself
         for remove_idx in range(self.X_train_.shape[0]):
@@ -306,7 +321,7 @@ class LeafInfluenceGBDT(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=util.dtype_t)
 
         if self.logger:
             self.logger.info('\n[INFO] computing influence for each test example...')
@@ -340,8 +355,8 @@ class LeafInfluenceGBDT(Explainer):
         """
         doc2leaf = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
 
-        og_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
-        new_pred = np.zeros((X.shape[0], self.n_class_), dtype=np.float32)  # shape=(X.shape[0], no. class)
+        og_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
+        new_pred = np.zeros((X.shape[0], self.n_class_), dtype=util.dtype_t)  # shape=(X.shape[0], no. class)
 
         # get prediction of each test example using the original and new leaf values
         tree_idx = 0
@@ -453,8 +468,8 @@ class LeafInfluenceRF(Explainer):
 
             for boost_idx in range(n_boost):
 
-                og_leaf_val = np.zeros(n_class, dtype=np.float32)  # shape=(no. class,)
-                new_leaf_val = np.zeros(n_class, dtype=np.float32)  # shape=(no. class,)
+                og_leaf_val = np.zeros(n_class, dtype=util.dtype_t)  # shape=(no. class,)
+                new_leaf_val = np.zeros(n_class, dtype=util.dtype_t)  # shape=(no. class,)
                 leaf_ids = np.zeros(n_class, dtype=np.int32)  # shape=(no. class,)
 
                 og_boost_count = 0
@@ -493,7 +508,7 @@ class LeafInfluenceRF(Explainer):
 
                     else:
                         assert self.model_.objective == 'multiclass'
-                        new_leaf_val = np.full(n_class, 1.0 / n_class, dtype=np.float32)
+                        new_leaf_val = np.full(n_class, 1.0 / n_class, dtype=util.dtype_t)
 
                 # recompute the new leaf value
                 else:
@@ -527,7 +542,7 @@ class LeafInfluenceRF(Explainer):
             - 1d array of shape=(no. train,).
                 * Array is returned in the same order as the traing data.
         """
-        influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)
+        influence = np.zeros(self.X_train_.shape[0], dtype=util.dtype_t)
 
         # compute influence of each training example on itself
         for remove_idx in range(self.X_train_.shape[0]):
@@ -547,7 +562,7 @@ class LeafInfluenceRF(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=util.dtype_t)
 
         # compute influence of each training example on the test example
         for remove_idx in range(self.X_train_.shape[0]):
@@ -571,8 +586,8 @@ class LeafInfluenceRF(Explainer):
         """
         doc2leaf = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
 
-        og_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
-        new_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
+        og_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
+        new_pred = np.tile(self.bias_, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
 
         # get prediction of each test example using the original and new leaf values
         n_prev_leaves = 0

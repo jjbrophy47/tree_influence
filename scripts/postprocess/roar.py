@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # experiment settings
     parser.add_argument('--dataset', type=str, default='surgical')
     parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--inf_obj', type=str, default='global')
+    parser.add_argument('--inf_obj', type=str, default='local')
     parser.add_argument('--random_state', type=int, default=1)
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     # result settings
     parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'loss', 'acc', 'auc'])
     parser.add_argument('--std_err', type=int, default=0)
-    parser.add_argument('--zoom', type=float, default=1.0)
+    parser.add_argument('--zoom', type=float, default=0.1)
 
     args = parser.parse_args()
     main(args)

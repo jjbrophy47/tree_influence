@@ -19,6 +19,9 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+# constants
+cdef np_dtype_t = np.float64
+
 cdef class _Tree:
 
     property node_count_:
@@ -56,14 +59,14 @@ cdef class _Tree:
             self._dealloc(self.root_)
             free(self.root_)
 
-    cpdef np.ndarray predict(self, float[:, :] X):
+    cpdef np.ndarray predict(self, DTYPE_t[:, :] X):
         """
         Predict leaf values for x in X.
         """
 
         # In / out
         cdef SIZE_t n_samples = X.shape[0]
-        cdef np.ndarray[float] out = np.zeros((n_samples,), dtype=np.float32)
+        cdef np.ndarray[DTYPE_t] out = np.zeros((n_samples,), dtype=np_dtype_t)
 
         # Incrementers
         cdef SIZE_t i = 0
@@ -75,16 +78,25 @@ cdef class _Tree:
                 node = self.root_
 
                 while not node.is_leaf:
+
+                    # if i == 1246:
+                    #     printf('X[1246, %ld]: %.32f, node.threshold: %.32f, node.id: %ld, node.depth: %ld\n',
+                    #            node.feature, X[1246, node.feature], node.threshold, node.node_id, node.depth)
+
                     if X[i, node.feature] <= node.threshold:
                         node = node.left_child
                     else:
                         node = node.right_child
 
+                # if i == 1246:
+                #     printf('node.node_id: %ld, node.leaf_id: %ld, node.leaf_val: %.32f\n',
+                #            node.node_id, node.leaf_id, node.leaf_val)
+
                 out[i] = node.leaf_val
 
         return out
 
-    cpdef np.ndarray apply(self, float[:, :] X):
+    cpdef np.ndarray apply(self, DTYPE_t[:, :] X):
         """
         Predict leaf index for x in X.
         """
@@ -118,8 +130,8 @@ cdef class _Tree:
         """
 
         # result
-        cdef DTYPE_t* leaf_values = <DTYPE_t *>malloc(self.leaf_count_ * sizeof(DTYPE_t))
-        cdef DTYPE_t[:] out = np.zeros((self.leaf_count_,), dtype=np.float32)
+        cdef DTYPE_t*   leaf_values = <DTYPE_t *>malloc(self.leaf_count_ * sizeof(DTYPE_t))
+        cdef DTYPE_t[:] out = np.zeros((self.leaf_count_,), dtype=np_dtype_t)
 
         # incrementer
         cdef SIZE_t i = 0
@@ -142,7 +154,7 @@ cdef class _Tree:
 
         # result
         cdef DTYPE_t* leaf_weights = <DTYPE_t *>malloc(self.leaf_count_ * sizeof(DTYPE_t))
-        cdef DTYPE_t[:] out = np.zeros((self.leaf_count_,), dtype=np.float32)
+        cdef DTYPE_t[:] out = np.zeros((self.leaf_count_,), dtype=np_dtype_t)
 
         # incrementer
         cdef SIZE_t i = 0
@@ -158,7 +170,7 @@ cdef class _Tree:
 
         return np.asarray(out)
 
-    cpdef void update_node_count(self, float[:, :] X):
+    cpdef void update_node_count(self, DTYPE_t[:, :] X):
         """
         Increment each node count if x in X pass through it.
         """
@@ -185,16 +197,16 @@ cdef class _Tree:
 
                 node.count += 1
 
-    cpdef np.ndarray leaf_path(self, float[:, :] X, bint output, bint weighted):
+    cpdef np.ndarray leaf_path(self, DTYPE_t[:, :] X, bint output, bint weighted):
         """
         Return 2d vector of leaf one-hot encodings, shape=(X.shape[0], no. leaves).
         """
 
         # In / out
-        cdef SIZE_t n_samples = X.shape[0]
-        cdef SIZE_t n_leaves = self.leaf_count_
-        cdef DTYPE_t[:, :] out = np.zeros((n_samples, n_leaves), dtype=np.float32)
-        cdef DTYPE_t val = 1.0
+        cdef SIZE_t        n_samples = X.shape[0]
+        cdef SIZE_t        n_leaves = self.leaf_count_
+        cdef DTYPE_t[:, :] out = np.zeros((n_samples, n_leaves), dtype=np_dtype_t)
+        cdef DTYPE_t       val = 1.0
 
         # Incrementers
         cdef SIZE_t i = 0
@@ -223,7 +235,7 @@ cdef class _Tree:
 
         return np.asarray(out)
 
-    cpdef np.ndarray feature_path(self, float[:, :] X, bint output, bint weighted):
+    cpdef np.ndarray feature_path(self, DTYPE_t[:, :] X, bint output, bint weighted):
         """
         Return 2d vector of feature one-hot encodings, shape=(X.shape[0], no. nodes).
         """
@@ -231,7 +243,7 @@ cdef class _Tree:
         # In / out
         cdef SIZE_t n_samples = X.shape[0]
         cdef SIZE_t n_nodes = self.node_count_
-        cdef DTYPE_t[:, :] out = np.zeros((n_samples, n_nodes), dtype=np.float32)
+        cdef DTYPE_t[:, :] out = np.zeros((n_samples, n_nodes), dtype=np_dtype_t)
         cdef DTYPE_t val = 1.0
 
         # Incrementers
@@ -269,6 +281,12 @@ cdef class _Tree:
                 out[i][node.node_id] = val
 
         return np.asarray(out)
+
+    cpdef str tree_str(self):
+        """
+        Return string representation of the tree.
+        """
+        return self._tree_str(self.root_, '')
 
     # private
     cdef Node* _add_node(self,
@@ -385,3 +403,26 @@ cdef class _Tree:
         node.leaf_val = -1
         node.left_child = NULL
         node.right_child = NULL
+
+    cdef str _tree_str(self, Node* node, str s):
+        """
+        Return string representation of the tree.
+
+        Note
+            - Uses the GIL, so use this ONLY for debugging.
+        """
+        if node == NULL:
+            return ''
+
+        space = node.depth * '\t'
+        
+        if node.is_leaf:
+            s = f'\n{space}[Node {node.node_id}, leaf {node.leaf_id}] leaf_val: {node.leaf_val:.32f}'
+
+        else:
+            s = f'\n{space}[Node {node.node_id}] feature: {node.feature}, threshold: {node.threshold:.32f}'
+
+            s += self._tree_str(node.left_child, s)
+            s += self._tree_str(node.right_child, s)
+
+        return s

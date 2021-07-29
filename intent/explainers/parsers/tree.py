@@ -22,9 +22,12 @@ class Tree(object):
         children_left = np.array(children_left, dtype=np.intp)
         children_right = np.array(children_right, dtype=np.intp)
         feature = np.array(feature, dtype=np.intp)
-        threshold = np.array(threshold, dtype=np.float32)
-        leaf_vals = np.array(leaf_vals, dtype=np.float32)
+        threshold = np.array(threshold, dtype=util.dtype_t)
+        leaf_vals = np.array(leaf_vals, dtype=util.dtype_t)
         self.tree_ = _Tree(children_left, children_right, feature, threshold, leaf_vals)
+
+    def __str__(self):
+        return self.tree_.tree_str()
 
     def predict(self, X):
         """
@@ -91,7 +94,7 @@ class TreeEnsemble(object):
                  learning_rate, l2_leaf_reg, factor):
         """
         Input
-            trees: A 1d (or 2d for multiclass) array of Tree objects.
+            trees: 2d array of Tree objects of shape=(no. boost, no. class).
             objective: str, task ("regression", "binary", or "multiclass").
             bias: A single or 1d list (for multiclass) of floats.
                 If classification, numbers are in log space.
@@ -146,11 +149,15 @@ class TreeEnsemble(object):
         X = util.check_input_data(X)
 
         # shape=(X.shape[0], no. class)
-        pred = np.tile(self.bias, (X.shape[0], 1)).astype(np.float32)
+        pred = np.tile(self.bias, (X.shape[0], 1)).astype(util.dtype_t)
 
         for boost_idx in range(self.n_boost_):  # per boosting round
             for class_idx in range(self.n_class_):  # per class
                 pred[:, class_idx] += self.trees[boost_idx, class_idx].predict(X)
+
+                # print(boost_idx, class_idx)
+                # p = self.trees[boost_idx, class_idx].predict(X)
+                # pred[:, class_idx] += p
 
         # transform predictions based on the tree type and objective
         if self.tree_type == 'rf':
@@ -184,7 +191,7 @@ class TreeEnsemble(object):
             - Multiclass trees are flattened s.t. trees from all classes in one boosting
                 iteration come before those in the subsequent boosting iteration.
         """
-        return np.concatenate([tree.get_leaf_values() for tree in self.trees.flatten()]).astype(np.float32)
+        return np.concatenate([tree.get_leaf_values() for tree in self.trees.flatten()]).astype(util.dtype_t)
 
     def get_leaf_weights(self):
         """
@@ -196,7 +203,7 @@ class TreeEnsemble(object):
 
             - Must run `update_node_count` BEFORE this method.
         """
-        return np.concatenate([tree.get_leaf_weights() for tree in self.trees.flatten()]).astype(np.float32)
+        return np.concatenate([tree.get_leaf_weights() for tree in self.trees.flatten()]).astype(util.dtype_t)
 
     def get_leaf_counts(self):
         """

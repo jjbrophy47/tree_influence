@@ -164,15 +164,15 @@ class DShap(Explainer):
 
             # result container
             if inf == 'local':
-                marginals = np.zeros((0, self.X_train_.shape[0], X_test.shape[0]), dtype=np.float32)
-                result = np.zeros((self.X_train_.shape[0], X_test.shape[0]), dtype=np.float32)
-                stable = np.zeros(X_test.shape[0], dtype=np.float32)
+                marginals = np.zeros((0, self.X_train_.shape[0], X_test.shape[0]), dtype=util.dtype_t)
+                result = np.zeros((self.X_train_.shape[0], X_test.shape[0]), dtype=util.dtype_t)
+                stable = np.zeros(X_test.shape[0], dtype=util.dtype_t)
 
             else:
                 assert inf == 'global'
-                marginals = np.zeros((0, self.X_train_.shape[0], 1), dtype=np.float32)  # shape=(no. train, 1)
-                result = np.zeros((self.X_train_.shape[0], 1), dtype=np.float32)
-                stable = np.zeros(1, dtype=np.float32)
+                marginals = np.zeros((0, self.X_train_.shape[0], 1), dtype=util.dtype_t)  # shape=(no. train, 1)
+                result = np.zeros((self.X_train_.shape[0], 1), dtype=util.dtype_t)
+                stable = np.zeros(1, dtype=util.dtype_t)
 
             iteration = 0
 
@@ -192,7 +192,7 @@ class DShap(Explainer):
                 # check convergence
                 #   - add up all marginals using axis=0, then divide by their iteration
                 #   - diff. between last `check_every` runs and last run, divide by last run, average over all points
-                errors = np.zeros(marginals.shape[2], dtype=np.float32)  # shape=(X.shape[0],)
+                errors = np.zeros(marginals.shape[2], dtype=util.dtype_t)  # shape=(X.shape[0],)
 
                 for i in range(marginals.shape[2]):
                     divisor = np.arange(1, iteration + 1)[-check_every:].reshape(-1, 1)  # shape=(iteration, 1)
@@ -263,13 +263,13 @@ def _run_iteration(original_model, X_train, y_train, loss_fn, random_loss,
 
     # result container
     if inf == 'local':
-        marginals = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=np.float32)
+        marginals = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=util.dtype_t)
 
     else:  # global influence
-        marginals = np.zeros((X_train.shape[0], 1), dtype=np.float32)  # shape=(no. train, 1)
+        marginals = np.zeros((X_train.shape[0], 1), dtype=util.dtype_t)  # shape=(no. train, 1)
 
     # empty containers
-    X_batch = np.zeros((0,) + (X_train.shape[1],), dtype=np.float32)  # shape=(0, no. feature)
+    X_batch = np.zeros((0,) + (X_train.shape[1],), dtype=util.dtype_t)  # shape=(0, no. feature)
     y_batch = np.zeros(0, dtype=np.int32)  # shape=(0,)
 
     old_loss = random_loss  # tracker

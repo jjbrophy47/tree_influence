@@ -148,16 +148,16 @@ class LOO(Explainer):
             # result container
             if inf == 'local':
                 original_loss = _get_loss(loss_fn, original_model, objective, X=X_test, y=y_test)  # (X_test.shape[0],)
-                influence = np.zeros((0, X_test.shape[0]), dtype=np.float32)
+                influence = np.zeros((0, X_test.shape[0]), dtype=util.dtype_t)
 
             elif inf == 'global' and X_test is not None and batch:  # global expected influence
                 original_loss = _get_loss(loss_fn, original_model, objective, X=X_test, y=y_test, batch=batch)  # float
-                influence = np.zeros((0, 1), dtype=np.float32)
+                influence = np.zeros((0, 1), dtype=util.dtype_t)
 
             else:
                 assert inf == 'global' and not batch
                 original_loss = _get_loss(loss_fn, original_model, objective, X=X_train, y=y_train)  # (no. train,)
-                influence = np.zeros((0, 1), dtype=np.float32)
+                influence = np.zeros((0, 1), dtype=util.dtype_t)
 
             # trackers
             fits_completed = 0

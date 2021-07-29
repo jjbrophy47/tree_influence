@@ -152,7 +152,7 @@ class Trex(Explainer):
             sim = np.matmul(self.X_train_, X_test_.T)  # shape=(no. train, X.shape[0])
 
             # intermediate result, shape=(no. train, X.shape[0], no. class)
-            rep_vals = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=np.float32)
+            rep_vals = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=util.dtype_t)
 
             for class_idx in range(self.n_class_):  # per class
                 rep_vals[:, :, class_idx] = sim * self.alpha_[:, class_idx].reshape(-1, 1)
@@ -162,7 +162,7 @@ class Trex(Explainer):
             rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, X.shape[0], no. class)
 
             # compute loss with and then without each train example
-            influence = np.zeros(self.X_train_.shape[0], dtype=np.float32)  # shape=(no. train,)
+            influence = np.zeros(self.X_train_.shape[0], dtype=util.dtype_t)  # shape=(no. train,)
             original_loss = self.loss_fn_(y, rep_vals_sum, raw=True, batch=True)  # single float
 
             # compute losses without each train example, and their influences
@@ -210,7 +210,7 @@ class Trex(Explainer):
         sim = np.matmul(self.X_train_, X_test_.T)  # shape=(no. train, X.shape[0])
 
         # intermediate result, shape=(no. train, X.shape[0], no. class)
-        rep_vals = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=np.float32)
+        rep_vals = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=util.dtype_t)
 
         for class_idx in range(self.n_class_):  # per class
             rep_vals[:, :, class_idx] = sim * self.alpha_[:, class_idx].reshape(-1, 1)
@@ -220,7 +220,7 @@ class Trex(Explainer):
         rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, X.shape[0], no. class)
 
         # compute losses with and then without each train example
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X.shape[0]), dtype=util.dtype_t)
         original_losses = self.loss_fn_(y, rep_vals_sum, raw=True)  # shape=(X.shape[0],)
 
         # compute losses without each train example, and their influences

@@ -139,7 +139,7 @@ class BoostIn(Explainer):
             test_gradients = np.sign(test_gradients)
 
         # result container, shape=(X.shape[0], no. train, no. class)
-        influence = np.zeros((self.n_train_, X.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)
 
         # compute attributions for each test example
         for i in range(X.shape[0]):
@@ -179,7 +179,7 @@ class BoostIn(Explainer):
         n_class = self.model_.n_class_
         bias = self.model_.bias
 
-        current_approx = np.tile(bias, (n_train, 1)).astype(np.float32)  # shape=(X.shape[0], no. class)
+        current_approx = np.tile(bias, (n_train, 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
         gradients = np.zeros((n_train, n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
 
         # compute gradients for each boosting iteration
@@ -206,7 +206,7 @@ class BoostIn(Explainer):
         leaf_weights = self.leaf_weights_ # shape=(no. leaves across all trees,)
 
         # result container
-        weights = np.zeros(idxs.shape, dtype=np.float32) # shape=(no. examples, no. boost, no. class)
+        weights = np.zeros(idxs.shape, dtype=util.dtype_t) # shape=(no. examples, no. boost, no. class)
 
         n_prev_leaves = 0
 

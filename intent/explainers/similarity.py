@@ -92,7 +92,7 @@ class Similarity(Explainer):
 
         X_test_ = self._kernel_transform(X)  # shape=(X.shape[0], no. feature)
 
-        influence = np.zeros((self.X_train_.shape[0], X_test_.shape[0]), dtype=np.float32)
+        influence = np.zeros((self.X_train_.shape[0], X_test_.shape[0]), dtype=util.dtype_t)
 
         for test_idx in range(X.shape[0]):
 

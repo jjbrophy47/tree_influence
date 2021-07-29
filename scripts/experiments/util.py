@@ -30,6 +30,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import log_loss
 
+# constants
+dtype_t = np.float64
+
 
 # public
 def get_logger(filename=''):
@@ -108,8 +111,8 @@ def get_data(data_dir, dataset):
     """
     data = np.load(os.path.join(data_dir, dataset, 'data.npy'), allow_pickle=True)[()]
 
-    X_train, y_train = data['X_train'], data['y_train']
-    X_test, y_test = data['X_test'], data['y_test']
+    X_train, y_train = data['X_train'].astype(dtype_t), data['y_train'].astype(dtype_t)
+    X_test, y_test = data['X_test'].astype(dtype_t), data['y_test'].astype(dtype_t)
 
     # get objective for the given dataset
     d = {}
