@@ -374,19 +374,53 @@ def get_hyperparams(tree_type, dataset):
     lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
     lgb['no_show'] = {'n_estimators': 50, 'num_leaves': 61, 'max_depth': -1}
     lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
-    lgb['online_news'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
-    lgb['poker'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
     lgb['spambase'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
     lgb['surgical'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
-    lgb['synth_binary'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
-    lgb['synth_multiclass'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
-    lgb['synth_regression'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
     lgb['twitter'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
-    lgb['uav'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
     lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
+
+    cb = {}
+    cb['adult'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['bank_marketing'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['bean'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['casp'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['compas'] = {'n_estimators': 50, 'max_depth': 7}
+    cb['credit_card'] = {'n_estimators': 200, 'max_depth': 5}
+    cb['diabetes'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['flight_delays'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['german_credit'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['htru2'] = {'n_estimators': 200, 'max_depth': 5}
+    cb['life'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['no_show'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['spambase'] = {'n_estimators': 200, 'max_depth': 5}
+    cb['surgical'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['twitter'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['vaccine'] = {'n_estimators': 200, 'max_depth': 7}
+
+    xgb = {}
+    xgb['adult'] = {'n_estimators': 200, 'max_depth': 3}
+    xgb['bank_marketing'] = {'n_estimators': 100, 'max_depth': 3}
+    xgb['bean'] = {'n_estimators': 25, 'max_depth': 5}
+    xgb['casp'] = {'n_estimators': 200, 'max_depth': 7}
+    xgb['compas'] = {'n_estimators': 10, 'max_depth': 3}
+    xgb['credit_card'] = {'n_estimators': 10, 'max_depth': 3}
+    xgb['diabetes'] = {'n_estimators': 200, 'max_depth': 3}
+    xgb['flight_delays'] = {'n_estimators': 200, 'max_depth': 5}
+    xgb['german_credit'] = {'n_estimators': 10, 'max_depth': 3}
+    xgb['htru2'] = {'n_estimators': 50, 'max_depth': 3}
+    xgb['life'] = {'n_estimators': 200, 'max_depth': 5}
+    xgb['no_show'] = {'n_estimators': 100, 'max_depth': 5}
+    xgb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
+    xgb['spambase'] = {'n_estimators': 50, 'max_depth': 7}
+    xgb['surgical'] = {'n_estimators': 25, 'max_depth': 7}
+    xgb['twitter'] = {'n_estimators': 200, 'max_depth': 7}
+    xgb['vaccine'] = {'n_estimators': 100, 'max_depth': 3}
 
     hp = {}
     hp['lgb'] = lgb
+    hp['cb'] = cb
+    hp['xgb'] = xgb
 
     return hp[tree_type][dataset]
 
