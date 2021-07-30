@@ -417,10 +417,30 @@ def get_hyperparams(tree_type, dataset):
     xgb['twitter'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['vaccine'] = {'n_estimators': 100, 'max_depth': 3}
 
+    skrf = {}
+    skrf['adult'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['bank_marketing'] = {'n_estimators': 100, 'max_depth': 7}
+    skrf['bean'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['casp'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['compas'] = {'n_estimators': 100, 'max_depth': 5}
+    skrf['credit_card'] = {'n_estimators': 50, 'max_depth': 7}
+    skrf['diabetes'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['flight_delays'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['german_credit'] = {'n_estimators': 25, 'max_depth': 5}
+    skrf['htru2'] = {'n_estimators': 50, 'max_depth': 7}
+    skrf['life'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['no_show'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['obesity'] = {'n_estimators': 50, 'max_depth': 7}
+    skrf['spambase'] = {'n_estimators': 200, 'max_depth': 7}
+    skrf['surgical'] = {'n_estimators': 100, 'max_depth': 7}
+    skrf['twitter'] = {'n_estimators': 50, 'max_depth': 7}
+    skrf['vaccine'] = {'n_estimators': 200, 'max_depth': 7}
+
     hp = {}
     hp['lgb'] = lgb
     hp['cb'] = cb
     hp['xgb'] = xgb
+    hp['skrf'] = skrf
 
     return hp[tree_type][dataset]
 

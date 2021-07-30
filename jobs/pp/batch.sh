@@ -34,6 +34,8 @@ tf=1.0
 
 ./jobs/pp/primer.sh 'obesity' 'xgb' $tf  7 1440 'short'
 
+./jobs/pp/primer.sh 'spambase' 'skrf' $tf 3 300 'short'
+
 ./jobs/pp/primer.sh 'surgical' 'svm' $tf 3 300 'short'
 
 ./jobs/pp/primer.sh 'synth_binary' 'svm' $tf 3 300 'short'
@@ -51,4 +53,5 @@ tf=1.0
 ./jobs/pp/primer.sh 'twitter' 'svm'  0.01 7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'mlp'  $tf  7 1440 'short'
 
-./jobs/pp/primer.sh 'vaccine' 'svm' $tf 3 300 'short'
+./jobs/pp/primer.sh 'vaccine' 'skrf' $tf 3 300 'short'
+./jobs/pp/primer.sh 'vaccine' 'svm'  $tf 3 300 'short'
