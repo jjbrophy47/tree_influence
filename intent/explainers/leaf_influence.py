@@ -97,6 +97,10 @@ class LeafInfluence(Explainer):
     def model_(self):
         return self.explainer_.model_
 
+    @property
+    def parse_time_(self):
+        return self.explainer_.parse_time_
+
 
 class LeafInfluenceGBDT(Explainer):
     """
