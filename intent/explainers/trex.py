@@ -101,6 +101,8 @@ class Trex(Explainer):
         self.X_train_ = self._kernel_transform(X)
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
+        print(self.X_train_)
+
         # select target
         if self.target == 'actual':
 
@@ -518,11 +520,12 @@ class LogisticModel(nn.Module):
         Note
             - This loss function represents "closeness" if y is predicted values.
         """
-        eps = 1e-15
+        eps = 1e-5
 
         D = torch.matmul(X, self.W)  # raw output, shape=(X.shape[0],)
         D = torch.sigmoid(D)  # normalized prob.
         D = torch.clip(D, eps, 1 - eps)  # prevent log(0)
+
         Phi = torch.sum(-(y * torch.log(D) + (1 - y) * torch.log(1 - D)))  # log loss
 
         # L2 norm.

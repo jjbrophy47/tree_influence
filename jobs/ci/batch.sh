@@ -1,4 +1,4 @@
-tt='lgb'
+tt='cb'
 
 da='adult'
 dbm='bank_marketing'
@@ -57,7 +57,7 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
-./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $gos 6  60    $ps  # trex
+./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $gos 9  60    $ps  # trex
 # ./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $goe 15 60    $ps
 # ./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $goa 6  60    $ps
 # ./jobs/ci/primer.sh     $da $tt $mli $tf $us1 $iol $lon $gos 3  10080 $p2  # leaf_influence
@@ -75,7 +75,7 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dbm $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $dbm $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dbm $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
-./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iol $lon $gos 3  60    $ps  # trex
+./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iol $lon $gos 6  60    $ps  # trex
 # ./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iol $lon $goe 6  60    $ps
 # ./jobs/ci/primer.sh     $dbm $tt $mtx $tf $us1 $iol $lon $goa 3  60    $ps
 # ./jobs/ci/primer.sh     $dbm $tt $mli $tf $us1 $iol $lon $gos 3  10080 $p2  # leaf_influence
@@ -309,7 +309,7 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
-./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $gos 3  60    $ps  # trex
+./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $gos 6  60    $ps  # trex
 # ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $goe 6  60    $ps
 # ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $goa 3  60    $ps
 # ./jobs/ci/primer.sh     $ds $tt $mli $tf $us1 $iol $lon $gos 3  10080 $p2  # leaf_influence
