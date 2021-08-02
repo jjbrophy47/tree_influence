@@ -79,7 +79,8 @@ def experiment(args, logger, params, out_dir):
         # randomly select test instances to compute influence values for
         if args.inf_obj == 'local':
             avail_idxs = np.arange(X_test.shape[0])
-            test_idxs = select_elements(avail_idxs, rng, n=args.n_test)
+            n_test = min(args.n_test, len(avail_idxs))
+            test_idxs = select_elements(avail_idxs, rng, n=n_test)
 
         elif args.inf_obj == 'local_correct' and objective != 'regression':
             y_pred = tree.predict(X_test)
@@ -200,7 +201,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
+    parser.add_argument('--n_test', type=int, default=1000)  # local
 
     args = parser.parse_args()
     main(args)

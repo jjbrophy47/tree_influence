@@ -163,10 +163,6 @@ class BoostIn(Explainer):
                 elif self.local_op == 'hess':
                     prod = train_gradients / train_hessians * train_weights * test_gradients[i] * mask * lr
 
-                # TODO: (grad(xi) / hess(xi)) / leaf_val(xi) * sign(xt) * mask * lr
-                elif self.local_op == 'hess2':
-                    pass
-
                 else:
                     raise ValueError(f'Unknown local_op: {self.local_op}')
 
@@ -206,18 +202,14 @@ class BoostIn(Explainer):
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
 
-            # update approximation TEMP
-            for class_idx in range(n_class):
-                current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
-
             gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
 
             if self.local_op == 'hess':
                 hessians[:, boost_idx, :] = self.loss_fn_.hessian(y, current_approx)  # shape=(no. train, no. class)
 
-            # # update approximation
-            # for class_idx in range(n_class):
-            #     current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
+            # update approximation
+            for class_idx in range(n_class):
+                current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
         return gradients, hessians
 

@@ -71,7 +71,13 @@ def process(args, out_dir, logger):
         for method, res in results:
             ax = axs[0]
 
-            x, y = res['remove_frac'].mean(axis=0) * 100, res['loss'].mean(axis=0)
+            # TEMP
+            if res['remove_frac'].ndim == 1:
+                x = res['remove_frac'] * 100
+            else:
+                x = res['remove_frac'][0] * 100
+
+            y = res['loss'].mean(axis=0)
             y_err = sem(res['loss'], axis=0)
             y_err = y_err if args.std_err else None
 

@@ -22,7 +22,7 @@ from experiments import util
 from leaf_analysis import filter_results
 
 
-def get_cis(res):
+def get_cis(res, objective):
     """
     Compute the min. frac. train examples that, when deleted,
         flip the prediction (counterfactual influence set).
@@ -143,37 +143,12 @@ def experiment(args, logger, out_dir):
     # TODO: add support for multiclass
     # TODO: add support for regression
     else:  # local
-
         assert objective == 'binary'
 
         fig, axs = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
         
         for method, res in results:
-
-            include = True
-            for skip in args.skip:
-                if skip in method:
-                    include = False
-                    break
-            if not include:
-                continue
-
-            pred = res['pred']
-
-            idxs = np.zeros(pred.shape[0], dtype=np.int32)
-            for idx in range(idxs.shape[0]):
-                init_pred = 1.0 if pred[idx][0] >= 0.5 else 0
-
-                if init_pred == 0:
-                    r = np.where(pred[idx] >= 0.5)[0]
-                else:
-                    r = np.where(pred[idx] < 0.5)[0]
-
-                if len(r) == 0:
-                    idxs[idx] = -1
-                else:
-                    idxs[idx] = r[0]
-
+            fracs = get_cis(res, objective=objective)
 
             fracs = res['remove_frac'][0][idxs] * 100
             fracs_zoom = fracs[np.where(fracs <= args.zoom)]  # cutoff
