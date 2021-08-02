@@ -49,6 +49,7 @@ def filter_results(results, skip_list):
 
 
 def experiment(args, logger, out_dir):
+    rng = np.random.default_rng(args.random_state)
 
     # initialize experiment
     begin = time.time()
@@ -105,35 +106,38 @@ def experiment(args, logger, out_dir):
     test_leaves = explainer.model_.apply(X_test)  # shape=(no. test, no. boost, no. class)
     test_weights = explainer._get_leaf_weights(test_leaves)[test_idxs]  # shape=(no. test, no. boost, no. class)
 
-    # pick test example
-    test_idx = pos[0]  # relative index
-    test_weight = test_weights[test_idx].flatten() # flatten across boosts/classes
+    # pick test examples
+    fig, axs = plt.subplots(3, 3, figsize=(16, 12), sharey=False)
+    axs = axs.flatten()
 
-    # # average test examples
-    # mean_weights = np.mean(test_weights[neg], axis=0).flatten()  # shape=(no. boost * no. class)
-    # std_weights = np.std(test_weights[neg], axis=0).flatten()  # shape=(no. boost * no. class)
-    
-    fig, ax = plt.subplots()
-    sns.barplot(x=np.arange(len(test_weight)), y=test_weight, ax=ax)
-    # sns.barplot(x=np.arange(len(mean_weights)), y=mean_weights, ci=std_weights, ax=ax)
-    ax.set_xticklabels([])
-    ax.set_title(f'Leaf Weights for Test Ex. {test_idx}')
-    # ax.set_title(f'Avg. Leaf Weights')
-    ax.set_ylabel('Leaf weight (1 / no. train at that leaf)')
-    ax.set_xlabel('Tree index')
-    ax.set_yscale('log')
+    avail_idxs = pos if args.test == 'pos' else neg
 
-    # ax.plot(np.arange(len(test_weight)), test_weight)
+    for i, selected_idx in enumerate(rng.choice(len(avail_idxs), size=9, replace=False)):
+        test_idx = avail_idxs[selected_idx]
+        logger.info(f'[No. {i:,}, Test {test_idx}]')
 
-    plt_dir = os.path.join(args.out_dir, args.inf_obj)
+        test_weight = test_weights[test_idx].flatten() # flatten across boosts/classes
+
+        ax = axs[i]
+        sns.barplot(x=np.arange(len(test_weight)), y=test_weight, ax=ax)
+        ax.set_xticklabels([])
+        ax.set_title(f'Test No. {test_idx}, pred.: {test_proba[test_idx]:.3f}, target: {y_test[test_idx]}')
+        if i in [0, 3, 6]:
+            ax.set_ylabel('Leaf weight (1 / no. train at that leaf)')
+        if i in [6, 7, 8]:
+            ax.set_xlabel('Tree index')
+        if args.scale == 'log':
+            ax.set_yscale('log')
+
+    plt_dir = os.path.join(args.out_dir, args.inf_obj, args.dataset)
     suffix = ''
 
     os.makedirs(plt_dir, exist_ok=True)
-    fp = os.path.join(plt_dir, f'{args.dataset}')
+    fp = os.path.join(plt_dir, f'{args.test}{args.scale}')
 
+    logger.info(f'\nsaving plots to {fp + suffix + ".pdf"}...')
     plt.tight_layout()
-    plt.savefig(fp + suffix + '.png', bbox_inches='tight')
-    plt.show()
+    plt.savefig(fp + suffix + '.pdf', bbox_inches='tight')
 
 
 def main(args):
@@ -195,8 +199,8 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='local')
-    # parser.add_argument('--zoom', type=float, default=2.0)
-    # parser.add_argument('--n_sample', type=int, default=100)
+    parser.add_argument('--test', type=str, default='pos')
+    parser.add_argument('--scale', type=str, default='')
 
     args = parser.parse_args()
     main(args)

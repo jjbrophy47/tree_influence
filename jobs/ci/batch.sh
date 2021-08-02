@@ -1,4 +1,4 @@
-tt='cb'
+tt='lgb'
 
 da='adult'
 dbm='bank_marketing'
@@ -44,6 +44,8 @@ iob='both'
 lon='normal'  # local_op
 log='sign'  # BoostIn
 los='sim'  # BoostIn
+lot='ntg'  # BoostIn
+loh='hess'  # BoostIn
 
 gos='self'  # global_op
 goe='expected'  # TREX, LOO, and DShap
@@ -309,12 +311,14 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $lot $gos 3  60    $ps
+./jobs/ci/primer.sh     $ds $tt $mbi $tf $us1 $iol $loh $gos 3  60    $ps
 ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $gos 6  60    $ps  # trex
 # ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $goe 6  60    $ps
 # ./jobs/ci/primer.sh     $ds $tt $mtx $tf $us1 $iol $lon $goa 3  60    $ps
 # ./jobs/ci/primer.sh     $ds $tt $mli $tf $us1 $iol $lon $gos 3  10080 $p2  # leaf_influence
 ./jobs/ci/primer.sh     $ds $tt $mli $tf $us0 $iol $lon $gos 3  1440  $ps
-./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iol $lon $gos 5  600   $ps  # loo
+./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iol $lon $gos 5  900   $ps  # loo
 # ./jobs/ci/primer_mcu.sh $ds $tt $mlo $tf $us1 $iol $lon $goe 28 600   $ps
 # ./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iol $lon $gos 28 1440  $ps  # dshap
 # ./jobs/ci/primer_mcu.sh $ds $tt $mds $tf $us1 $iol $lon $goe 28 1440  $ps

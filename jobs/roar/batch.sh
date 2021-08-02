@@ -1,4 +1,4 @@
-tt='lgb'
+tt='cb'
 
 sk=1  # if 1, skip already present results
 
@@ -306,7 +306,7 @@ goa='alpha'  # TREX only
 # surgical
 ./jobs/roar/primer.sh $sk $ds $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 # ./jobs/roar/primer.sh $sk $ds $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
-./jobs/roar/primer.sh $sk $ds $tt $mtg  $tf $us1 $iol $lon $gos 3 120 $ps  # target
+./jobs/roar/primer.sh $sk $ds $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
 ./jobs/roar/primer.sh $sk $ds $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps

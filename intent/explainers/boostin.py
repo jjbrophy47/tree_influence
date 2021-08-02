@@ -37,10 +37,14 @@ class BoostIn(Explainer):
             use_leaf: bool, If True, only add attribution to examples
                 ONLY if those examples share the same leaf as the test example.
             local_op: str, Configures how the local influence is computed. 
+                'normal': grad(xi) * leaf_weight(xi) * grad(xt) * lr
+                'sign': sign(grad(xi)) * leaf_weight(xi) * sign(grad(xt)) * lr
+                'sim': sign(grad(xi)) * leaf_weight(xi) * sign(grad(xt)) * leaf_weight(xt)
+                'ntg': grad(xi) * leaf_weight(xi) * lr
             logger: object, If not None, output to logger.
         """
         assert use_leaf in [0, 1]
-        assert local_op in ['normal', 'sign', 'sim']
+        assert local_op in ['normal', 'sign', 'sim', 'ntg', 'hess']
         self.use_leaf = use_leaf
         self.local_op = local_op
         self.logger = logger
@@ -68,7 +72,7 @@ class BoostIn(Explainer):
 
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
-        self.train_gradients_ = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
+        self.train_gradients_, self.train_hessians_ = self._compute_gradients(X, y)  # (X.shape[0], n_boost, n_class)
 
         if self.use_leaf:
             self.model_.update_node_count(X)
@@ -117,8 +121,8 @@ class BoostIn(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        train_gradients = self.train_gradients_  # shape=(no. train, no. boost, no. class)
-        test_gradients = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
+        train_gradients, train_hessians = self.train_gradients_, self.train_hessians_  # (n_train, n_boost, n_class)
+        test_gradients, test_hessians = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
         
         uniform_weight = 1.0 / self.n_train_
         lr = self.learning_rate_
@@ -133,13 +137,16 @@ class BoostIn(Explainer):
             if self.local_op == 'sim':
                 test_weights = self._get_leaf_weights(test_leaves)  # shape=(X.shape[0], no. boost, no. class)
 
+        # result container, shape=(X.shape[0], no. train, no. class)
+        influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)
+
         # use sign of gradients instead of their sign + magnitude.
         if self.local_op in ['sign', 'sim']:
             train_gradients = np.sign(train_gradients)
             test_gradients = np.sign(test_gradients)
 
-        # result container, shape=(X.shape[0], no. train, no. class)
-        influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)
+        elif self.local_op == ['ntg', 'hess']:
+            test_gradients = np.sign(test_gradients)
 
         # compute attributions for each test example
         for i in range(X.shape[0]):
@@ -150,10 +157,20 @@ class BoostIn(Explainer):
                 if self.local_op == 'sim':
                     prod = train_gradients * train_weights * test_gradients[i] * test_weights[i] * mask
 
-                else:  # normal or sign
+                elif self.local_op in ['sign', 'ntg', 'normal']:
                     prod = train_gradients * train_weights * test_gradients[i] * mask * lr
 
-            else:
+                elif self.local_op == 'hess':
+                    prod = train_gradients / train_hessians * train_weights * test_gradients[i] * mask * lr
+
+                # TODO: (grad(xi) / hess(xi)) / leaf_val(xi) * sign(xt) * mask * lr
+                elif self.local_op == 'hess2':
+                    pass
+
+                else:
+                    raise ValueError(f'Unknown local_op: {self.local_op}')
+
+            else:  # no leaf use
                 prod = train_gradients * uniform_weight * test_gradients[i] * lr
 
             influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
@@ -181,16 +198,23 @@ class BoostIn(Explainer):
 
         current_approx = np.tile(bias, (n_train, 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
         gradients = np.zeros((n_train, n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
+        hessians = None
+
+        if self.local_op == 'hess':
+            hessians = np.zeros((n_train, n_boost, n_class))  # shape(X.shape[0], no. boost, no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
             gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
 
+            if self.local_op == 'hess':
+                hessians[:, boost_idx, :] = self.loss_fn_.hessian(y, current_approx)  # shape=(no. train, no. class)
+
             # update approximation
             for class_idx in range(n_class):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
 
-        return gradients
+        return gradients, hessians
 
     def _get_leaf_weights(self, idxs):
         """

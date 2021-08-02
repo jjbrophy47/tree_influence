@@ -98,7 +98,7 @@ def process(args, out_dir, logger):
         if args.zoom <= 0.0 or args.zoom >= 1.0:
             fig.delaxes(axs[1])
 
-    plt_dir = os.path.join(args.out_dir, args.inf_obj)
+    plt_dir = os.path.join(args.out_dir, args.inf_obj, args.tree_type)
     suffix = ''
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')
