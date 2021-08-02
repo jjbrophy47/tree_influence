@@ -1,4 +1,4 @@
-tt='cb'
+tt='lgb'
 
 sk=1  # if 1, skip already present results
 

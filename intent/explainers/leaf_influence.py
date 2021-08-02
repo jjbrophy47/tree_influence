@@ -204,14 +204,7 @@ class LeafInfluenceGBDT(Explainer):
                     leaf_denominator = np.sum(hessian[doc_ids, class_idx]) + l2_leaf_reg
                     leaf_prediction = -leaf_enumerator / leaf_denominator * learning_rate
 
-                    # print(boost_idx, class_idx, leaf_idx, len(np.where(doc2leaf == leaf_idx)[0]),
-                    #       leaf_prediction, leaf_vals[leaf_idx])
-
-                    # if boost_idx == 21 and class_idx == 0 and leaf_idx == 41:
-                    #     idxs = np.where(doc2leaf == leaf_idx)[0]
-
                     # compare leaf values to actual leaf values
-                    # isclose = np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=self.atol)
                     if not np.isclose(leaf_prediction, leaf_vals[leaf_idx], atol=1e-5):
                         n_not_close += 1
                         max_diff = max(max_diff, abs(leaf_prediction - leaf_vals[leaf_idx]))

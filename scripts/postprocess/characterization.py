@@ -19,6 +19,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 import util as pp_util
 from experiments import util
+from leaf_analysis import filter_results
 
 
 def get_cis(res):
@@ -57,6 +58,7 @@ def experiment(args, logger, out_dir):
 
     # get results
     results = pp_util.get_results(args, logger)
+    results = filter_results(results, args.skip)
     color, line, label = pp_util.get_plot_dicts()
 
     if args.inf_obj == 'global':

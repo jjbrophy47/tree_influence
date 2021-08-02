@@ -148,16 +148,11 @@ class TreeEnsemble(object):
         """
         X = util.check_input_data(X)
 
-        # shape=(X.shape[0], no. class)
-        pred = np.tile(self.bias, (X.shape[0], 1)).astype(util.dtype_t)
+        pred = np.tile(self.bias, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
 
         for boost_idx in range(self.n_boost_):  # per boosting round
             for class_idx in range(self.n_class_):  # per class
                 pred[:, class_idx] += self.trees[boost_idx, class_idx].predict(X)
-
-                # print(boost_idx, class_idx)
-                # p = self.trees[boost_idx, class_idx].predict(X)
-                # pred[:, class_idx] += p
 
         # transform predictions based on the tree type and objective
         if self.tree_type == 'rf':
