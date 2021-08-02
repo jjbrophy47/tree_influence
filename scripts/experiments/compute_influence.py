@@ -104,13 +104,13 @@ def experiment(args, logger, params, out_dir):
         y_test_pred = tree.predict(X_test).reshape(-1, 1)
 
     elif objective == 'binary':
-        y_test_pred = tree.predict_proba(X_test)[:, 1].reshape(-1, 1)
         y_train_pred = tree.predict_proba(X_train)[:, 1].reshape(-1, 1)
+        y_test_pred = tree.predict_proba(X_test)[:, 1].reshape(-1, 1)
 
     else:
         assert objective == 'multiclass'
-        y_test_pred = tree.predict_proba(X_test)
         y_train_pred = tree.predict_proba(X_train)
+        y_test_pred = tree.predict_proba(X_test)
 
     # display influence
     logger.info(f'\ninfluence: {influence}, shape: {influence.shape}')
@@ -199,7 +199,7 @@ if __name__ == '__main__':
     parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
 
     # Experiment settings
-    parser.add_argument('--inf_obj', type=str, default='global')
+    parser.add_argument('--inf_obj', type=str, default='local')
     parser.add_argument('--n_test', type=int, default=100)  # local
 
     args = parser.parse_args()

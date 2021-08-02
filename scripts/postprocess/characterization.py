@@ -21,6 +21,32 @@ import util as pp_util
 from experiments import util
 
 
+def get_cis(res):
+    """
+    Compute the min. frac. train examples that, when deleted,
+        flip the prediction (counterfactual influence set).
+
+    Input
+        res: dict, ROAR result dictionary.
+
+    Return
+        - 1d array of CIS's of shape=(no. test,).
+    """
+    pred = res['pred']  # shape=(no. test, no. ckpts, no. class)
+    frac_arr = res['remove_frac'][0]  # shape=(no. ckpts,)
+
+    fracs = np.zeros(pred.shape[0], dtype=np.int32)  # shape=(no. test,)
+
+    for i in range(idxs.shape[0]):
+
+        if objective in ['binary', 'multiclass']:
+            init_pred = np.argmax(pred[i, 0])  # pred. label at 1st ckpt.
+            flip_idxs = np.where(np.argmax(pred[i], axis=1) != init_pred)[0]
+            fracs[i] = frac_arr[-1] if len(flip_idxs) == 0 else frac_arr[flip_idxs[0]]
+
+    return fracs
+
+
 def experiment(args, logger, out_dir):
 
     # initialize experiment

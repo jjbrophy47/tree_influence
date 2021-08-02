@@ -59,6 +59,8 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $lot $gos 3  60    $ps
+./jobs/ci/primer.sh     $da $tt $mbi $tf $us1 $iol $loh $gos 3  60    $ps
 ./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $gos 9  60    $ps  # trex
 # ./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $goe 15 60    $ps
 # ./jobs/ci/primer.sh     $da $tt $mtx $tf $us1 $iol $lon $goa 6  60    $ps
@@ -167,6 +169,8 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $lot $gos 3  60    $ps
+./jobs/ci/primer.sh     $dd $tt $mbi $tf $us1 $iol $loh $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $gos 9  60    $ps  # trex
 # ./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $goe 30 60    $ps
 # ./jobs/ci/primer.sh     $dd $tt $mtx $tf $us1 $iol $lon $goa 15 60    $ps
@@ -185,6 +189,8 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $lot $gos 3  60    $ps
+./jobs/ci/primer.sh     $dfd $tt $mbi $tf $us1 $iol $loh $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dfd $tt $mtx $tf $us1 $iol $lon $gos 11 60    $ps  # trex
 # ./jobs/ci/primer.sh     $dfd $tt $mtx $tf $us1 $iol $lon $goe 30 60    $ps
 # ./jobs/ci/primer.sh     $dfd $tt $mtx $tf $us1 $iol $lon $goa 15 60    $ps
@@ -349,6 +355,8 @@ goa='alpha'  # TREX only
 ./jobs/ci/primer.sh     $dv $tt $mbi $tf $us1 $iol $lon $gos 3  60    $ps  # boostin
 ./jobs/ci/primer.sh     $dv $tt $mbi $tf $us1 $iol $log $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dv $tt $mbi $tf $us1 $iol $los $gos 3  60    $ps
+./jobs/ci/primer.sh     $dv $tt $mbi $tf $us1 $iol $lot $gos 3  60    $ps
+./jobs/ci/primer.sh     $dv $tt $mbi $tf $us1 $iol $loh $gos 3  60    $ps
 ./jobs/ci/primer.sh     $dv $tt $mtx $tf $us1 $iol $lon $gos 3  60    $ps  # trex
 # ./jobs/ci/primer.sh     $dv $tt $mtx $tf $us1 $iol $lon $goe 6  60    $ps
 # ./jobs/ci/primer.sh     $dv $tt $mtx $tf $us1 $iol $lon $goa 3  60    $ps

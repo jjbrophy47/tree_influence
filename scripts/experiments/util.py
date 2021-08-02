@@ -241,6 +241,8 @@ def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
         result['acc'] = accuracy_score(y, pred)
         result['loss'] = log_loss(y, proba)
 
+    result['keys'] = ['mse', 'acc', 'auc', 'loss']
+
     logger.info(f"[{prefix}] mse: {result['mse']:>10.3f}, "
                 f"acc.: {result['acc']:>10.3f}, "
                 f"AUC: {result['auc']:>10.3f}, "
@@ -258,31 +260,34 @@ def eval_loss(objective, model, X, y, logger, prefix='', eps=1e-5):
     result = {}
 
     if objective == 'regression':
-        y_hat = model.predict(X)  # shape=(X.shape[0])
+        y_hat = model.predict(X)  # shape=(X.shape[0],)
         losses = 0.5 * (y - y_hat) ** 2
-        result['pred'] = y_hat[0]
+        result['pred'] = y_hat
         result['loss'] = losses[0]
         loss_type = 'squared_loss'
 
     elif objective == 'binary':
-        y_hat = model.predict_proba(X)[:, 1]  # shape=(X.shape[0])
-        y_hat = np.clip(y_hat, eps, 1 - eps)  # prevent log(0)
-        losses = -(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))
-        result['pred'] = y_hat[0]
+        y_hat = model.predict_proba(X)  # shape=(X.shape[0], 2)
+        y_hat_pos = np.clip(y_hat[:, 1], eps, 1 - eps)  # prevent log(0)
+        losses = -(y * np.log(y_hat_pos) + (1 - y) * np.log(1 - y_hat_pos))
+        result['pred'] = y_hat
         result['loss'] = losses[0]
         loss_type = 'logloss'
 
     else:
         assert objective == 'multiclass'
         target = y[0]
-        y_hat = model.predict_proba(X)[0]  # shape=(no. class,)
+        y_hat = model.predict_proba(X)[0]  # shape=(X.shape[0], no. class)
         y_hat = np.clip(y_hat, eps, 1 - eps)
-        result['pred'] = y_hat[target]
+        result['pred'] = y_hat
         result['loss'] = -np.log(y_hat)[target]
         loss_type = 'cross_entropy_loss'
 
-    logger.info(f"[{prefix}] prediction: {result['pred']:>10.3f}, "
-                f"{loss_type}: {result['loss']:>10.3f}, ")
+    result['keys'] = ['loss']
+
+    with np.printoptions(formatter={'float': '{:0.10f}'.format}):
+        logger.info(f"[{prefix}] prediction: {result['pred']}, "
+                    f"{loss_type}: {result['loss']:>10.3f}, ")
 
     return result
 

@@ -34,9 +34,12 @@ def remove_and_retrain(inf_obj, objective, ranking, tree, X_train, y_train,
     # result container
     result = {}
     result['remove_frac'] = np.concatenate([np.array([0.0]), remove_frac_arr])
-    for key in res.keys():
+    for key in res['keys']:
         result[key] = np.full(remove_frac_arr.shape[0] + 1, np.nan, dtype=np.float32)
         result[key][0] = res[key]
+    if inf_obj == 'local':
+        result['pred'] = [res['pred']]
+    result['keys'] = res['keys']
 
     # remove train instances
     for i, remove_frac in enumerate(remove_frac_arr):
@@ -60,8 +63,13 @@ def remove_and_retrain(inf_obj, objective, ranking, tree, X_train, y_train,
 
             # add to results
             result['remove_frac'][i + 1] = remove_frac
-            for key in res.keys():
+            for key in res['keys']:
                 result[key][i + 1] = res[key]
+            if inf_obj == 'local':
+                result['pred'].append(res['pred'])
+
+    if inf_obj == 'local':
+        result['pred'] = np.vstack(result['pred'])  # shape=(no. completed ckpts., no. class)
 
     return result
 
@@ -144,8 +152,13 @@ def experiment(args, logger, params, in_dir, out_dir):
                             f', cum. time: {cum_time:.3f}s')
 
             # combine results from each test example
-            for key in res_list[0].keys():
-                result[key] = np.vstack([r[key] for r in res_list])  # shape=(no. test, no. completed ckpts)
+            result['remove_frac'] = res_list[0]['remove_frac']  # shape=(no. ckpts,)
+
+            for key in res_list[0]['keys']:
+                result[key] = np.vstack([res[key] for res in res_list])  # shape=(no. test, no. ckpts)
+
+            if args.inf_obj == 'local':
+                result['pred'] = [res['pred'] for res in res_list]  # shape=(no. test, no. completed ckpts, no class)
 
     roar_time = time.time() - start
     logger.info(f'ROAR time: {roar_time:.5f}s')
@@ -234,7 +247,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--skip', type=int, default=0)
-    parser.add_argument('--inf_obj', type=str, default='global')
+    parser.add_argument('--inf_obj', type=str, default='local')
     parser.add_argument('--remove_frac', type=float, default=0.5)
     parser.add_argument('--n_ckpt', type=int, default=200)
     parser.add_argument('--n_jobs', type=int, default=-1)

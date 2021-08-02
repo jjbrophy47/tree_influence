@@ -46,6 +46,8 @@ iob='both'
 lon='normal'  # local_op
 log='sign'  # BoostIn
 los='sim'  # BoostIn
+lot='ntg'  # BoostIn
+loh='hess'  # BoostIn
 
 gos='self'  # global_op
 goe='expected'  # TREX, LOO, and DShap
@@ -59,6 +61,8 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $lot $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $da $tt $mbi $tf $us1 $iol $loh $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $da $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
 # ./jobs/roar/primer.sh $sk $da $tt $mtx $tf $us1 $iol $lon $goe 3 120 $ps
 # ./jobs/roar/primer.sh $sk $da $tt $mtx $tf $us1 $iol $lon $goa 3 120 $ps
@@ -167,6 +171,8 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $lot $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dd $tt $mbi $tf $us1 $iol $loh $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
 # ./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iol $lon $goe 3 600 $ps
 # ./jobs/roar/primer.sh $sk $dd $tt $mtx $tf $us1 $iol $lon $goa 3 600 $ps
@@ -185,6 +191,8 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $lot $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dfd $tt $mbi $tf $us1 $iol $loh $gos 3 600 $ps
 ./jobs/roar/primer.sh $sk $dfd $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
 # ./jobs/roar/primer.sh $sk $dfd $tt $mtx $tf $us1 $iol $lon $goe 3 600 $ps
 # ./jobs/roar/primer.sh $sk $dfd $tt $mtx $tf $us1 $iol $lon $goa 3 600 $ps
@@ -311,6 +319,8 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lot $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $loh $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
 # ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $goe 3 120 $ps
 # ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $goa 3 120 $ps
@@ -347,6 +357,8 @@ goa='alpha'  # TREX only
 ./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
 ./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $lot $gos 3 120 $ps
+./jobs/roar/primer.sh $sk $dv $tt $mbi $tf $us1 $iol $loh $gos 3 120 $ps
 ./jobs/roar/primer.sh $sk $dv $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
 # ./jobs/roar/primer.sh $sk $dv $tt $mtx $tf $us1 $iol $lon $goe 3 120 $ps
 # ./jobs/roar/primer.sh $sk $dv $tt $mtx $tf $us1 $iol $lon $goa 3 120 $ps
