@@ -230,7 +230,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_leaf', type=int, default=1)  # BoostIn
     parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
 
-    parser.add_argument('--update_set', type=int, default=-1)  # LeafInfluence
+    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
 
     parser.add_argument('--similarity', type=str, default='dot_prod')  # Similarity
 

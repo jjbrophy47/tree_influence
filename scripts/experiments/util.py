@@ -128,6 +128,10 @@ def get_data(data_dir, dataset):
             objective = k
             break
 
+    if objective in ['binary', 'multiclass']:
+        y_train = y_train.astype(np.int32)
+        y_test = y_test.astype(np.int32)
+
     if objective == '':
         raise ValueError(f'No objetive for dataset: {dataset}')
 
@@ -285,7 +289,7 @@ def eval_loss(objective, model, X, y, logger, prefix='', eps=1e-5):
 
     result['keys'] = ['loss']
 
-    with np.printoptions(formatter={'float': '{:0.10f}'.format}):
+    with np.printoptions(formatter={'float': '{:0.5f}'.format}):
         logger.info(f"[{prefix}] prediction: {result['pred']}, "
                     f"{loss_type}: {result['loss']:>10.3f}, ")
 

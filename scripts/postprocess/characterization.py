@@ -22,7 +22,7 @@ from experiments import util
 from leaf_analysis import filter_results
 
 
-def get_cis(res, objective):
+def get_cis(res, objective, y_train=None):
     """
     Compute the min. frac. train examples that, when deleted,
         flip the prediction (counterfactual influence set).
@@ -34,16 +34,21 @@ def get_cis(res, objective):
         - 1d array of CIS's of shape=(no. test,).
     """
     pred = res['pred']  # shape=(no. test, no. ckpts, no. class)
-    frac_arr = res['remove_frac'][0]  # shape=(no. ckpts,)
+    frac_arr = res['remove_frac']  # shape=(no. ckpts,)
 
-    fracs = np.zeros(pred.shape[0], dtype=np.int32)  # shape=(no. test,)
+    fracs = np.zeros(len(pred), dtype=np.float32)  # shape=(no. test,)
 
-    for i in range(idxs.shape[0]):
+    for i in range(len(pred)):
 
         if objective in ['binary', 'multiclass']:
-            init_pred = np.argmax(pred[i, 0])  # pred. label at 1st ckpt.
-            flip_idxs = np.where(np.argmax(pred[i], axis=1) != init_pred)[0]
-            fracs[i] = frac_arr[-1] if len(flip_idxs) == 0 else frac_arr[flip_idxs[0]]
+            preds = np.argmax(pred[i], axis=1)
+
+        elif objective == 'regression':
+            assert y_train is not None
+            preds = np.where(pred[i].flatten() > np.median(y_train), 1, 0)
+
+        flip_idxs = np.where(preds != preds[0])[0]
+        fracs[i] = frac_arr[-1] if len(flip_idxs) == 0 else frac_arr[flip_idxs[0]]
 
     return fracs
 
@@ -140,17 +145,13 @@ def experiment(args, logger, out_dir):
                         ax.set_xlabel('% train data removed')
                         ax.set_ylabel('Log loss of removed examples')
 
-    # TODO: add support for multiclass
-    # TODO: add support for regression
     else:  # local
         assert objective == 'binary'
 
         fig, axs = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
         
         for method, res in results:
-            fracs = get_cis(res, objective=objective)
-
-            fracs = res['remove_frac'][0][idxs] * 100
+            fracs = get_cis(res, objective=objective, y_train=y_train) * 100
             fracs_zoom = fracs[np.where(fracs <= args.zoom)]  # cutoff
 
             f_mean, f_std = fracs.mean(), sem(fracs)
@@ -244,7 +245,7 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--zoom', type=float, default=2.0)
+    parser.add_argument('--zoom', type=float, default=1.0)
     parser.add_argument('--n_sample', type=int, default=100)
 
     args = parser.parse_args()

@@ -92,22 +92,22 @@ goa='alpha'  # TREX only
 # ./jobs/roar/primer.sh $sk $dbm $tt $mds $tf $us1 $iol $lon $goe 3 120 $ps
 
 # bean
-./jobs/roar/primer.sh $sk $dbn $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
-# ./jobs/roar/primer.sh $sk $dbn $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
-./jobs/roar/primer.sh $sk $dbn $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
-./jobs/roar/primer.sh $sk $dbn $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
-./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
-# ./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $goe 3 120 $ps
-# ./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $goa 3 120 $ps
-# ./jobs/roar/primer.sh $sk $dbn $tt $mli $tf $us1 $iol $lon $gos 3 120 $p2  # leaf_influence
-./jobs/roar/primer.sh $sk $dbn $tt $mli $tf $us0 $iol $lon $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $dbn $tt $mlo $tf $us1 $iol $lon $gos 3 120 $ps  # loo
-# ./jobs/roar/primer.sh $sk $dbn $tt $mlo $tf $us1 $iol $lon $goe 3 120 $ps
-# ./jobs/roar/primer.sh $sk $dbn $tt $mds $tf $us1 $iol $lon $gos 3 120 $ps  # dshap
-# ./jobs/roar/primer.sh $sk $dbn $tt $mds $tf $us1 $iol $lon $goe 3 120 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
+# ./jobs/roar/primer.sh $sk $dbn $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
+./jobs/roar/primer.sh $sk $dbn $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
+./jobs/roar/primer.sh $sk $dbn $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
+./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
+# ./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $goe 3 600 $ps
+# ./jobs/roar/primer.sh $sk $dbn $tt $mtx $tf $us1 $iol $lon $goa 3 600 $ps
+# ./jobs/roar/primer.sh $sk $dbn $tt $mli $tf $us1 $iol $lon $gos 3 600 $p2  # leaf_influence
+./jobs/roar/primer.sh $sk $dbn $tt $mli $tf $us0 $iol $lon $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $dbn $tt $mlo $tf $us1 $iol $lon $gos 3 600 $ps  # loo
+# ./jobs/roar/primer.sh $sk $dbn $tt $mlo $tf $us1 $iol $lon $goe 3 600 $ps
+# ./jobs/roar/primer.sh $sk $dbn $tt $mds $tf $us1 $iol $lon $gos 3 600 $ps  # dshap
+# ./jobs/roar/primer.sh $sk $dbn $tt $mds $tf $us1 $iol $lon $goe 3 600 $ps
 
 # casp
 ./jobs/roar/primer.sh $sk $dc $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # random
@@ -312,24 +312,24 @@ goa='alpha'  # TREX only
 # ./jobs/roar/primer.sh $sk $dsb $tt $mds $tf $us1 $iol $lon $goe 3 600 $ps
 
 # surgical
-./jobs/roar/primer.sh $sk $ds $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
-# ./jobs/roar/primer.sh $sk $ds $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
-./jobs/roar/primer.sh $sk $ds $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
-./jobs/roar/primer.sh $sk $ds $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
-./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lot $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $loh $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex
-# ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $goe 3 120 $ps
-# ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $goa 3 120 $ps
-# ./jobs/roar/primer.sh $sk $ds $tt $mli $tf $us1 $iol $lon $gos 3 120 $p2  # leaf_influence
-./jobs/roar/primer.sh $sk $ds $tt $mli $tf $us0 $iol $lon $gos 3 120 $ps
-./jobs/roar/primer.sh $sk $ds $tt $mlo $tf $us1 $iol $lon $gos 3 120 $ps  # loo
-# ./jobs/roar/primer.sh $sk $ds $tt $mlo $tf $us1 $iol $lon $goe 3 120 $ps
-# ./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iol $lon $gos 3 120 $ps  # dshap
-# ./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iol $lon $goe 3 120 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
+# ./jobs/roar/primer.sh $sk $ds $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
+./jobs/roar/primer.sh $sk $ds $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
+./jobs/roar/primer.sh $sk $ds $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $lot $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mbi $tf $us1 $iol $loh $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
+# ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $goe 3 600 $ps
+# ./jobs/roar/primer.sh $sk $ds $tt $mtx $tf $us1 $iol $lon $goa 3 600 $ps
+# ./jobs/roar/primer.sh $sk $ds $tt $mli $tf $us1 $iol $lon $gos 3 600 $p2  # leaf_influence
+./jobs/roar/primer.sh $sk $ds $tt $mli $tf $us0 $iol $lon $gos 3 600 $ps
+./jobs/roar/primer.sh $sk $ds $tt $mlo $tf $us1 $iol $lon $gos 3 600 $ps  # loo
+# ./jobs/roar/primer.sh $sk $ds $tt $mlo $tf $us1 $iol $lon $goe 3 600 $ps
+# ./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iol $lon $gos 3 600 $ps  # dshap
+# ./jobs/roar/primer.sh $sk $ds $tt $mds $tf $us1 $iol $lon $goe 3 600 $ps
 
 # twitter
 ./jobs/roar/primer.sh $sk $tw $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random

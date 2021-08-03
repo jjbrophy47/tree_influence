@@ -39,65 +39,42 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
 
     # average influence values over all test examples
     if args.inf_obj == 'local':
+
+        # sort influence values
+        for i in range(inf1.shape[1]):
+            idxs = np.argsort(inf1[:, i])[::-1]
+            inf1[:, i] = inf1[:, i][idxs]
+            inf2[:, i] = inf2[:, i][idxs]
+
         inf1 = inf1.mean(axis=1)
         inf2 = inf2.mean(axis=1)
 
     # compute correlation for the entire length of influence values
-    if args.n_sample == 1:
+    fig, axs = plt.subplots(1, len(args.zoom), figsize=(4 * len(args.zoom), 4), sharey=True)
 
-        if args.zoom > 0.0 and args.zoom < 1.0:
-            n = int(len(inf1) * args.zoom)
-            inf1 = inf1[:n]
-            inf2 = inf2[:n]
+    for i, zoom in enumerate(args.zoom):
+        assert zoom > 0 and zoom <= 1.0
+
+        n = int(len(inf1) * zoom)
+        i1 = inf1[:n]
+        i2 = inf2[:n]
 
         # shape=(no. train,)
-        pearson = pearsonr(inf1, inf2)[0]
-        spearman = spearmanr(inf1, inf2)[0]
-        r2score = r2_score(inf1, inf2)
+        pearson = pearsonr(i1, i2)[0]
+        spearman = spearmanr(i1, i2)[0]
+        r2score = r2_score(i1, i2)
 
-        fig, ax = plt.subplots()
-        label = f'p: {pearson:.3f}\ns: {spearman:.3f}\nr^2: {r2score:.3f}'
-        ax.scatter(inf1, inf2, label=label)
-        ax.set_title(f'{args.dataset}, {args.inf_obj}')
+        ax = axs[i]
+        ax.scatter(i1, i2, label=f'p: {pearson:.3f}\ns: {spearman:.3f}\nr^2: {r2score:.3f}')
+        ax.set_title(f'first {zoom * 100}% (sorted by {args.method1})')
         ax.set_xlabel(args.method1)
-        ax.set_ylabel(args.method2)
         ax.legend(fontsize=6)
+        if i == 0:
+            ax.set_ylabel(args.method2)
 
-        plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
-        plt.show()
-
-    # compute correlation for increasing lengths of the influence values
-    elif args.n_sample > 1:
-        exit('does not make sense, influence values are not sorted!')
-        frac_list = np.linspace(0, 1.0, args.n_sample + 1)[1:]
-
-        frac_arr = np.zeros(len(frac_list))
-        p_arr = np.zeros(len(frac_list))
-        s_arr = np.zeros(len(frac_list))
-        r2_arr = np.zeros(len(frac_list))
-
-        for i, frac in enumerate(frac_list):
-            n = int(len(inf1) * frac)
-
-            inf_a = inf1[:n]
-            inf_b = inf2[:n]
-
-            p_arr[i] = pearsonr(inf_a, inf_b)[0]
-            s_arr[i] = spearmanr(inf_a, inf_b)[0]
-            r2_arr[i] = r2_score(inf_a, inf_b)
-            frac_arr[i] = frac
-
-        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
-
-        for i, (arr, name) in enumerate([(p_arr, 'pearson'), (s_arr, 'spearman'), (r2_arr, 'r2')]):
-            ax = axs[i]
-            ax.plot(frac_arr * 100, arr)
-            ax.set_xlabel('% influence values')
-            ax.set_ylabel(name)
-
-        plt.tight_layout()
-        plt.show()
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
+    plt.show()
 
 
 def main(args):
@@ -154,7 +131,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_leaf', type=int, default=1)  # BoostIn
     parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
 
-    parser.add_argument('--update_set', type=int, default=-1)  # LeafInfluence
+    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
 
     parser.add_argument('--similarity', type=str, nargs='+', default='dot_prod')  # Similarity
 
@@ -172,11 +149,10 @@ if __name__ == '__main__':
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
 
     # Experiment settings
-    parser.add_argument('--inf_obj', type=str, default='global')
+    parser.add_argument('--inf_obj', type=str, default='local')
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
-    parser.add_argument('--zoom', type=float, default=1.0)
-    parser.add_argument('--n_sample', type=int, default=1)
+    parser.add_argument('--zoom', type=float, nargs='+', default=[0.01, 0.1, 0.5, 1.0])
 
     args = parser.parse_args()
     main(args)
