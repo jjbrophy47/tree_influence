@@ -11,7 +11,7 @@ from experiments import util as exp_util
 
 
 # public
-def get_results(args, logger=None):
+def get_results(args, in_dir, logger=None):
     """
     Retrieve results for the multiple methods.
     """
@@ -49,7 +49,7 @@ def get_results(args, logger=None):
 
         _, hash_str = exp_util.explainer_params_to_dict(method, template)
 
-        exp_dir = os.path.join(args.in_dir,
+        exp_dir = os.path.join(in_dir,
                                args.dataset,
                                args.tree_type,
                                f'rs_{args.random_state}',

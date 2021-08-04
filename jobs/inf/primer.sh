@@ -6,7 +6,7 @@ update_set=$5
 inf_obj=$6
 local_op=$7
 global_op=$8
-mem=$9
+ncpu=$9
 time=${10}
 partition=${11}
 
@@ -24,15 +24,15 @@ fi
 
 for inf_obj in ${inf_obj_list[@]}; do
 
-    job_name=CI_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
+    job_name=I_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
 
-    sbatch --mem=${mem}G \
+    sbatch --cpus-per-task=$ncpu \
            --time=$time \
            --partition=$partition \
            --job-name=$job_name \
-           --output=jobs/logs/ci/$job_name \
-           --error=jobs/errors/ci/$job_name \
-           jobs/ci/runner.sh $dataset $tree_type $method \
+           --output=jobs/logs/inf/$job_name \
+           --error=jobs/errors/inf/$job_name \
+           jobs/inf/runner.sh $dataset $tree_type $method \
            $inf_obj $trunc_frac $update_set $local_op $global_op
 
 done

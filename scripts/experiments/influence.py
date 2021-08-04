@@ -4,6 +4,7 @@ Compute global or local influence.
 import os
 import sys
 import time
+import joblib
 import argparse
 import resource
 from datetime import datetime
@@ -45,11 +46,62 @@ def select_elements(arr, rng, n):
     return result
 
 
+def remove_and_evaluate(inf_obj, objective, ranking, tree,
+                        X_train, y_train, X_test, y_test,
+                        remove_frac, n_ckpt, logger):
+
+    # get appropriate evaluation function
+    eval_fn = util.eval_loss
+
+    # get list of remove fractions
+    remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)
+    n_remove = int((remove_frac / n_ckpt) * X_train.shape[0])
+
+    # result container
+    result = {}
+    result['remove_frac'] = remove_frac_arr
+    result['loss'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
+    result['pred'] = []
+
+    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
+    result['loss'][0] = res['loss']
+    result['pred'].append(res['pred'])
+
+    for i in range(1, n_ckpt):
+
+        remove_frac = remove_frac_arr[i]
+        n_remove = int(X_train.shape[0] * remove_frac)
+
+        new_X_train = np.delete(X_train, ranking[:n_remove], axis=0)
+        new_y_train = np.delete(y_train, ranking[:n_remove])
+
+        if objective == 'binary' and len(np.unique(new_y_train)) == 1:
+            logger.info('Only samples from one class remain!')
+            break
+
+        elif objective == 'multiclass' and len(np.unique(new_y_train)) < len(np.unique(y_train)):
+            logger.info('At least 1 sample is not present for all classes!')
+            break
+
+        else:
+            new_tree = clone(tree).fit(new_X_train, new_y_train)
+
+            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.2f}%'
+            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
+            result['loss'][i] = res['loss']
+            result['pred'].append(res['pred'])
+
+    result['pred'] = np.vstack(result['pred'])
+
+    return result
+
+
 def experiment(args, logger, params, out_dir):
 
     # initialize experiment
     begin = time.time()
     rng = np.random.default_rng(args.random_state)
+    result = {}
 
     # data
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
@@ -64,40 +116,65 @@ def experiment(args, logger, params, out_dir):
     tree = tree.fit(X_train, y_train)
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
 
-    # compute infuence
+    # randomly select test instances to compute influence values for
+    avail_idxs = np.arange(X_test.shape[0])
+    n_test = min(args.n_test, len(avail_idxs))
+    test_idxs = select_elements(avail_idxs, rng, n=n_test)
+
+    # fit explainer
     start = time.time()
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
     fit_time = time.time() - start - explainer.parse_time_
 
-    if args.inf_obj == 'global':
-        start2 = time.time()
-        influence = explainer.get_global_influence(X=X_test, y=y_test)
-        inf_time = time.time() - start2
+    # compute influence
+    start2 = time.time()
+    influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
+    inf_time = time.time() - start2
+
+    # get ranking
+    ranking = np.argsort(influence, axis=0)[::-1]  # shape=(no. train, no. test)
+
+    # get no. jobs to run in parallel
+    if args.n_jobs == -1:
+        n_jobs = joblib.cpu_count()
 
     else:
+        assert args.n_jobs >= 1
+        n_jobs = min(args.n_jobs, joblib.cpu_count())
 
-        # randomly select test instances to compute influence values for
-        if args.inf_obj == 'local':
-            avail_idxs = np.arange(X_test.shape[0])
-            n_test = min(args.n_test, len(avail_idxs))
-            test_idxs = select_elements(avail_idxs, rng, n=n_test)
+    logger.info(f'[INFO] no. jobs: {n_jobs:,}')
 
-        elif args.inf_obj == 'local_correct' and objective != 'regression':
-            y_pred = tree.predict(X_test)
-            correct_idxs = np.where(y_pred == y_test)[0]
-            n_test = min(args.n_test, len(correct_idxs))
-            test_idxs = select_elements(correct_idxs, rng, n=n_test)
+    with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
-        else:
-            assert args.inf_obj == 'local_incorrect' and objective != 'regression'
-            y_pred = tree.predict(X_test)
-            incorrect_idxs = np.where(y_pred != y_test)[0]
-            n_test = min(args.n_test, len(incorrect_idxs))
-            test_idxs = select_elements(incorrect_idxs, rng, n=n_test)
+        n_finish = 0
+        n_remain = len(test_idxs)
 
-        start2 = time.time()
-        influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
-        inf_time = time.time() - start2
+        res_list = []
+
+        while n_remain > 0:
+            n = min(min(10, n_jobs), n_remain)
+
+            results = parallel(joblib.delayed(remove_and_evaluate)
+                                             (args.inf_obj, objective,
+                                              ranking[:, n_finish + i], tree,
+                                              X_train, y_train, X_test[[idx]], y_test[[idx]],
+                                              args.remove_frac, args.n_ckpt, logger)
+                                              for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
+
+            # synchronization barrier
+            res_list += results
+
+            n_finish += n
+            n_remain -= n
+
+            cum_time = time.time() - start
+            logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
+                        f', cum. time: {cum_time:.3f}s')
+
+        # combine results from each test example
+        result['remove_frac'] = res_list[0]['remove_frac']  # shape=(no. ckpts,)
+        result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
+        result['pred'] = [res['pred'] for res in res_list]  # shape=(no. test, no. completed ckpts, no class)
 
     # store ALL train and test predictions
     if objective == 'regression':
@@ -113,16 +190,10 @@ def experiment(args, logger, params, out_dir):
         y_train_pred = tree.predict_proba(X_train)
         y_test_pred = tree.predict_proba(X_test)
 
-    # display influence
-    logger.info(f'\ninfluence: {influence}, shape: {influence.shape}')
-
-    logger.info(f'fit time: {fit_time:.5f}s')
-    logger.info(f'compute time: {inf_time:.5f}s')
-
     # save results
-    result = {}
     result['influence'] = influence
-    result['test_idxs'] = test_idxs if args.inf_obj != 'global' else ''
+    result['ranking'] = ranking
+    result['test_idxs'] = test_idxs
     result['y_train_pred'] = y_train_pred
     result['y_test_pred'] = y_test_pred
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
@@ -172,7 +243,7 @@ if __name__ == '__main__':
     parser.add_argument('--out_dir', type=str, default='output/influence/')
 
     # Data settings
-    parser.add_argument('--dataset', type=str, default='synthetic_regression')
+    parser.add_argument('--dataset', type=str, default='surgical')
 
     # Tree-ensemble settings
     parser.add_argument('--tree_type', type=str, default='lgb')
@@ -202,6 +273,8 @@ if __name__ == '__main__':
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='local')
     parser.add_argument('--n_test', type=int, default=1000)  # local
+    parser.add_argument('--remove_frac', type=float, default=0.5)
+    parser.add_argument('--n_ckpt', type=int, default=200)
 
     args = parser.parse_args()
     main(args)

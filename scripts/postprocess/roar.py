@@ -21,7 +21,9 @@ from experiments import util
 
 def process(args, out_dir, logger):
 
-    results = pp_util.get_results(args, logger)
+    results = pp_util.get_results(args, args.in_dir[0], logger)
+    if len(args.in_dir) > 1:
+        results += pp_util.get_results(args, args.in_dir[1], logger)
     color, line, label = pp_util.get_plot_dicts()
 
     if args.inf_obj == 'global':
@@ -131,7 +133,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # I/O settings
-    parser.add_argument('--in_dir', type=str, default='temp_roar/', help='input directory.')
+    parser.add_argument('--in_dir', type=str, nargs='+', default=['temp_roar', 'temp_reinfluence'])
     parser.add_argument('--out_dir', type=str, default='output/plot/roar/', help='output directory.')
 
     # experiment settings

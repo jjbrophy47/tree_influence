@@ -93,8 +93,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dbn $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $dbn $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $dbn $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $dbn $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $dbn $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $dbn $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dbn $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dbn $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dbn $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dbn $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -129,8 +129,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dco $tt $mr  $tf $us1 $iol $lon $gos 3 300 $ps  # random
 # ./jobs/reinf/primer.sh $dco $tt $mm  $tf $us1 $iol $lon $gos 3 300 $ps  # minority
 ./jobs/reinf/primer.sh $dco $tt $mtg $tf $us1 $iol $lon $gos 3 300 $ps  # target
-./jobs/reinf/primer.sh $dco $tt $ms  $tf $us1 $iol $lon $gos 3 300 $ps  # similarity
-./jobs/reinf/primer.sh $dco $tt $mbi $tf $us1 $iol $lon $gos 3 300 $ps  # boostin
+./jobs/reinf/primer.sh $dco $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dco $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dco $tt $mbi $tf $us1 $iol $log $gos 3 300 $ps
 ./jobs/reinf/primer.sh $dco $tt $mbi $tf $us1 $iol $los $gos 3 300 $ps
 ./jobs/reinf/primer.sh $dco $tt $mtx $tf $us1 $iol $lon $gos 3 300 $ps  # trex
@@ -165,8 +165,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dd $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $dd $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $dd $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $dd $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $dd $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $dd $tt $ms  $tf $us1 $iol $lon $gos 28 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dd $tt $mbi $tf $us1 $iol $lon $gos 28 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dd $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dd $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dd $tt $mbi $tf $us1 $iol $lot $gos 3 600 $ps
@@ -185,8 +185,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dfd $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $dfd $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $dfd $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $dfd $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $dfd $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $dfd $tt $ms  $tf $us1 $iol $lon $gos 28 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dfd $tt $mbi $tf $us1 $iol $lon $gos 28 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dfd $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dfd $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dfd $tt $mbi $tf $us1 $iol $lot $gos 3 600 $ps
@@ -205,8 +205,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dgc $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $dgc $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $dgc $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $dgc $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $dgc $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $dgc $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dgc $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dgc $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dgc $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dgc $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -241,8 +241,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dl $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $dl $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $dl $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $dl $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $dl $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $dl $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dl $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dl $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dl $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dl $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -295,8 +295,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dsb $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $dsb $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $dsb $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $dsb $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $dsb $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $dsb $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dsb $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dsb $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dsb $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $dsb $tt $mtx $tf $us1 $iol $lon $gos 3 600 $ps  # trex
@@ -313,8 +313,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $ds $tt $mr  $tf $us1 $iol $lon $gos 3 600 $ps  # random
 # ./jobs/reinf/primer.sh $ds $tt $mm  $tf $us1 $iol $lon $gos 3 600 $ps  # minority
 ./jobs/reinf/primer.sh $ds $tt $mtg $tf $us1 $iol $lon $gos 3 600 $ps  # target
-./jobs/reinf/primer.sh $ds $tt $ms  $tf $us1 $iol $lon $gos 3 600 $ps  # similarity
-./jobs/reinf/primer.sh $ds $tt $mbi $tf $us1 $iol $lon $gos 3 600 $ps  # boostin
+./jobs/reinf/primer.sh $ds $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $ds $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $ds $tt $mbi $tf $us1 $iol $log $gos 3 600 $ps
 ./jobs/reinf/primer.sh $ds $tt $mbi $tf $us1 $iol $los $gos 3 600 $ps
 ./jobs/reinf/primer.sh $ds $tt $mbi $tf $us1 $iol $lot $gos 3 600 $ps
@@ -351,8 +351,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dv $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 # ./jobs/reinf/primer.sh $dv $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/reinf/primer.sh $dv $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
-./jobs/reinf/primer.sh $dv $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/reinf/primer.sh $dv $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/reinf/primer.sh $dv $tt $ms  $tf $us1 $iol $lon $gos 3 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dv $tt $mbi $tf $us1 $iol $lon $gos 3 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dv $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/reinf/primer.sh $dv $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/reinf/primer.sh $dv $tt $mbi $tf $us1 $iol $lot $gos 3 120 $ps
