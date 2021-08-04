@@ -1,15 +1,14 @@
-skip=$1
-dataset=$2
-tree_type=$3
-method=$4
-trunc_frac=$5
-update_set=$6
-inf_obj=$7
-local_op=$8
-global_op=$9
-ncpu=${10}
-time=${11}
-partition=${12}
+dataset=$1
+tree_type=$2
+method=$3
+trunc_frac=$4
+update_set=$5
+inf_obj=$6
+local_op=$7
+global_op=$8
+ncpu=$9
+time=${10}
+partition=${11}
 
 rs_list=(1 2 3 4 5)
 
