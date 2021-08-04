@@ -131,7 +131,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # I/O settings
-    parser.add_argument('--in_dir', type=str, default='output/roar/', help='input directory.')
+    parser.add_argument('--in_dir', type=str, default='temp_roar/', help='input directory.')
     parser.add_argument('--out_dir', type=str, default='output/plot/roar/', help='output directory.')
 
     # experiment settings

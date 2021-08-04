@@ -101,8 +101,6 @@ class Trex(Explainer):
         self.X_train_ = self._kernel_transform(X)
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
-        print(self.X_train_)
-
         # select target
         if self.target == 'actual':
 

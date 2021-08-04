@@ -58,14 +58,19 @@ def experiment(args, logger, out_dir):
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
 
     # get results
-    results = pp_util.get_results(args, logger)
-    results = filter_results(results, args.skip)
+    inf_results = pp_util.get_results(args, logger)
+    args.in_dir = args.in_dir2
+    roar_results = pp_util.get_results(args, logger)
+
+    inf_results = filter_results(inf_results, args.skip)
+    roar_results = filter_results(roar_results, args.skip)
+
     color, line, label = pp_util.get_plot_dicts()
 
     assert objective == 'binary'
 
     # extract test examples
-    _, res = results[0]
+    _, res = inf_results[0]
     test_idxs = res['test_idxs']
     test_proba = res['y_test_pred'][:, 0]
     test_pred = np.where(test_proba <= 0.5, 0, 1)
@@ -163,7 +168,8 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='output/influence/')
+    parser.add_argument('--in_dir', type=str, default='temp_influence/')
+    parser.add_argument('--in_dir2', type=str, default='temp_roar/')
     parser.add_argument('--out_dir', type=str, default='output/plot/leaf_analysis/')
 
     # Data settings

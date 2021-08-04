@@ -62,8 +62,12 @@ def experiment(args, logger, out_dir):
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
 
     # get results
-    results = pp_util.get_results(args, logger)
-    results = filter_results(results, args.skip)
+    roar_results = pp_util.get_results(args, logger)
+    args.in_dir = args.in_dir2
+    inf_results = pp_util.get_results(args, logger)
+
+    roar_results = filter_results(roar_results, args.skip)
+    inf_results = filter_results(inf_results, args.skip)
     color, line, label = pp_util.get_plot_dicts()
 
     if args.inf_obj == 'global':
@@ -146,12 +150,13 @@ def experiment(args, logger, out_dir):
                         ax.set_ylabel('Log loss of removed examples')
 
     else:  # local
-        assert objective == 'binary'
-
         fig, axs = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
         
-        for method, res in results:
-            fracs = get_cis(res, objective=objective, y_train=y_train) * 100
+        for i in range(len(roar_results)):
+            method, roar_res = roar_results[i]
+            _, inf_res = inf_results[i]
+
+            fracs = get_cis(roar_res, objective=objective, y_train=y_train) * 100
             fracs_zoom = fracs[np.where(fracs <= args.zoom)]  # cutoff
 
             f_mean, f_std = fracs.mean(), sem(fracs)
@@ -209,7 +214,8 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='output/influence/')
+    parser.add_argument('--in_dir', type=str, default='temp_roar/')
+    parser.add_argument('--in_dir2', type=str, default='temp_influence/')
     parser.add_argument('--out_dir', type=str, default='output/plot/characterization/')
 
     # Data settings

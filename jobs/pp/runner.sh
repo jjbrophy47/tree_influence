@@ -9,7 +9,7 @@ dataset=$1
 model=$2
 tune_frac=$3
 
-python3 scripts/experiments/predictive_performance.py \
+python3 scripts/experiments/prediction.py \
   --dataset $dataset \
   --model $model \
   --tune_frac $tune_frac \
