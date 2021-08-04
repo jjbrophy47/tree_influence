@@ -24,7 +24,7 @@ fi
 
 for inf_obj in ${inf_obj_list[@]}; do
 
-    job_name=RR_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
+    job_name=RI_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
 
     sbatch --cpus-per-task=$ncpu \
            --time=$time \
