@@ -5,7 +5,6 @@
 module load miniconda
 conda activate jbrophy-20210713
 
-skip=$1
 dataset=$2
 tree_type=$3
 method=$4

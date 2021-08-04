@@ -5,16 +5,18 @@
 module load miniconda
 conda activate jbrophy-20210713
 
-dataset=$1
-tree_type=$2
-method=$3
-inf_obj=$4
-trunc_frac=$5
-update_set=$6
-local_op=$7
-global_op=$8
+skip=$1
+dataset=$2
+tree_type=$3
+method=$4
+inf_obj=$5
+trunc_frac=$6
+update_set=$7
+local_op=$8
+global_op=$9
 
 python3 scripts/experiments/reinfluence.py \
+  --skip $skip \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
