@@ -32,7 +32,7 @@ for inf_obj in ${inf_obj_list[@]}; do
            --job-name=$job_name \
            --output=jobs/logs/reinf/$job_name \
            --error=jobs/errors/reinf/$job_name \
-           jobs/reinf/runner.sh $skip $dataset $tree_type $method \
+           jobs/reinf/runner.sh $dataset $tree_type $method \
            $inf_obj $trunc_frac $update_set $local_op $global_op
 
 done
