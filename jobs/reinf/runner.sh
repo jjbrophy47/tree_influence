@@ -14,7 +14,7 @@ update_set=$6
 local_op=$7
 global_op=$8
 
-python3 scripts/experiments/roar.py \
+python3 scripts/experiments/reinfluence.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
