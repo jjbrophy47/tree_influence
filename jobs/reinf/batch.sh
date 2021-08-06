@@ -41,11 +41,15 @@ iog='global'  # inf_obj
 iol='local'
 iob='both'
 
-lon='normal'  # local_op
-log='sign'  # BoostIn
-los='sim'  # BoostIn
-lot='ntg'  # BoostIn
-loh='hess'  # BoostIn
+lno='normal'  # local_op, boostin
+lsg='sign'  # boostin
+lsr='sign_tr'  # boostin
+lse='sign_te'  # boostin
+
+sc1=0.0 # boostin leaf_scale
+sc1=-1.0
+sc1=-2.0
+sc1=-3.0
 
 gos='self'  # global_op
 goe='expected'  # TREX, LOO, and DShap
@@ -55,8 +59,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $da $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 # ./jobs/reinf/primer.sh $da $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/reinf/primer.sh $da $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
-./jobs/reinf/primer.sh $da $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/reinf/primer.sh $da $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/reinf/primer.sh $da $tt $ms  $tf $us1 $iol $lon $gos 28 1440 $ps  # similarity
+./jobs/reinf/primer.sh $da $tt $mbi $tf $us1 $iol $lon $gos 28 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $da $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/reinf/primer.sh $da $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/reinf/primer.sh $da $tt $mbi $tf $us1 $iol $lot $gos 3 120 $ps
@@ -75,8 +79,8 @@ goa='alpha'  # TREX only
 ./jobs/reinf/primer.sh $dbm $tt $mr  $tf $us1 $iol $lon $gos 3 120 $ps  # random
 # ./jobs/reinf/primer.sh $dbm $tt $mm  $tf $us1 $iol $lon $gos 3 120 $ps  # minority
 ./jobs/reinf/primer.sh $dbm $tt $mtg $tf $us1 $iol $lon $gos 3 120 $ps  # target
-./jobs/reinf/primer.sh $dbm $tt $ms  $tf $us1 $iol $lon $gos 3 120 $ps  # similarity
-./jobs/reinf/primer.sh $dbm $tt $mbi $tf $us1 $iol $lon $gos 3 120 $ps  # boostin
+./jobs/reinf/primer.sh $dbm $tt $ms  $tf $us1 $iol $lon $gos 28 1440 $ps  # similarity
+./jobs/reinf/primer.sh $dbm $tt $mbi $tf $us1 $iol $lon $gos 28 1440 $ps  # boostin
 ./jobs/reinf/primer.sh $dbm $tt $mbi $tf $us1 $iol $log $gos 3 120 $ps
 ./jobs/reinf/primer.sh $dbm $tt $mbi $tf $us1 $iol $los $gos 3 120 $ps
 ./jobs/reinf/primer.sh $dbm $tt $mtx $tf $us1 $iol $lon $gos 3 120 $ps  # trex

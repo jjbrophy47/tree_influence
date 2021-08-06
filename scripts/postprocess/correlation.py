@@ -4,9 +4,11 @@ Measure correlation between two influence methods.
 import os
 import sys
 import time
+import tqdm
 import hashlib
 import argparse
 import resource
+import seaborn as sns
 from datetime import datetime
 
 import numpy as np
@@ -15,10 +17,26 @@ from sklearn.base import clone
 from sklearn.metrics import r2_score
 from scipy.stats import pearsonr
 from scipy.stats import spearmanr
+from scipy.stats import sem
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from experiments import util
+
+
+def show_values_on_bars(axs):
+    def _show_on_single_plot(ax):        
+        for p in ax.patches:
+            _x = p.get_x() + p.get_width() / 2
+            _y = p.get_y() + p.get_height()
+            value = '{:.2f}'.format(p.get_height())
+            ax.text(_x, _y, value, ha="center") 
+
+    if isinstance(axs, np.ndarray):
+        for idx, ax in np.ndenumerate(axs):
+            _show_on_single_plot(ax)
+    else:
+        _show_on_single_plot(axs)
 
 
 def experiment(args, logger, in_dir1, in_dir2, out_dir):
@@ -37,44 +55,61 @@ def experiment(args, logger, in_dir1, in_dir2, out_dir):
     inf1 = inf_res1['influence']
     inf2 = inf_res2['influence']
 
+    # rnk1 = inf_res1['ranking'][:, 0]
+    # rnk2 = inf_res2['ranking'][:, 0]
+
+    # print(rnk1, rnk1.shape)
+    # print(rnk2, rnk2.shape)
+
+    # n_agree = len(np.where(rnk1 == rnk2)[0])
+    # print(n_agree)
+
+    pearson = np.zeros(inf1.shape[1], dtype=np.float32)
+    spearman = np.zeros(inf1.shape[1], dtype=np.float32)
+    r2 = np.zeros(inf1.shape[1], dtype=np.float32)
+
+    means = np.zeros(2, dtype=np.float32)
+    sems = np.zeros(2, dtype=np.float32)
+
     # average influence values over all test examples
-    if args.inf_obj == 'local':
+    assert args.inf_obj == 'local'
 
-        # sort influence values
-        for i in range(inf1.shape[1]):
-            idxs = np.argsort(inf1[:, i])[::-1]
-            inf1[:, i] = inf1[:, i][idxs]
-            inf2[:, i] = inf2[:, i][idxs]
+    # sort influence values based on method1
+    for i in tqdm.tqdm(range(inf1.shape[1])):
+        idxs = np.argsort(inf1[:, i])[::-1]
 
-        inf1 = inf1.mean(axis=1)
-        inf2 = inf2.mean(axis=1)
+        i1 = inf1[:, i][idxs]
+        i2 = inf2[:, i][idxs]
 
-    # compute correlation for the entire length of influence values
-    fig, axs = plt.subplots(1, len(args.zoom), figsize=(4 * len(args.zoom), 4), sharey=True)
+        pearson[i] = pearsonr(i1, i2)[0]
+        spearman[i] = spearmanr(i1, i2)[0]
+        r2[i] = r2_score(i1, i2)
 
-    for i, zoom in enumerate(args.zoom):
-        assert zoom > 0 and zoom <= 1.0
+    means[0] = np.mean(pearson, axis=0)
+    means[1] = np.mean(spearman, axis=0)
+    # means[2] = np.mean(r2, axis=0)
 
-        n = int(len(inf1) * zoom)
-        i1 = inf1[:n]
-        i2 = inf2[:n]
+    sems[0] = sem(pearson, axis=0)
+    sems[1] = sem(spearman, axis=0)
+    # sems[2] = sem(r2, axis=0)
 
-        # shape=(no. train,)
-        pearson = pearsonr(i1, i2)[0]
-        spearman = spearmanr(i1, i2)[0]
-        r2score = r2_score(i1, i2)
+    names = ['Pearson', 'Spearman']
 
-        ax = axs[i]
-        ax.scatter(i1, i2, label=f'p: {pearson:.3f}\ns: {spearman:.3f}\nr^2: {r2score:.3f}')
-        ax.set_title(f'first {zoom * 100}% (sorted by {args.method1})')
-        ax.set_xlabel(args.method1)
-        ax.legend(fontsize=6)
-        if i == 0:
-            ax.set_ylabel(args.method2)
+    logger.info(f'\nPearson: {means[0]:.5f} +/- {sems[0]:.5f}')
+    logger.info(f'Spearman: {means[1]:.5f} +/- {sems[1]:.5f}')
 
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
-    plt.show()
+    # plot correlations
+    # fig, ax = plt.subplots()
+
+    # sns.barplot(names, means, yerr=sems)
+    # ax.set_title(f'No. test: {pearson.shape[0]}')
+    # ax.set_ylabel('Avg. correlation')
+
+    # show_values_on_bars(ax)
+
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
+    # plt.show()
 
 
 def main(args):
@@ -106,7 +141,7 @@ def main(args):
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = util.get_logger(os.path.join(out_dir, f'{args.method1}_{args.method2}.txt'))
     logger.info(args)
     logger.info(datetime.now())
 
@@ -118,7 +153,7 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='output/influence/')
+    parser.add_argument('--in_dir', type=str, default='temp_influence')
     parser.add_argument('--out_dir', type=str, default='output/plot/correlation/')
 
     # Data settings
@@ -152,7 +187,7 @@ if __name__ == '__main__':
     parser.add_argument('--inf_obj', type=str, default='local')
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
-    parser.add_argument('--zoom', type=float, nargs='+', default=[0.01, 0.1, 0.5, 1.0])
+    parser.add_argument('--zoom', type=float, nargs='+', default=[1.0])
 
     args = parser.parse_args()
     main(args)

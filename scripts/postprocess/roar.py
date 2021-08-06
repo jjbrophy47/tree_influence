@@ -17,13 +17,32 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 import util as pp_util
 from experiments import util
+from leaf_analysis import filter_results
 
 
 def process(args, out_dir, logger):
 
-    results = pp_util.get_results(args, args.in_dir[0], logger)
-    if len(args.in_dir) > 1:
-        results += pp_util.get_results(args, args.in_dir[1], logger)
+    n_test = None
+    reinf_exists = 0
+
+    results = []
+    reinf_list = []
+
+    for in_dir in args.in_dir:
+
+        res = pp_util.get_results(args, in_dir, logger)
+        res = filter_results(res, args.skip)
+        results += res
+
+        is_reinf = 1 if 'reinfluence' in in_dir else 0
+        reinf_list += [is_reinf] * len(res)
+
+        if is_reinf:
+            reinf_exists = 1
+
+    # get dataset
+    X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
+
     color, line, label = pp_util.get_plot_dicts()
 
     if args.inf_obj == 'global':
@@ -70,7 +89,17 @@ def process(args, out_dir, logger):
     else:
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))
 
-        for method, res in results:
+        for i, (method, res) in enumerate(results):
+
+            if i == 0:
+                n_test = res['loss'].shape[0]
+
+            else:
+                temp = res['loss'].shape[0]
+                assert n_test == temp, f'Inconsistent no. test: {temp:,} != {n_test:,}'
+
+            is_reinf = reinf_list[i]
+
             ax = axs[0]
 
             # TEMP
@@ -83,8 +112,15 @@ def process(args, out_dir, logger):
             y_err = sem(res['loss'], axis=0)
             y_err = y_err if args.std_err else None
 
-            ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
-                        linestyle=line[method], alpha=0.75)
+            if is_reinf:
+                linestyle = '--'
+                labelstyle = f'{label[method]} (RI)'
+            else:
+                linestyle = line[method]
+                labelstyle = label[method]
+
+            ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
+                        linestyle=linestyle, alpha=0.75)
             ax.set_xlabel('Train data removed (%)')
             ax.set_ylabel(f'Avg. example test loss')
             ax.legend(fontsize=6)
@@ -98,16 +134,18 @@ def process(args, out_dir, logger):
                 if y_err is not None:
                     y_err = y_err[:n]
 
-                ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
-                            linestyle=line[method], alpha=0.75)
+                ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
+                            linestyle=linestyle, alpha=0.75)
                 ax.set_xlabel('Train data removed (%)')
                 ax.set_ylabel(f'Avg. example test loss')
 
         if args.zoom <= 0.0 or args.zoom >= 1.0:
             fig.delaxes(axs[1])
 
-    plt_dir = os.path.join(args.out_dir, args.inf_obj, args.tree_type)
-    suffix = ''
+    custom_dir = 'reestimation' if reinf_exists else args.custom_dir
+
+    plt_dir = os.path.join(args.out_dir, args.inf_obj, args.tree_type, custom_dir)
+    suffix = f'_{n_test}'
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')
 
@@ -133,7 +171,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # I/O settings
-    parser.add_argument('--in_dir', type=str, nargs='+', default=['temp_roar', 'temp_reinfluence'])
+    parser.add_argument('--data_dir', type=str, default='data/')
+    parser.add_argument('--in_dir', type=str, nargs='+',
+                        default=['/Volumes/30/intent/temp_influence/', '/Volumes/30/intent/temp_reinfluence/'])
     parser.add_argument('--out_dir', type=str, default='output/plot/roar/', help='output directory.')
 
     # experiment settings
@@ -147,6 +187,8 @@ if __name__ == '__main__':
     parser.add_argument('--method', type=str, nargs='+',
                         default=['random', 'target', 'similarity', 'boostin', 'trex',
                                  'leaf_influence', 'loo', 'dshap'])  # no minority, loss
+    parser.add_argument('--skip', type=str, nargs='+',
+                        default=['minority', 'loss', 'boostin_9e', 'boostin_08', 'boostin_e8', 'boostin_c4'])
     parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
     parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sim', 'ntg', 'hess'])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
@@ -166,7 +208,8 @@ if __name__ == '__main__':
     # result settings
     parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'loss', 'acc', 'auc'])
     parser.add_argument('--std_err', type=int, default=0)
-    parser.add_argument('--zoom', type=float, default=0.1)
+    parser.add_argument('--custom_dir', type=str, default='')
+    parser.add_argument('--zoom', type=float, default=0.025)
 
     args = parser.parse_args()
     main(args)

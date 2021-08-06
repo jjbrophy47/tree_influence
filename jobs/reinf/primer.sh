@@ -3,12 +3,13 @@ tree_type=$2
 method=$3
 trunc_frac=$4
 update_set=$5
-inf_obj=$6
-local_op=$7
-global_op=$8
-ncpu=$9
-time=${10}
-partition=${11}
+leaf_scale=$6
+inf_obj=$7
+local_op=$8
+global_op=$9
+ncpu=${10}
+time=${11}
+partition=${12}
 
 rs_list=(1 2 3 4 5)
 
@@ -33,6 +34,6 @@ for inf_obj in ${inf_obj_list[@]}; do
            --output=jobs/logs/reinf/$job_name \
            --error=jobs/errors/reinf/$job_name \
            jobs/reinf/runner.sh $dataset $tree_type $method \
-           $inf_obj $trunc_frac $update_set $local_op $global_op
+           $inf_obj $trunc_frac $update_set $leaf_scale $local_op $global_op
 
 done

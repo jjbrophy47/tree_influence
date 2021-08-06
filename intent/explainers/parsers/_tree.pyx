@@ -139,7 +139,7 @@ cdef class _Tree:
 
         return np.asarray(out)
 
-    cpdef np.ndarray get_leaf_weights(self):
+    cpdef np.ndarray get_leaf_weights(self, DTYPE_t leaf_scale):
         """
         Return 1d array of leaf values in order of their leaf IDs.
         """
@@ -151,7 +151,7 @@ cdef class _Tree:
         # incrementer
         cdef SIZE_t i = 0
 
-        self._get_leaf_weights(self.root_, leaf_weights)
+        self._get_leaf_weights(self.root_, leaf_weights, leaf_scale)
 
         # copy values to np.ndarray
         for i in range(self.leaf_count_):
@@ -351,17 +351,18 @@ cdef class _Tree:
 
     cdef void _get_leaf_weights(self,
                                 Node* node,
-                                DTYPE_t* leaf_weights) nogil:
+                                DTYPE_t* leaf_weights,
+                                DTYPE_t leaf_scale) nogil:
         """
         Recursively fill 1d array of leaf weights in order of their leaf IDs.
         """
 
         if node.is_leaf:
-            leaf_weights[node.leaf_id] = 1.0 / node.count
+            leaf_weights[node.leaf_id] = pow(node.count, leaf_scale)
 
         else:
-            self._get_leaf_weights(node.left_child, leaf_weights)
-            self._get_leaf_weights(node.right_child, leaf_weights)
+            self._get_leaf_weights(node.left_child, leaf_weights, leaf_scale)
+            self._get_leaf_weights(node.right_child, leaf_weights, leaf_scale)
 
         return
 

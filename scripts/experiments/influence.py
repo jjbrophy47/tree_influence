@@ -126,10 +126,15 @@ def experiment(args, logger, params, out_dir):
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
     fit_time = time.time() - start - explainer.parse_time_
 
+    logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s')
+
     # compute influence
     start2 = time.time()
     influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
     inf_time = time.time() - start2
+
+    logger.info(f'[INFO] explainer influence time: {inf_time:.5f}s')
+    logger.info(f'[INFO] total time: {time.time() - begin:.5f}s')
 
     # get ranking
     ranking = np.argsort(influence, axis=0)[::-1]  # shape=(no. train, no. test)
@@ -142,7 +147,7 @@ def experiment(args, logger, params, out_dir):
         assert args.n_jobs >= 1
         n_jobs = min(args.n_jobs, joblib.cpu_count())
 
-    logger.info(f'[INFO] no. jobs: {n_jobs:,}')
+    logger.info(f'\n[INFO] no. jobs: {n_jobs:,}')
 
     with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
@@ -201,6 +206,7 @@ def experiment(args, logger, params, out_dir):
     result['inf_time'] = inf_time
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
+    result['n_jobs'] = n_jobs
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))
     np.save(os.path.join(out_dir, 'results.npy'), result)
@@ -208,7 +214,12 @@ def experiment(args, logger, params, out_dir):
 
 def main(args):
 
-    # get method params and unique settings hash
+    # get unique hash for this experiment setting
+    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
+                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = util.dict_to_hash(exp_dict)
+
+    # get unique hash for the explainer
     params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
     # special cases
@@ -220,8 +231,7 @@ def main(args):
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
                            args.tree_type,
-                           f'rs_{args.random_state}',
-                           args.inf_obj,
+                           f'exp_{exp_hash}',
                            f'{args.method}_{hash_str}')
 
     # create output directory and clear previous contents
@@ -242,16 +252,18 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, default='data/')
     parser.add_argument('--out_dir', type=str, default='output/influence/')
 
-    # Data settings
+    # Experiment settings
     parser.add_argument('--dataset', type=str, default='surgical')
-
-    # Tree-ensemble settings
     parser.add_argument('--tree_type', type=str, default='lgb')
+    parser.add_argument('--inf_obj', type=str, default='local')
+    parser.add_argument('--n_test', type=int, default=100)  # local
+    parser.add_argument('--remove_frac', type=float, default=0.05)
+    parser.add_argument('--n_ckpt', type=int, default=50)
 
     # Explainer settings
     parser.add_argument('--method', type=str, default='random')
 
-    parser.add_argument('--use_leaf', type=int, default=1)  # BoostIn
+    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
     parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
 
     parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
@@ -269,12 +281,6 @@ if __name__ == '__main__':
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
     parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
-
-    # Experiment settings
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=1000)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.5)
-    parser.add_argument('--n_ckpt', type=int, default=200)
 
     args = parser.parse_args()
     main(args)

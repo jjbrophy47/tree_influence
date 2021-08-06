@@ -49,14 +49,17 @@ class Tree(object):
         """
         return self.tree_.get_leaf_values()
 
-    def get_leaf_weights(self):
+    def get_leaf_weights(self, scale=-1.0):
         """
-        Return 1d array of leaf weights (1.0 / no. train at leaf), shape=(no. leaves,).
+        Return 1d array of leaf weights, shape=(no. leaves,).
+
+        Input
+            scale: float, raises leaf count by this value (e.g. leaf_count ^ scale).
 
         Note
             - Must run `update_node_count` BEFORE this method.
         """
-        return self.tree_.get_leaf_weights()
+        return self.tree_.get_leaf_weights(scale)
 
     def update_node_count(self, X):
         """
@@ -188,9 +191,12 @@ class TreeEnsemble(object):
         """
         return np.concatenate([tree.get_leaf_values() for tree in self.trees.flatten()]).astype(util.dtype_t)
 
-    def get_leaf_weights(self):
+    def get_leaf_weights(self, scale=-1.0):
         """
-        Returns 1d array of leaf weights (1.0 / no. train at leaf), shape=(no. leaves across all trees,).
+        Returns 1d array of leaf weights, shape=(no. leaves across all trees,).
+
+        Input
+            scale: float, Raises leaf count by this value (e.g. count ^ scale).
 
         Note
             - Multiclass trees are flattened s.t. trees from all classes in one boosting
@@ -198,7 +204,7 @@ class TreeEnsemble(object):
 
             - Must run `update_node_count` BEFORE this method.
         """
-        return np.concatenate([tree.get_leaf_weights() for tree in self.trees.flatten()]).astype(util.dtype_t)
+        return np.concatenate([tree.get_leaf_weights(scale) for tree in self.trees.flatten()]).astype(util.dtype_t)
 
     def get_leaf_counts(self):
         """

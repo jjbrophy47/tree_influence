@@ -58,13 +58,8 @@ def experiment(args, logger, out_dir):
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
 
     # get results
-    inf_results = pp_util.get_results(args, logger)
-    args.in_dir = args.in_dir2
-    roar_results = pp_util.get_results(args, logger)
-
+    inf_results = pp_util.get_results(args, args.in_dir, logger)
     inf_results = filter_results(inf_results, args.skip)
-    roar_results = filter_results(roar_results, args.skip)
-
     color, line, label = pp_util.get_plot_dicts()
 
     assert objective == 'binary'
@@ -125,7 +120,7 @@ def experiment(args, logger, out_dir):
 
         ax = axs[i]
         sns.barplot(x=np.arange(len(test_weight)), y=test_weight, ax=ax)
-        ax.set_xticklabels([])
+        ax.set_xticklabels(ax.get_xticklabels(), fontsize=1)
         ax.set_title(f'Test No. {test_idx}, pred.: {test_proba[test_idx]:.3f}, target: {y_test[test_idx]}')
         if i in [0, 3, 6]:
             ax.set_ylabel('Leaf weight (1 / no. train at that leaf)')
@@ -168,8 +163,7 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='temp_influence/')
-    parser.add_argument('--in_dir2', type=str, default='temp_roar/')
+    parser.add_argument('--in_dir', type=str, default='/Volumes/30/intent/temp_influence/')
     parser.add_argument('--out_dir', type=str, default='output/plot/leaf_analysis/')
 
     # Data settings

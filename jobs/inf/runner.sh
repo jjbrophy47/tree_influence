@@ -11,8 +11,9 @@ method=$3
 inf_obj=$4
 trunc_frac=$5
 update_set=$6
-local_op=$7
-global_op=$8
+leaf_scale=$7
+local_op=$8
+global_op=$9
 
 python3 scripts/experiments/influence.py \
   --dataset $dataset \
@@ -21,5 +22,6 @@ python3 scripts/experiments/influence.py \
   --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
   --update_set $update_set \
+  --leaf_scale $leaf_scale \
   --local_op $local_op \
   --global_op $global_op \

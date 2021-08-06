@@ -49,7 +49,7 @@ cdef class _Tree:
     cpdef np.ndarray predict(self, DTYPE_t[:, :] X)
     cpdef np.ndarray apply(self, DTYPE_t[:, :] X)
     cpdef np.ndarray get_leaf_values(self)
-    cpdef np.ndarray get_leaf_weights(self)
+    cpdef np.ndarray get_leaf_weights(self, DTYPE_t leaf_scale)
     cpdef void       update_node_count(self, DTYPE_t[:, :] X)
     cpdef np.ndarray leaf_path(self, DTYPE_t[:, :] X, bint output, bint weighted)
     cpdef np.ndarray feature_path(self, DTYPE_t[:, :] X, bint output, bint weighted)
@@ -59,6 +59,6 @@ cdef class _Tree:
     cdef Node* _add_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
     cdef Node* _initialize_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
     cdef void  _get_leaf_values(self, Node* node, DTYPE_t* leaf_values) nogil
-    cdef void  _get_leaf_weights(self, Node* node, DTYPE_t* leaf_weights) nogil
+    cdef void  _get_leaf_weights(self, Node* node, DTYPE_t* leaf_weights, DTYPE_t leaf_scale) nogil
     cdef void  _dealloc(self, Node *node) nogil
     cdef str   _tree_str(self, Node* node, str s)

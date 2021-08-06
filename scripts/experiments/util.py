@@ -296,7 +296,7 @@ def eval_loss(objective, model, X, y, logger, prefix='', eps=1e-5):
     return result
 
 
-def dict_to_hash(my_dict):
+def dict_to_hash(my_dict, skip=[]):
     """
     Convert to string and concatenate the desired values
     in `my_dict` and return the hashed string.
@@ -304,7 +304,7 @@ def dict_to_hash(my_dict):
     d = my_dict.copy()
 
     # remove keys not desired in the hash string
-    for key in ['n_jobs', 'random_state', 'atol']:
+    for key in skip:
         if key in d:
             del d[key]
 
@@ -322,7 +322,7 @@ def explainer_params_to_dict(explainer, exp_params):
     params = {}
 
     if explainer == 'boostin':
-        params['use_leaf'] = exp_params['use_leaf']
+        params['leaf_scale'] = exp_params['leaf_scale']
         params['local_op'] = exp_params['local_op']
 
     elif explainer == 'leaf_influence':
@@ -355,7 +355,7 @@ def explainer_params_to_dict(explainer, exp_params):
         params['kernel'] = exp_params['kernel']
 
     # create hash string based on the chosen hyperparameters
-    hash_str = dict_to_hash(params)
+    hash_str = dict_to_hash(params, skip=['n_jobs', 'random_state', 'atol'])
 
     return params, hash_str
 
