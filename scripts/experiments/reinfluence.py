@@ -28,7 +28,7 @@ def remove_and_reinfluence(inf_obj, objective, tree, method, params,
 
     # get list of remove fractions
     remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)
-    n_remove = int((remove_frac / n_ckpt) * X_train.shape[0])
+    n_remove = round((remove_frac * X_train.shape[0]) / n_ckpt)
 
     # result container
     result = {}
@@ -46,7 +46,7 @@ def remove_and_reinfluence(inf_obj, objective, tree, method, params,
 
     new_tree = clone(tree).fit(new_X_train, new_y_train)
 
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
+    res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
     result['loss'][0] = res['loss']
     result['pred'].append(res['pred'])
 
@@ -76,7 +76,7 @@ def remove_and_reinfluence(inf_obj, objective, tree, method, params,
             new_tree = clone(tree).fit(new_X_train, new_y_train)
 
             remove_frac = remove_frac_arr[i]
-            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.2f}%'
+            prefix = f'{i:>5}: {remove_frac * 100:>5.2f}%'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
             result['loss'][i] = res['loss']
             result['pred'].append(res['pred'])
@@ -215,7 +215,7 @@ def main(args):
                 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
     exp_hash = util.dict_to_hash(exp_dict)
 
-    # get method params and unique settings hash
+    # get unique hash for the explainer
     params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
     # special cases

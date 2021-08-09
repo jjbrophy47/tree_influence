@@ -37,7 +37,7 @@ def process(args, out_dir, logger):
         is_reinf = 1 if 'reinfluence' in in_dir else 0
         reinf_list += [is_reinf] * len(res)
 
-        if is_reinf:
+        if is_reinf and len(res) > 0:
             reinf_exists = 1
 
     # get dataset
@@ -119,8 +119,17 @@ def process(args, out_dir, logger):
                 linestyle = line[method]
                 labelstyle = label[method]
 
-            ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
-                        linestyle=linestyle, alpha=0.75)
+            if args.plt == 'fill':
+                assert y_err is not None
+
+                ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
+                ax.fill_between(x, y - y_err, y + y_err, color=color[method],
+                                linestyle=linestyle, alpha=0.2)
+
+            else:
+                ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
+                            linestyle=linestyle, alpha=0.75)
+
             ax.set_xlabel('Train data removed (%)')
             ax.set_ylabel(f'Avg. example test loss')
             ax.legend(fontsize=6)
@@ -134,17 +143,33 @@ def process(args, out_dir, logger):
                 if y_err is not None:
                     y_err = y_err[:n]
 
-                ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
-                            linestyle=linestyle, alpha=0.75)
+                if args.plt == 'fill':
+                    assert y_err is not None
+
+                    ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
+                    ax.fill_between(x, y - y_err, y + y_err, label=labelstyle, color=color[method],
+                                    linestyle=linestyle, alpha=0.2)
+                else:
+                    ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
+                                linestyle=linestyle, alpha=0.75)
+
                 ax.set_xlabel('Train data removed (%)')
                 ax.set_ylabel(f'Avg. example test loss')
 
         if args.zoom <= 0.0 or args.zoom >= 1.0:
             fig.delaxes(axs[1])
 
+    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
+                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = util.dict_to_hash(exp_dict)
+
     custom_dir = 'reestimation' if reinf_exists else args.custom_dir
 
-    plt_dir = os.path.join(args.out_dir, args.inf_obj, args.tree_type, custom_dir)
+    plt_dir = os.path.join(args.out_dir,
+                           args.inf_obj,
+                           args.tree_type,
+                           f'exp_{exp_hash}',
+                           custom_dir)
     suffix = f'_{n_test}'
     os.makedirs(plt_dir, exist_ok=True)
     fp = os.path.join(plt_dir, f'{args.dataset}')
@@ -172,14 +197,18 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, nargs='+',
-                        default=['/Volumes/30/intent/temp_influence/', '/Volumes/30/intent/temp_reinfluence/'])
+    parser.add_argument('--in_dir', type=str, nargs='+', default=['temp_influence/', 'temp_reinfluence/'])
     parser.add_argument('--out_dir', type=str, default='output/plot/roar/', help='output directory.')
 
     # experiment settings
     parser.add_argument('--dataset', type=str, default='surgical')
     parser.add_argument('--tree_type', type=str, default='lgb')
     parser.add_argument('--inf_obj', type=str, default='local')
+    parser.add_argument('--n_test', type=int, default=100)  # local
+    parser.add_argument('--remove_frac', type=float, default=0.05)
+    parser.add_argument('--n_ckpt', type=int, default=50)
+
+    # additional settings
     parser.add_argument('--random_state', type=int, default=1)
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
 
@@ -188,9 +217,9 @@ if __name__ == '__main__':
                         default=['random', 'target', 'similarity', 'boostin', 'trex',
                                  'leaf_influence', 'loo', 'dshap'])  # no minority, loss
     parser.add_argument('--skip', type=str, nargs='+',
-                        default=['minority', 'loss', 'boostin_9e', 'boostin_08', 'boostin_e8', 'boostin_c4'])
-    parser.add_argument('--use_leaf', type=int, nargs='+', default=[1, 0])  # BoostIn
-    parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sim', 'ntg', 'hess'])  # BoostIn
+                        default=['minority', 'loss'])
+    parser.add_argument('--leaf_scale', type=int, nargs='+', default=[0.0, -1.0, -2.0, -3.0])  # BoostIn
+    parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sign_tr', 'sign_te'])  # BoostIn
     parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
 
     parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
@@ -209,7 +238,8 @@ if __name__ == '__main__':
     parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'loss', 'acc', 'auc'])
     parser.add_argument('--std_err', type=int, default=0)
     parser.add_argument('--custom_dir', type=str, default='')
-    parser.add_argument('--zoom', type=float, default=0.025)
+    parser.add_argument('--zoom', type=float, default=0.2)
+    parser.add_argument('--plt', type=str, default='no_fill')
 
     args = parser.parse_args()
     main(args)

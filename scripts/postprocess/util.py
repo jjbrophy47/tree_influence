@@ -19,7 +19,7 @@ def get_results(args, in_dir, logger=None):
     if logger:
         logger.info('\nGathering results...')
 
-    experiment_settings = list(product(*[args.method, args.use_leaf, args.update_set,
+    experiment_settings = list(product(*[args.method, args.leaf_scale, args.update_set,
                                          args.kernel, args.target, args.lmbd, args.n_epoch, args.trunc_frac,
                                          args.check_every, args.global_op, args.local_op, args.similarity]))
 
@@ -28,11 +28,11 @@ def get_results(args, in_dir, logger=None):
 
     for items in tqdm(experiment_settings):
 
-        method, use_leaf, update_set, kernel, target, lmbd, n_epoch,\
+        method, leaf_scale, update_set, kernel, target, lmbd, n_epoch,\
             trunc_frac, check_every, global_op, local_op, similarity = items
 
         template = {'method': method,
-                    'use_leaf': use_leaf,
+                    'leaf_scale': leaf_scale,
                     'update_set': update_set,
                     'kernel': kernel,
                     'target': target,
@@ -47,13 +47,16 @@ def get_results(args, in_dir, logger=None):
                     'local_op': local_op,
                     'similarity': similarity}
 
+        exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
+                    'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+        exp_hash = exp_util.dict_to_hash(exp_dict)
+
         _, hash_str = exp_util.explainer_params_to_dict(method, template)
 
         exp_dir = os.path.join(in_dir,
                                args.dataset,
                                args.tree_type,
-                               f'rs_{args.random_state}',
-                               args.inf_obj,
+                               f'exp_{exp_hash}',
                                f'{method}_{hash_str}')
 
         method_id = f'{method}_{hash_str}'
@@ -78,11 +81,12 @@ def get_plot_dicts():
     Return dict for color, line, and labels for each method.
     """
     color = {'random_': 'blue', 'minority_': 'pink', 'target_': 'cyan', 'loss_': 'yellow'}
-    color['boostin_a13c8d352d437d05a9ea0fa682414bd0'] = 'orange'
-    color['boostin_9e7293ec2e335fc18664e45dc2434f0c'] = 'orange'
-    color['boostin_089c2ebe4906b715923c1ccf354f6bf7'] = 'orange'
-    color['boostin_e88a59815ab34d3ffb6cafb4e51af75e'] = 'gray'
-    color['boostin_c4fa9c6f9e90416578f695d6cd7d9ddf'] = 'gray'
+    color['boostin_5fa0dc231efe739492c9904ea2304460'] = 'orange'
+    color['boostin_814cd0d3199b076a65b67e6d3b017c5f'] = 'orange'
+    color['boostin_92588165d78cfa923e46d8af4451baf2'] = 'orange'
+    color['boostin_61ee96c878fb97f78f3f309129890cf2'] = 'gray'
+    color['boostin_0b960733ca2491723f810be9e3bb84bf'] = 'gray'
+    color['boostin_0c30d2bb70334ce6bfbba141733017cc'] = 'gray'
     color['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'green'
     color['trex_c026a1d65c79084fe50ec2a8524b2533'] = 'green'
     color['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'green'
@@ -94,11 +98,12 @@ def get_plot_dicts():
     color['similarity_da2995ca8d4801840027a5128211b2d0'] = 'purple'
 
     line = {'random_': '-', 'minority_': '-', 'target_': '-', 'loss_': '-'}
-    line['boostin_a13c8d352d437d05a9ea0fa682414bd0'] = '-'
-    line['boostin_9e7293ec2e335fc18664e45dc2434f0c'] = '--'
-    line['boostin_089c2ebe4906b715923c1ccf354f6bf7'] = ':'
-    line['boostin_e88a59815ab34d3ffb6cafb4e51af75e'] = '--'
-    line['boostin_c4fa9c6f9e90416578f695d6cd7d9ddf'] = ':'
+    line['boostin_5fa0dc231efe739492c9904ea2304460'] = '-'
+    line['boostin_814cd0d3199b076a65b67e6d3b017c5f'] = '--'
+    line['boostin_92588165d78cfa923e46d8af4451baf2'] = ':'
+    line['boostin_61ee96c878fb97f78f3f309129890cf2'] = '-'
+    line['boostin_0b960733ca2491723f810be9e3bb84bf'] = '--'
+    line['boostin_0c30d2bb70334ce6bfbba141733017cc'] = ':'
     line['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = '-'
     line['trex_c026a1d65c79084fe50ec2a8524b2533'] = '--'
     line['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = ':'
@@ -110,11 +115,12 @@ def get_plot_dicts():
     line['similarity_da2995ca8d4801840027a5128211b2d0'] = '-'
 
     label = {'random_': 'Random', 'minority_': 'Minority', 'target_': 'Target', 'loss_': 'Loss'}
-    label['boostin_a13c8d352d437d05a9ea0fa682414bd0'] = 'BoostIn'
-    label['boostin_9e7293ec2e335fc18664e45dc2434f0c'] = 'BoostIn_SGN'
-    label['boostin_089c2ebe4906b715923c1ccf354f6bf7'] = 'BoostIn_SIM'
-    label['boostin_e88a59815ab34d3ffb6cafb4e51af75e'] = 'BoostIn_NTG'
-    label['boostin_c4fa9c6f9e90416578f695d6cd7d9ddf'] = 'BoostIn_HESS'
+    label['boostin_5fa0dc231efe739492c9904ea2304460'] = 'BoostIn_0'
+    label['boostin_814cd0d3199b076a65b67e6d3b017c5f'] = 'BoostIn_-1'
+    label['boostin_92588165d78cfa923e46d8af4451baf2'] = 'BoostIn_-2'
+    label['boostin_61ee96c878fb97f78f3f309129890cf2'] = 'BoostIn_sign_0'
+    label['boostin_0b960733ca2491723f810be9e3bb84bf'] = 'BoostIn_sign_-1'
+    label['boostin_0c30d2bb70334ce6bfbba141733017cc'] = 'BoostIn_sign_-2'
     label['trex_0e3f576fe95f9fdbc089be2b13e26f89'] = 'TREX'
     label['trex_c026a1d65c79084fe50ec2a8524b2533'] = 'TREX_exp'
     label['trex_f6f04e6ea39b41fecb05f72fc45c1da8'] = 'TREX_alpha'

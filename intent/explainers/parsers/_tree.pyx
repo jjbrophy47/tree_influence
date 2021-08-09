@@ -79,10 +79,19 @@ cdef class _Tree:
 
                 while not node.is_leaf:
 
+                    # DEBUG
+                    # if i == 9687:
+                    #     printf('X[9687, %ld]: %.32f, node.threshold: %.32f, node.depth: %ld\n',
+                    #            node.feature, X[i, node.feature], node.threshold, node.depth)
+
                     if X[i, node.feature] <= node.threshold:
                         node = node.left_child
                     else:
                         node = node.right_child
+
+                # DEBUG
+                # if i == 9687:
+                #     printf('node.leaf_val: %.32f, node.depth: %ld\n\n', node.leaf_val, node.depth)
 
                 out[i] = node.leaf_val
 

@@ -3,6 +3,10 @@ import numpy as np
 from .tree import Tree
 
 
+# DEBUG
+# g = 0
+
+
 def parse_xgb_ensemble(model):
     """
     Parse XGBoost model based on its string representation.
@@ -77,6 +81,12 @@ def _parse_xgb_tree(tree_str):
     feature = []
     threshold = []
     leaf_vals = []
+
+    # DEBUG
+    # global g
+    # if g == 14:
+    #     print(tree_str)
+    # g += 1
 
     # each line is a node, the no. preceeding tabs indicates its depth
     lines = tree_str.split('\n')

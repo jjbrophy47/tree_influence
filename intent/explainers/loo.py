@@ -236,7 +236,7 @@ def _get_loss(loss_fn, model, objective, X, y, batch=False):
         y_pred = model.predict(X)  # shape=(X.shape[0])
 
     elif objective == 'binary':
-        y_pred = model.predict_proba(X)[:, 1]  # 1d arry of pos. probabilities
+        y_pred = model.predict_proba(X)[:, 1]  # 1d arry of pos. probabilities, shape=(X.shape[0],)
 
     else:
         assert objective == 'multiclass'

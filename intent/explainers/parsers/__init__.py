@@ -69,36 +69,20 @@ def _check_predictions(original_model, model, X, y):
         p1 = original_model.predict_proba(X)
         p2 = model.predict(X)
 
-    # print(model.bias)
-    # print(model.trees[21][0])
+    # DEBUG
+    # import xgboost
 
-    # l1 = model.apply(X)
-    # t21 = l1.squeeze()[:,21]
-    # i1 = np.where(t21 == 41)[0]
-    # print(i1, i1.shape)
+    # print(dir(original_model))
+    # leaves = original_model.get_booster().predict(xgboost.DMatrix(X), pred_leaf=True)
+    # print(leaves, leaves.shape)
 
-    # l2 = original_model.predict(X, pred_leaf=True)
-    # i2 = np.where(l2[:, 21] == 40)[0]
-    # print(i2, i2.shape)
+    # print(leaves[9687][15])
 
-    # print(np.all(i1 == i2))
+    # i = np.where(~np.isclose(p1, p2, atol=1e-5))[0]
+    # print(i, i.shape)
+    # print(p1[i[:1]])
+    # print(p2[i[:1]])
 
-    # json_data = original_model.booster_.dump_model()['tree_info']
-    # print(json_data[21]['tree_structure'])
-
-    # exit(0)
-
-    # print(p1)
-    # print(p2)
-    # nc = np.where(~np.isclose(p1, p2))
-
-    # print(nc)
-
-    # print(p1[nc])
-    # print(p2[nc])
-
-    # leaves = original_model.predict(X, pred_leaf=True)
-    # print(leaves.shape)
-    # print(leaves[1246][:7], leaves[1246][7:14])
+    # print(model.trees[2][0])
 
     assert np.allclose(p1, p2)
