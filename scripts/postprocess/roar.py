@@ -113,7 +113,7 @@ def process(args, out_dir, logger):
             y_err = y_err if args.std_err else None
 
             if is_reinf:
-                linestyle = '--'
+                linestyle = '-.'
                 labelstyle = f'{label[method]} (RI)'
             else:
                 linestyle = line[method]

@@ -74,7 +74,6 @@ def remove_and_evaluate(inf_obj, objective, ranking, tree,
 
         new_X_train = np.delete(X_train, ranking[:n_remove], axis=0)
         new_y_train = np.delete(y_train, ranking[:n_remove])
-        print(new_X_train.shape)
 
         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')

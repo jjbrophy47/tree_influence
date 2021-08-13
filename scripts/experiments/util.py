@@ -116,7 +116,8 @@ def get_data(data_dir, dataset):
 
     # get objective for the given dataset
     d = {}
-    d['regression'] = ['synth_regression', 'casp', 'obesity', 'life', 'online_news']
+    d['regression'] = ['synth_regression', 'obesity', 'life', 'online_news',
+                       'protein', 'power', 'concrete', 'msd', 'wine', 'yacht', 'energy', 'naval']
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
                    'diabetes', 'flight_delays', 'compas', 'credit_card', 'spambase',
                    'german_credit', 'htru2', 'no_show', 'twitter', 'higgs', 'uav']
@@ -247,7 +248,7 @@ def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
 
     result['keys'] = ['mse', 'acc', 'auc', 'loss']
 
-    logger.info(f"[{prefix}] mse: {result['mse']:>10.3f}, "
+    logger.info(f"[{prefix}] mse: {result['mse']:e}, "
                 f"acc.: {result['acc']:>10.3f}, "
                 f"AUC: {result['auc']:>10.3f}, "
                 f"loss: {result['loss']:>10.3f}")
