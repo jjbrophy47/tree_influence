@@ -118,6 +118,9 @@ def experiment(args, logger, out_dir):
     # start experiment timer
     begin = time.time()
 
+    # pseduo-random number generator
+    rng = np.random.default_rng(args.random_state)
+
     # get data
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
 
@@ -129,10 +132,17 @@ def experiment(args, logger, out_dir):
     if not args.no_tune:
 
         if args.tune_frac < 1.0:
-            sss = StratifiedShuffleSplit(n_splits=1, test_size=2,
-                                         train_size=args.tune_frac,
-                                         random_state=args.random_state)
-            tune_indices, _ = list(sss.split(X_train, y_train))[0]
+
+            if objective == 'regression':
+                n_tune = int(X_train.shape[0] * args.tune_frac)
+                tune_indices = rng.choice(X_train.shape[0], size=n_tune, relace=False)
+
+            else:
+                sss = StratifiedShuffleSplit(n_splits=1, test_size=2,
+                                             train_size=args.tune_frac,
+                                             random_state=args.random_state)
+                tune_indices, _ = list(sss.split(X_train, y_train))[0]
+
             X_train_sub, y_train_sub = X_train[tune_indices], y_train[tune_indices]
             logger.info('tune instances: {:,}'.format(X_train_sub.shape[0]))
 

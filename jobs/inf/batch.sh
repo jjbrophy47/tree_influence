@@ -222,7 +222,7 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $den $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $den $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $den $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
-# ./jobs/inf/primer.sh     $den $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
+./jobs/inf/primer.sh     $den $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # leaf_influence
 ./jobs/inf/primer.sh     $den $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
 ./jobs/inf/primer.sh     $den $tt $mlo $tf $us1 $sc1 $iol $lno $gos 5  1440  $ps  # loo
 # ./jobs/inf/primer.sh $den $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
@@ -327,7 +327,7 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dnv $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dnv $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dnv $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
-# ./jobs/inf/primer.sh     $dnv $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
+./jobs/inf/primer.sh     $dnv $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # leaf_influence
 ./jobs/inf/primer.sh     $dnv $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
 ./jobs/inf/primer.sh     $dnv $tt $mlo $tf $us1 $sc1 $iol $lno $gos 5  1440  $ps  # loo
 # ./jobs/inf/primer.sh $dnv $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
@@ -390,7 +390,7 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dpw $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dpw $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dpw $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
-# ./jobs/inf/primer.sh     $dpw $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
+./jobs/inf/primer.sh     $dpw $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # leaf_influence
 ./jobs/inf/primer.sh     $dpw $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
 ./jobs/inf/primer.sh     $dpw $tt $mlo $tf $us1 $sc1 $iol $lno $gos 5  1440  $ps  # loo
 # ./jobs/inf/primer.sh $dpw $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
@@ -516,7 +516,7 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dwn $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dwn $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dwn $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
-# ./jobs/inf/primer.sh     $dwn $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
+./jobs/inf/primer.sh     $dwn $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # leaf_influence
 ./jobs/inf/primer.sh     $dwn $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
 ./jobs/inf/primer.sh     $dwn $tt $mlo $tf $us1 $sc1 $iol $lno $gos 5  1440  $ps  # loo
 # ./jobs/inf/primer.sh $dwn $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
