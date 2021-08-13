@@ -135,7 +135,7 @@ def experiment(args, logger, out_dir):
 
             if objective == 'regression':
                 n_tune = int(X_train.shape[0] * args.tune_frac)
-                tune_indices = rng.choice(X_train.shape[0], size=n_tune, relace=False)
+                tune_indices = rng.choice(X_train.shape[0], size=n_tune, replace=False)
 
             else:
                 sss = StratifiedShuffleSplit(n_splits=1, test_size=2,
