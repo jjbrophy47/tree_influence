@@ -383,6 +383,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['german_credit'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
     lgb['htru2'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
+    lgb['msd'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['naval'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['no_show'] = {'n_estimators': 50, 'num_leaves': 61, 'max_depth': -1}
     lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
@@ -407,6 +408,7 @@ def get_hyperparams(tree_type, dataset):
     cb['german_credit'] = {'n_estimators': 200, 'max_depth': 7}
     cb['htru2'] = {'n_estimators': 200, 'max_depth': 5}
     cb['life'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['msd'] = {'n_estimators': 200, 'max_depth': 7}
     cb['naval'] = {'n_estimators': 200, 'max_depth': 7}
     cb['no_show'] = {'n_estimators': 200, 'max_depth': 7}
     cb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
@@ -431,6 +433,7 @@ def get_hyperparams(tree_type, dataset):
     xgb['german_credit'] = {'n_estimators': 10, 'max_depth': 3}
     xgb['htru2'] = {'n_estimators': 50, 'max_depth': 3}
     xgb['life'] = {'n_estimators': 200, 'max_depth': 5}
+    xgb['msd'] = {'n_estimators': 200, 'max_depth': 5}
     xgb['naval'] = {'n_estimators': 100, 'max_depth': 7}
     xgb['no_show'] = {'n_estimators': 100, 'max_depth': 5}
     xgb['obesity'] = {'n_estimators': 200, 'max_depth': 7}

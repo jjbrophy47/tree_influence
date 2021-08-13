@@ -118,19 +118,22 @@ def main(args):
     _, hash_str1 = util.explainer_params_to_dict(args.method1, vars(args))
     _, hash_str2 = util.explainer_params_to_dict(args.method2, vars(args))
 
+    # experiment hash_str
+    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
+                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = util.dict_to_hash(exp_dict)
+
     # method1 dir
     in_dir1 = os.path.join(args.in_dir,
                            args.dataset,
                            args.tree_type,
-                           f'rs_{args.random_state}',
-                           args.inf_obj,
+                           f'exp_{exp_hash}',
                            f'{args.method1}_{hash_str1}')
 
     in_dir2 = os.path.join(args.in_dir,
                            args.dataset,
                            args.tree_type,
-                           f'rs_{args.random_state}',
-                           args.inf_obj,
+                           f'exp_{exp_hash}',
                            f'{args.method2}_{hash_str2}')
 
     # create output dir
@@ -163,7 +166,7 @@ if __name__ == '__main__':
     parser.add_argument('--tree_type', type=str, default='lgb')
 
     # Explainer settings
-    parser.add_argument('--use_leaf', type=int, default=1)  # BoostIn
+    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
     parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
 
     parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
@@ -185,6 +188,9 @@ if __name__ == '__main__':
 
     # Experiment settings
     parser.add_argument('--inf_obj', type=str, default='local')
+    parser.add_argument('--n_test', type=int, default=100)  # local
+    parser.add_argument('--remove_frac', type=float, default=0.05)
+    parser.add_argument('--n_ckpt', type=int, default=50)
     parser.add_argument('--method1', type=str, default='random')
     parser.add_argument('--method2', type=str, default='boostin')
     parser.add_argument('--zoom', type=float, nargs='+', default=[1.0])

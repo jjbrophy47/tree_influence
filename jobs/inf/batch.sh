@@ -313,6 +313,27 @@ goa='alpha'  # TREX only
 # ./jobs/inf/primer.sh $dlf $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 1440  $ps  # dshap
 # ./jobs/inf/primer.sh $dlf $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 1440  $ps
 
+# msd
+./jobs/inf/primer.sh     $dms $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random
+# ./jobs/inf/primer.sh     $dms $tt $mm  $tf $us1 $iol $lno $gos 3  600    $ps  # minority
+./jobs/inf/primer.sh     $dms $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # target
+./jobs/inf/primer.sh     $dms $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # similarity
+./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin
+./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  600    $ps
+./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  600    $ps
+./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  600    $ps
+./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
+./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
+./jobs/inf/primer.sh     $dms $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
+# ./jobs/inf/primer.sh     $dms $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
+# ./jobs/inf/primer.sh     $dms $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
+./jobs/inf/primer.sh     $dms $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # leaf_influence
+./jobs/inf/primer.sh     $dms $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
+./jobs/inf/primer.sh     $dms $tt $mlo $tf $us1 $sc1 $iol $lno $gos 5  1440  $ps  # loo
+# ./jobs/inf/primer.sh $dms $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
+# ./jobs/inf/primer.sh $dms $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 1440  $ps  # dshap
+# ./jobs/inf/primer.sh $dms $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 1440  $ps
+
 # naval
 ./jobs/inf/primer.sh     $dnv $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random
 # ./jobs/inf/primer.sh     $dnv $tt $mm  $tf $us1 $iol $lno $gos 3  600    $ps  # minority

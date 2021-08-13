@@ -31,7 +31,7 @@ class BoostIn(Explainer):
             the signs of the gradients differ.
         - Only support GBDTs.
     """
-    def __init__(self, local_op='normal', leaf_scale=-1.0, logger=0):
+    def __init__(self, local_op='normal', leaf_scale=-1.0, logger=None):
         """
         Input
             use_leaf: bool, If True, only add attribution to examples
