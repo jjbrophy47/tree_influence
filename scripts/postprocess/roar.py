@@ -215,7 +215,7 @@ if __name__ == '__main__':
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
                         default=['random', 'target', 'similarity', 'boostin', 'trex',
-                                 'leaf_influence', 'loo', 'dshap'])  # no minority, loss
+                                 'leaf_influence', 'loo', 'dshap', 'subsample'])  # no minority, loss
     parser.add_argument('--skip', type=str, nargs='+',
                         default=['minority', 'loss'])
     parser.add_argument('--leaf_scale', type=int, nargs='+', default=[0.0, -1.0, -2.0, -3.0])  # BoostIn
@@ -231,6 +231,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--trunc_frac', type=float, nargs='+', default=[0.25])  # DShap
     parser.add_argument('--check_every', type=int, nargs='+', default=[100])  # DShap
+
+    parser.add_argument('--sub_frac', type=float, nargs='+', default=[0.7])  # SubSample
+    parser.add_argument('--n_iter', type=int, nargs='+', default=[4000])  # SubSample
 
     parser.add_argument('--global_op', type=str, nargs='+', default=['self', 'expected'])  # TREX, LOO, DShap
 

@@ -348,6 +348,12 @@ def explainer_params_to_dict(explainer, exp_params):
         params['check_every'] = exp_params['check_every']
         params['random_state'] = exp_params['random_state']
 
+    elif explainer == 'subsample':
+        params['sub_frac'] = exp_params['sub_frac']
+        params['n_iter'] = exp_params['n_iter']
+        params['n_jobs'] = exp_params['n_jobs']
+        params['random_state'] = exp_params['random_state']
+
     elif explainer == 'random':
         params['random_state'] = exp_params['random_state']
 

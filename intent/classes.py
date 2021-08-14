@@ -8,6 +8,7 @@ from .explainers import Minority
 from .explainers import Loss
 from .explainers import Similarity
 from .explainers import Target
+from .explainers import SubSample
 
 
 class TreeExplainer(object):
@@ -26,12 +27,13 @@ class TreeExplainer(object):
         - Representer-point (Trex)
         - Influence Function (LeafInfluence)
         - LOO
-        - Appox. data Shapley
+        - TMC-Shap (Appox. Data Shapley)
         - Random
         - Random Minority
         - Loss
         - Similarity
         - Target
+        - SubSample (Approx. Data Shapley)
     """
     def __init__(self, method='boostin', params={}, logger=None):
 
@@ -64,6 +66,9 @@ class TreeExplainer(object):
 
         elif method == 'target':
             self.explainer = Target(**params, logger=logger)
+
+        elif method == 'subsample':
+            self.explainer = SubSample(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')

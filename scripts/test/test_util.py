@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 import argparse
 
 import numpy as np
@@ -90,7 +91,7 @@ def test_global_influence_multiclass(args, explainer_cls, explainer_str, kwargs)
     print(f'\n{status}')
 
 
-def test_local_influence_regression(args, explainer_cls, explainer_str, kwargs):
+def test_local_influence_regression(args, explainer_cls, explainer_str, kwargs, logger=None):
     print(f'\n***** test_{explainer_str}_local_influence_regression *****')
     args.model_type = 'regressor'
     X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
@@ -182,6 +183,29 @@ def test_local_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
 
 
 # private
+def get_logger(filename=''):
+    """
+    Return a logger object to easily save textual output.
+    """
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    stream_handler = logging.StreamHandler(sys.stdout)
+    log_handler = logging.FileHandler(filename, mode='w')
+    formatter = logging.Formatter('%(message)s')
+
+    stream_handler.setLevel(logging.INFO)
+    stream_handler.setFormatter(formatter)
+    log_handler.setLevel(logging.INFO)
+    log_handler.setFormatter(formatter)
+
+    logger.addHandler(stream_handler)
+    logger.addHandler(log_handler)
+
+    return logger
+
+
 def _get_test_data(args, n_class=2):
     """
     Return train and test data for the given objective.

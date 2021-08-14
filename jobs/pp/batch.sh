@@ -28,7 +28,7 @@ tf=1.0
 ./jobs/pp/primer.sh 'msd' 'lgb'  $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'msd' 'cb'   $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'msd' 'xgb'  $tf  7 1440 'short'
-./jobs/pp/primer.sh 'msd' 'skrf' $tf  7 1440 'short'
+./jobs/pp/primer.sh 'msd' 'skrf' 0.25 7 1440 'short'
 ./jobs/pp/primer.sh 'msd' 'lr'   $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'msd' 'dt'   $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'msd' 'knn'  0.1  7 1440 'short'

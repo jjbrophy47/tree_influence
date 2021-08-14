@@ -21,7 +21,8 @@ def get_results(args, in_dir, logger=None):
 
     experiment_settings = list(product(*[args.method, args.leaf_scale, args.update_set,
                                          args.kernel, args.target, args.lmbd, args.n_epoch, args.trunc_frac,
-                                         args.check_every, args.global_op, args.local_op, args.similarity]))
+                                         args.check_every, args.sub_frac, args.n_iter,
+                                         args.global_op, args.local_op, args.similarity]))
 
     visited = set()
     results = []
@@ -29,7 +30,7 @@ def get_results(args, in_dir, logger=None):
     for items in tqdm(experiment_settings):
 
         method, leaf_scale, update_set, kernel, target, lmbd, n_epoch,\
-            trunc_frac, check_every, global_op, local_op, similarity = items
+            trunc_frac, check_every, sub_frac, n_iter, global_op, local_op, similarity = items
 
         template = {'method': method,
                     'leaf_scale': leaf_scale,
@@ -41,6 +42,8 @@ def get_results(args, in_dir, logger=None):
                     'n_epoch': n_epoch,
                     'trunc_frac': trunc_frac,
                     'check_every': check_every,
+                    'sub_frac': sub_frac,
+                    'n_iter': n_iter,
                     'random_state': args.random_state,
                     'n_jobs': args.n_jobs,
                     'global_op': global_op,
@@ -93,6 +96,7 @@ def get_plot_dicts():
     color['loo_590f53e8699817c6fa498cc11a4cbe63'] = 'red'
     color['loo_cd26d9e10ce691cc69aa2b90dcebbdac'] = 'red'
     color['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'magenta'
+    color['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'magenta'
     color['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
     color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
     color['similarity_da2995ca8d4801840027a5128211b2d0'] = 'purple'
@@ -110,6 +114,7 @@ def get_plot_dicts():
     line['loo_590f53e8699817c6fa498cc11a4cbe63'] = '-'
     line['loo_cd26d9e10ce691cc69aa2b90dcebbdac'] = '--'
     line['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = '-'
+    line['subsample_2b793a1ebcb67340112cf064fbf171cf'] = '-'
     line['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
     line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
     line['similarity_da2995ca8d4801840027a5128211b2d0'] = '-'
@@ -127,6 +132,7 @@ def get_plot_dicts():
     label['loo_590f53e8699817c6fa498cc11a4cbe63'] = 'LOO'
     label['loo_cd26d9e10ce691cc69aa2b90dcebbdac'] = 'LOO_exp'
     label['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'DShap'
+    label['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'SubSample'
     label['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafInf'
     label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
     label['similarity_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'

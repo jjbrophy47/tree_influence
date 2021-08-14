@@ -278,6 +278,9 @@ if __name__ == '__main__':
     parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
     parser.add_argument('--check_every', type=int, default=100)  # DShap
 
+    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
+    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
+
     parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
     parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
     parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
