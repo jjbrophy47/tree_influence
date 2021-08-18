@@ -116,7 +116,7 @@ def get_data(data_dir, dataset):
 
     # get objective for the given dataset
     d = {}
-    d['regression'] = ['synth_regression', 'obesity', 'life', 'online_news',
+    d['regression'] = ['synth_regression', 'obesity', 'life', 'online_news', 'heart',
                        'protein', 'power', 'concrete', 'msd', 'wine', 'yacht', 'energy', 'naval']
     d['binary'] = ['synth_binary', 'bank_marketing', 'adult', 'surgical', 'vaccine',
                    'diabetes', 'flight_delays', 'compas', 'credit_card', 'spambase',
@@ -326,6 +326,9 @@ def explainer_params_to_dict(explainer, exp_params):
         params['leaf_scale'] = exp_params['leaf_scale']
         params['local_op'] = exp_params['local_op']
 
+    if explainer == 'boostin2':
+        params['local_op'] = exp_params['local_op']
+
     elif explainer == 'leaf_influence':
         params['update_set'] = exp_params['update_set']
 
@@ -387,6 +390,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['energy'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
     lgb['flight_delays'] = {'n_estimators': 100, 'num_leaves': 91, 'max_depth': -1}
     lgb['german_credit'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
+    lgb['heart'] = {'n_estimators': 10, 'num_leaves': 31, 'max_depth': -1}
     lgb['htru2'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
     lgb['msd'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
