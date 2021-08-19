@@ -1,5 +1,6 @@
 from .explainers import BoostIn
 from .explainers import BoostIn2
+from .explainers import BoostIn2B
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LOO
@@ -44,6 +45,9 @@ class TreeExplainer(object):
 
         elif method == 'boostin2':
             self.explainer = BoostIn2(**params, logger=logger)
+
+        elif method == 'boostin2B':
+            self.explainer = BoostIn2B(**params, logger=logger)
 
         elif method == 'trex':
             self.explainer = Trex(**params, logger=logger)

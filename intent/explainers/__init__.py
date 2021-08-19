@@ -1,5 +1,6 @@
 from .boostin import BoostIn
 from .boostin2 import BoostIn2
+from .boostin2B import BoostIn2B
 from .trex import Trex
 from .leaf_influence import LeafInfluence
 from .loo import LOO
