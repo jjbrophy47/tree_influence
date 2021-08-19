@@ -326,7 +326,7 @@ def explainer_params_to_dict(explainer, exp_params):
         params['leaf_scale'] = exp_params['leaf_scale']
         params['local_op'] = exp_params['local_op']
 
-    if explainer == 'boostin2':
+    elif explainer == 'boostin2':
         params['local_op'] = exp_params['local_op']
 
     elif explainer == 'leaf_influence':
@@ -352,6 +352,12 @@ def explainer_params_to_dict(explainer, exp_params):
         params['random_state'] = exp_params['random_state']
 
     elif explainer == 'subsample':
+        params['sub_frac'] = exp_params['sub_frac']
+        params['n_iter'] = exp_params['n_iter']
+        params['n_jobs'] = exp_params['n_jobs']
+        params['random_state'] = exp_params['random_state']
+
+    elif explainer == 'subsampleB':
         params['sub_frac'] = exp_params['sub_frac']
         params['n_iter'] = exp_params['n_iter']
         params['n_jobs'] = exp_params['n_jobs']

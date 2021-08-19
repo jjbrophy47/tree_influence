@@ -183,7 +183,7 @@ def experiment(args, logger, in_dir, out_dir):
 
         ax.legend(fontsize=9)
 
-        correlation_dir = os.path.join(out_dir, '..', 'correlation', args.dataset)
+        correlation_dir = os.path.join(out_dir, '..', 'correlation', objective, args.dataset)
         os.makedirs(correlation_dir, exist_ok=True)
 
         plt.tight_layout()

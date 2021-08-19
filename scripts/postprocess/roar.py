@@ -214,7 +214,7 @@ if __name__ == '__main__':
 
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'target', 'similarity', 'boostin', 'trex',
+                        default=['random', 'target', 'similarity', 'boostin', 'boostin2', 'trex',
                                  'leaf_influence', 'loo', 'dshap', 'subsample'])  # no minority, loss
     parser.add_argument('--skip', type=str, nargs='+',
                         default=['minority', 'loss'])

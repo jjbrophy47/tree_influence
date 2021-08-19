@@ -10,3 +10,4 @@ from .loss import Loss
 from .similarity import Similarity
 from .target import Target
 from .subsample import SubSample
+from .subsampleB import SubSampleB

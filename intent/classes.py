@@ -10,6 +10,7 @@ from .explainers import Loss
 from .explainers import Similarity
 from .explainers import Target
 from .explainers import SubSample
+from .explainers import SubSampleB
 
 
 class TreeExplainer(object):
@@ -73,6 +74,9 @@ class TreeExplainer(object):
 
         elif method == 'subsample':
             self.explainer = SubSample(**params, logger=logger)
+
+        elif method == 'subsampleB':
+            self.explainer = SubSampleB(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')
