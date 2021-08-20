@@ -4,7 +4,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class BoostIn2(Explainer):
+class BoostIn4(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles.
 
@@ -175,7 +175,7 @@ class BoostIn2(Explainer):
         current_approx = np.tile(bias, (n_train, 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
 
         # result container
-        leaf_dvs = np.zeros((n_train, n_boost, n_class), dtype=util.dtype_t)  # shape=(X.shape[0], n_boost, n_class)
+        leaf_dvs = np.zeros((n_train, n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):

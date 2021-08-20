@@ -4,7 +4,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class BoostIn2(Explainer):
+class BoostIn3(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles.
 
@@ -104,7 +104,7 @@ class BoostIn2(Explainer):
         # compute attributions for each test example
         for i in range(X.shape[0]):
             mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
-            prod = train_leaf_dvs * test_gradients[i] * mask  # shape=(no. train, no. boost, no. class)
+            prod = train_leaf_dvs * -test_gradients[i] * mask  # shape=(no. train, no. boost, no. class)
 
             # sum over boosts and classes
             influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
@@ -179,6 +179,7 @@ class BoostIn2(Explainer):
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
+
             g = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
             h = self.loss_fn_.hessian(y, current_approx)  # shape=(no. train, no. class)
 
@@ -189,10 +190,14 @@ class BoostIn2(Explainer):
                 for leaf_idx in range(leaf_count):
                     leaf_docs = np.where(leaf_idx == leaf_idxs[:, boost_idx, class_idx])[0]
 
-                    # compute leaf derivative w.r.t. each train example in `leaf_docs`
-                    numerator = g[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h[leaf_docs, class_idx]  # (no. docs,)
-                    denominator = np.sum(h[leaf_docs, class_idx]) + l2_leaf_reg
-                    leaf_dvs[leaf_docs, boost_idx, class_idx] = numerator / denominator * lr  # (no. docs,)
+                    # compute leaf difference after removing each train example in `leaf_docs`
+                    alpha1 = leaf_vals[leaf_idx]
+
+                    numerator = np.sum(g[leaf_docs, class_idx]) - g[leaf_docs, class_idx]  # shape=(no. docs,)
+                    denominator = np.sum(h[leaf_docs, class_idx]) - h[leaf_docs, class_idx] + l2_leaf_reg
+                    alpha2 = numerator / denominator * lr
+
+                    leaf_dvs[leaf_docs, boost_idx, class_idx] = alpha1 - alpha2  # (no. docs,)
 
                 # update approximation
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)

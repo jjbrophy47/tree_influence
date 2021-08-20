@@ -27,7 +27,9 @@ dwn='wine'
 mr='random'
 mm='minority'
 mbi='boostin'
-mb2='boostin2B'
+mb2='boostin2'
+mb3='boostin3'
+mb4='boostin4'
 mtx='trex'
 mli='leaf_influence'
 mlo='loo'
@@ -75,6 +77,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dad $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dad $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dad $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dad $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dad $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -98,6 +102,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dbm $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dbm $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dbm $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dbm $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dbm $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dbm $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dbm $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dbm $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -121,6 +127,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dbn $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dbn $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dbn $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dbn $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dbn $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dbn $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dbn $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dbn $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -144,6 +152,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dco $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dco $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dco $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dco $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dco $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dco $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dco $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dco $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -167,6 +177,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dcn $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dcn $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dcn $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dcn $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dcn $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dcn $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dcn $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dcn $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -190,6 +202,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dcc $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dcc $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dcc $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dcc $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dcc $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dcc $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dcc $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dcc $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -213,6 +227,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $ddb $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
 ./jobs/inf/primer.sh     $ddb $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
 ./jobs/inf/primer.sh     $ddb $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
+./jobs/inf/primer.sh     $ddb $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin3
+./jobs/inf/primer.sh     $ddb $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin4
 ./jobs/inf/primer.sh     $ddb $tt $mtx $tf $us1 $sc1 $iol $lno $gos 9  1440    $ps  # trex
 # ./jobs/inf/primer.sh     $ddb $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
 # ./jobs/inf/primer.sh     $ddb $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
@@ -236,6 +252,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $den $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $den $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $den $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $den $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $den $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $den $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $den $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $den $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -259,6 +277,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dfd $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
 ./jobs/inf/primer.sh     $dfd $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
 ./jobs/inf/primer.sh     $dfd $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
+./jobs/inf/primer.sh     $dfd $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin3
+./jobs/inf/primer.sh     $dfd $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin4
 ./jobs/inf/primer.sh     $dfd $tt $mtx $tf $us1 $sc1 $iol $lno $gos 5  1440    $ps  # trex
 # ./jobs/inf/primer.sh     $dfd $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
 # ./jobs/inf/primer.sh     $dfd $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
@@ -282,6 +302,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dgc $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dgc $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dgc $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dgc $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dgc $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dgc $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dgc $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dgc $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -305,6 +327,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dht $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dht $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dht $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dht $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dht $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dht $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dht $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dht $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -328,6 +352,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dlf $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dlf $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dlf $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dlf $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dlf $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dlf $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dlf $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dlf $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -351,6 +377,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 20  1440    $ps
 ./jobs/inf/primer.sh     $dms $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 20  1440    $ps
 ./jobs/inf/primer.sh     $dms $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 20  1440    $ps  # boostin2
+./jobs/inf/primer.sh     $dms $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 20  1440    $ps  # boostin3
+./jobs/inf/primer.sh     $dms $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 20  1440    $ps  # boostin4
 ./jobs/inf/primer.sh     $dms $tt $mtx $tf $us1 $sc1 $iol $lno $gos 20  1440    $ps  # trex
 # ./jobs/inf/primer.sh     $dms $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
 # ./jobs/inf/primer.sh     $dms $tt $mtx $tf $us1 $sc1 $iol $lno $goa 20  1440    $ps
@@ -374,6 +402,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dnv $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dnv $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dnv $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dnv $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dnv $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dnv $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dnv $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dnv $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -397,6 +427,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dns $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dns $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dns $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dns $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dns $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -420,6 +452,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dob $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dob $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dob $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dob $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dob $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -443,6 +477,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dpw $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dpw $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dpw $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dpw $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dpw $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dpw $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dpw $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dpw $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -466,6 +502,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dpr $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
 ./jobs/inf/primer.sh     $dpr $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
 ./jobs/inf/primer.sh     $dpr $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
+./jobs/inf/primer.sh     $dpr $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dpr $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $gos 5  1440    $ps  # trex
 # ./jobs/inf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
 # ./jobs/inf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
@@ -489,6 +527,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dsb $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dsb $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dsb $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dsb $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dsb $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dsb $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dsb $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dsb $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -512,6 +552,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dsg $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dsg $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dsg $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dsg $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dsg $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dsg $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dsg $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dsg $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -535,6 +577,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dtw $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 11  1440    $ps
 ./jobs/inf/primer.sh     $dtw $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 11  1440    $ps
 ./jobs/inf/primer.sh     $dtw $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 11  1440    $ps  # boostin2
+./jobs/inf/primer.sh     $dtw $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 11  1440    $ps  # boostin3
+./jobs/inf/primer.sh     $dtw $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 11  1440    $ps  # boostin4
 ./jobs/inf/primer.sh     $dtw $tt $mtx $tf $us1 $sc1 $iol $lno $gos 28  1440    $ps  # trex
 # ./jobs/inf/primer.sh     $dtw $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dtw $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -558,6 +602,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dvc $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dvc $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dvc $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dvc $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dvc $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dvc $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dvc $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dvc $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
@@ -581,6 +627,8 @@ goa='alpha'  # TREX only
 ./jobs/inf/primer.sh     $dwn $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dwn $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
 ./jobs/inf/primer.sh     $dwn $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
+./jobs/inf/primer.sh     $dwn $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
+./jobs/inf/primer.sh     $dwn $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
 ./jobs/inf/primer.sh     $dwn $tt $mtx $tf $us1 $sc1 $iol $lno $gos 6  600    $ps  # trex
 # ./jobs/inf/primer.sh     $dwn $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
 # ./jobs/inf/primer.sh     $dwn $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
