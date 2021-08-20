@@ -256,7 +256,7 @@ def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
     return result
 
 
-def eval_loss(objective, model, X, y, logger, prefix='', eps=1e-5):
+def eval_loss(objective, model, X, y, logger=None, prefix='', eps=1e-5):
     """
     Return individual losses.
     """
@@ -290,9 +290,10 @@ def eval_loss(objective, model, X, y, logger, prefix='', eps=1e-5):
 
     result['keys'] = ['loss']
 
-    with np.printoptions(formatter={'float': '{:0.5f}'.format}):
-        logger.info(f"[{prefix}] prediction: {result['pred']}, "
-                    f"{loss_type}: {result['loss']:>10.3f}, ")
+    if logger:
+        with np.printoptions(formatter={'float': '{:0.5f}'.format}):
+            logger.info(f"[{prefix}] prediction: {result['pred']}, "
+                        f"{loss_type}: {result['loss']:>10.3f}, ")
 
     return result
 
