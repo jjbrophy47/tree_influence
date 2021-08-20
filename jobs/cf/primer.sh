@@ -25,15 +25,15 @@ fi
 
 for inf_obj in ${inf_obj_list[@]}; do
 
-    job_name=I_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
+    job_name=CF_${dataset}_${tree_type}_${method}_${inf_obj}_${local_op}_${global_op}
 
     sbatch --cpus-per-task=$ncpu \
            --time=$time \
            --partition=$partition \
            --job-name=$job_name \
-           --output=jobs/logs/inf/$job_name \
-           --error=jobs/errors/inf/$job_name \
-           jobs/inf/runner.sh $dataset $tree_type $method \
+           --output=jobs/logs/cf/$job_name \
+           --error=jobs/errors/cf/$job_name \
+           jobs/cf/runner.sh $dataset $tree_type $method \
            $inf_obj $trunc_frac $update_set $leaf_scale $local_op $global_op
 
 done
