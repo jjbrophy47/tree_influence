@@ -227,11 +227,11 @@ def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
     """
     Evaluate the predictive performance of the model on X and y.
     """
-    result = {'mse': -1, 'acc': -1, 'auc': -1, 'loss': -1}
+    result = {'acc': -1, 'auc': -1, 'loss': -1}
 
     if objective == 'regression':
         pred = model.predict(X)
-        result['mse'] = mean_squared_error(y, pred)
+        result['loss'] = mean_squared_error(y, pred)
 
     elif objective == 'binary':
         pred = model.predict(X)
@@ -246,9 +246,9 @@ def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
         result['acc'] = accuracy_score(y, pred)
         result['loss'] = log_loss(y, proba)
 
-    result['keys'] = ['mse', 'acc', 'auc', 'loss']
+    result['keys'] = ['acc', 'auc', 'loss']
 
-    logger.info(f"[{prefix}] mse: {result['mse']:e}, "
+    logger.info(f"[{prefix}] "
                 f"acc.: {result['acc']:>10.3f}, "
                 f"AUC: {result['auc']:>10.3f}, "
                 f"loss: {result['loss']:>10.3f}")

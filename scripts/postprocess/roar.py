@@ -215,7 +215,8 @@ if __name__ == '__main__':
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
                         default=['random', 'target', 'similarity', 'boostin2', 'boostin3', 'boostin4',
-                                 'trex', 'leaf_influence', 'loo', 'dshap', 'subsample'])  # no minority, loss
+                                 'trex', 'leaf_influence', 'leaf_influenceSP', 'loo',
+                                 'dshap', 'subsample'])  # no minority, loss
     parser.add_argument('--skip', type=str, nargs='+',
                         default=['minority', 'loss'])
     parser.add_argument('--leaf_scale', type=int, nargs='+', default=[-1.0])  # BoostIn

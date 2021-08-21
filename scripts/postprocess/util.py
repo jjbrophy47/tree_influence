@@ -102,6 +102,7 @@ def get_plot_dicts():
     color['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'magenta'
     color['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
     color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
+    color['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = 'brown'
     color['similarity_da2995ca8d4801840027a5128211b2d0'] = 'gray'
 
     line = {'random_': '-', 'minority_': '-', 'target_': '-', 'loss_': '-'}
@@ -123,6 +124,7 @@ def get_plot_dicts():
     line['subsample_2b793a1ebcb67340112cf064fbf171cf'] = '-'
     line['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
     line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
+    line['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = ':'
     line['similarity_da2995ca8d4801840027a5128211b2d0'] = '-'
 
     label = {'random_': 'Random', 'minority_': 'Minority', 'target_': 'Target', 'loss_': 'Loss'}
@@ -144,6 +146,7 @@ def get_plot_dicts():
     label['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'SubSample'
     label['leaf_influence_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafInf'
     label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
+    label['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = 'LeafInf_SP2'
     label['similarity_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'
 
     return color, line, label
