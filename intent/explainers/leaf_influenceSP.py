@@ -4,7 +4,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class LeafInfluence2(Explainer):
+class LeafInfluenceSP(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles.
 
@@ -90,12 +90,12 @@ class LeafInfluence2(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        # result container, shape=(X.shape[0], no. train, no. class)
+        # result container, shape=(no. train, no. test, no. class)
         influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)
 
         # get change in leaf derivatives and test prediction derivatives
         train_leaf_dvs = self.train_leaf_dvs_  # (no. train, no. boost, no. class)
-        test_gradients = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
+        test_gradients = self._compute_final_gradients(X, y)  # shape=(X.shape[0], no. class)
 
         # get leaf indices each example arrives in
         train_leaf_idxs = self.train_leaf_idxs_  # shape=(no. train, no. boost, no. class)
@@ -104,24 +104,25 @@ class LeafInfluence2(Explainer):
         # compute attributions for each test example
         for i in range(X.shape[0]):
             mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
-            prod = train_leaf_dvs * -test_gradients[i] * mask  # shape=(no. train, no. boost, no. class)
+            weighted_train_leaf_dvs = np.sum(train_leaf_dvs * mask, axis=1)  # shape=(no. train, no. class)
+            prod = -test_gradients[i] * weighted_train_leaf_dvs  # shape=(no. train, no. class)
 
-            # sum over boosts and classes
-            influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+            # sum over classes
+            influence[:, i] = np.sum(prod, axis=1)  # shape=(no. train,)
 
         return influence
 
     # private
-    def _compute_gradients(self, X, y):
+    def _compute_final_gradients(self, X, y):
         """
-        - Compute gradients for all train instances across all boosting iterations.
+        - Compute gradients for all instances for the final predictions.
 
         Input
             X: 2d array of train examples.
             y: 1d array of train targets.
 
         Return
-            - 3d array of shape=(X.shape[0], no. boost, no. class).
+            - 3d array of shape=(X.shape[0], no. class).
         """
         n_train = X.shape[0]
 
@@ -131,16 +132,13 @@ class LeafInfluence2(Explainer):
         bias = self.model_.bias
 
         current_approx = np.tile(bias, (n_train, 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
-        gradients = np.zeros((n_train, n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
-
-            gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
-
-            # update approximation
             for class_idx in range(n_class):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
+
+        gradients = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
 
         return gradients
 
@@ -176,12 +174,14 @@ class LeafInfluence2(Explainer):
 
         # result container
         leaf_dvs = np.zeros((n_train, n_boost, n_class), dtype=util.dtype_t)  # shape=(X.shape[0], n_boost, n_class)
+        j = np.zeros((n_train, n_class), dtype=util.dtype_t)  # shape=(X.shape[0], no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
 
             g = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
             h = self.loss_fn_.hessian(y, current_approx)  # shape=(no. train, no. class)
+            k = self.loss_fn_.third(y, current_approx)  # shape=(no. train, no. class)
 
             for class_idx in range(n_class):
                 leaf_count = leaf_counts[boost_idx, class_idx]
@@ -190,14 +190,15 @@ class LeafInfluence2(Explainer):
                 for leaf_idx in range(leaf_count):
                     leaf_docs = np.where(leaf_idx == leaf_idxs[:, boost_idx, class_idx])[0]
 
-                    # compute leaf difference after removing each train example in `leaf_docs`
-                    alpha1 = leaf_vals[leaf_idx]
+                    # compute leaf derivative w.r.t. each train example in `leaf_docs`
+                    num1 = g[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h[leaf_docs, class_idx] / lr  # (no. docs,)
+                    num2 = h[leaf_docs, class_idx] + leaf_vals[leaf_idx] * k[leaf_docs, class_idx] / lr  # (no. docs,)
+                    numerator = num1 + (num2 * j[leaf_docs, class_idx])  # (no. docs,)
+                    denominator = np.sum(h[leaf_docs, class_idx]) + l2_leaf_reg
+                    leaf_dvs[leaf_docs, boost_idx, class_idx] = -numerator / denominator * lr  # shape=(no. docs,)
 
-                    numerator = np.sum(g[leaf_docs, class_idx]) - g[leaf_docs, class_idx]  # shape=(no. docs,)
-                    denominator = np.sum(h[leaf_docs, class_idx]) - h[leaf_docs, class_idx] + l2_leaf_reg
-                    alpha2 = numerator / denominator * lr
-
-                    leaf_dvs[leaf_docs, boost_idx, class_idx] = alpha1 - alpha2  # (no. docs,)
+                    # update prediction derivatives
+                    j[leaf_docs, class_idx] += leaf_dvs[leaf_docs, boost_idx, class_idx]  # shape=(no. docs,)
 
                 # update approximation
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)

@@ -179,9 +179,6 @@ class LeafInfluenceGBDT(Explainer):
             hessian = self.loss_fn_.hessian(y, current_approx)  # shape=(X.shape[0], no. class)
             third = self.loss_fn_.third(y, current_approx)  # shape=(X.shape[0], no. class)
 
-            naive_gradient_addendum[:, boost_idx, :] = hessian * doc_preds / learning_rate + gradient
-            da_vector_multiplier[:, boost_idx, :] = doc_preds / learning_rate * third + hessian
-
             for class_idx in range(n_class):
 
                 # get leaf values
@@ -215,6 +212,10 @@ class LeafInfluenceGBDT(Explainer):
 
                 n_prev_leaves += leaf_count  # move to next set of tree leaves
                 leaf2docs.append(leaf2doc)  # list of dicts, one per tree
+
+            # precompute influence statistics
+            naive_gradient_addendum[:, boost_idx, :] = hessian * doc_preds / learning_rate + gradient
+            da_vector_multiplier[:, boost_idx, :] = doc_preds / learning_rate * third + hessian
 
             # n_prev_trees += n_class
             current_approx += doc_preds  # update approximation

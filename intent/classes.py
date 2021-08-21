@@ -5,6 +5,7 @@ from .explainers import BoostIn4
 from .explainers import BoostIn2B
 from .explainers import Trex
 from .explainers import LeafInfluence
+from .explainers import LeafInfluenceSP
 from .explainers import LOO
 from .explainers import DShap
 from .explainers import Random
@@ -62,6 +63,9 @@ class TreeExplainer(object):
 
         elif method == 'leaf_influence':
             self.explainer = LeafInfluence(**params, logger=logger)
+
+        elif method == 'leaf_influenceSP':
+            self.explainer = LeafInfluenceSP(**params, logger=logger)
 
         elif method == 'loo':
             self.explainer = LOO(**params, logger=logger)

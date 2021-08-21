@@ -54,7 +54,7 @@ def get_cb_influence_original_method(model, X_train, y_train, X_test, y_test, kw
     influence = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=np.float32)
 
     # compute influence for each training instance
-    for train_idx in tqdm(range(X_train.shape[0]), disable=args.verbose == 0):
+    for train_idx in tqdm(range(X_train.shape[0])):
         explainer.fit(removed_point_idx=train_idx, destination_model=buf)
         influence[train_idx, :] = buf.loss_derivative(X_test, y_test)  # shape=(1, no. test)
 
@@ -132,9 +132,9 @@ def main(args):
     kwargs = {'update_set': args.update_set}
 
     # tests
-    test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
-    test_util.test_global_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
-    test_util.test_global_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs)
+    # test_util.test_global_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
+    # test_util.test_global_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
+    # test_util.test_global_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     parser.add_argument('--rs', type=int, default=1)
 
     # explainer settings
-    parser.add_argument('--update_set', type=int, default=-1)
+    parser.add_argument('--update_set', type=int, default=0)
 
     args = parser.parse_args()
 

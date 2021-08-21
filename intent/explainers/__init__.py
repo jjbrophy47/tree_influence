@@ -5,6 +5,7 @@ from .boostin4 import BoostIn4
 from .boostin2B import BoostIn2B
 from .trex import Trex
 from .leaf_influence import LeafInfluence
+from .leaf_influenceSP import LeafInfluenceSP
 from .loo import LOO
 from .dshap import DShap
 from .random import Random
