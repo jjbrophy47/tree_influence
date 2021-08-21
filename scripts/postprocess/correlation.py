@@ -12,6 +12,7 @@ import seaborn as sns
 from datetime import datetime
 
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.base import clone
 from sklearn.metrics import r2_score
@@ -24,131 +25,132 @@ sys.path.insert(0, here + '/../')
 from experiments import util
 
 
-def show_values_on_bars(axs):
-    def _show_on_single_plot(ax):        
-        for p in ax.patches:
-            _x = p.get_x() + p.get_width() / 2
-            _y = p.get_y() + p.get_height()
-            value = '{:.2f}'.format(p.get_height())
-            ax.text(_x, _y, value, ha="center") 
+def get_correlation(inf1, inf2):
+    """
+    Compute avg. correlation between the given influences.
+    """
+    inf1 = np.where(inf1 == np.inf, 1000, inf1)
+    inf2 = np.where(inf2 == np.inf, 1000, inf2)
 
-    if isinstance(axs, np.ndarray):
-        for idx, ax in np.ndenumerate(axs):
-            _show_on_single_plot(ax)
-    else:
-        _show_on_single_plot(axs)
+    pearson = np.zeros(inf1.shape[1], dtype=np.float32)
+    spearman = np.zeros(inf1.shape[1], dtype=np.float32)
+
+    for i in range(inf1.shape[1]):
+        inf1i = inf1[:, i]
+        inf2i = inf2[:, i]
+
+        pearson[i] = pearsonr(inf1i, inf2i)[0]
+        spearman[i] = spearmanr(inf1i, inf2i)[0]
+
+    mean_p = np.mean(pearson)
+    mean_s = np.mean(spearman)
+
+    std_p = np.std(pearson)
+    std_s = np.std(spearman)
+
+    return mean_p, std_p, mean_s, std_s
 
 
-def experiment(args, logger, in_dir1, in_dir2, out_dir):
+def experiment(args, logger, in_dir_list, out_dir):
 
     # initialize experiment
     begin = time.time()
 
+    n_method = len(in_dir_list)
+    p_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+    s_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+    p_std_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+    s_std_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+
+    logger.info(f'\nno. methods: {n_method:,}, no. comparisons: {n_method ** 2}')
+
     # get influence results
-    inf_res1 = np.load(os.path.join(in_dir1, 'results.npy'), allow_pickle=True)[()]
-    inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
+    names = []
+    n_finish = 0
 
-    # evaluate influence ranking
-    start = time.time()
-    result = {}
+    for i, (method1, in_dir1) in enumerate(in_dir_list):
+        inf_res1 = np.load(os.path.join(in_dir1, 'results.npy'), allow_pickle=True)[()]
+        names.append(method1)
 
-    inf1 = inf_res1['influence']
-    inf2 = inf_res2['influence']
+        for j, (method2, in_dir2) in enumerate(in_dir_list):
 
-    # rnk1 = inf_res1['ranking'][:, 0]
-    # rnk2 = inf_res2['ranking'][:, 0]
+            if method1 == method2:
+                n_finish += 1
+                logger.info(f'no. finish: {n_finish:>10,} / {n_method ** 2}, cum. time: {time.time() - begin:.3f}s')
+                continue
 
-    # print(rnk1, rnk1.shape)
-    # print(rnk2, rnk2.shape)
+            inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
+            mean_p, std_p, mean_s, std_s = get_correlation(inf_res1['influence'], inf_res2['influence'])
 
-    # n_agree = len(np.where(rnk1 == rnk2)[0])
-    # print(n_agree)
+            p_mean_mat[i, j] = mean_p
+            s_mean_mat[i, j] = mean_s
+            p_std_mat[i, j] = std_p
+            s_std_mat[i, j] = std_s
 
-    pearson = np.zeros(inf1.shape[1], dtype=np.float32)
-    spearman = np.zeros(inf1.shape[1], dtype=np.float32)
-    r2 = np.zeros(inf1.shape[1], dtype=np.float32)
+            n_finish += 1
+            logger.info(f'no. finish: {n_finish:>10,} / {n_method ** 2}, cum. time: {time.time() - begin:.3f}s')
 
-    means = np.zeros(2, dtype=np.float32)
-    sems = np.zeros(2, dtype=np.float32)
+            n_test = inf_res1['influence'].shape[1]
 
-    # average influence values over all test examples
-    assert args.inf_obj == 'local'
-
-    # sort influence values based on method1
-    for i in tqdm.tqdm(range(inf1.shape[1])):
-        idxs = np.argsort(inf1[:, i])[::-1]
-
-        i1 = inf1[:, i][idxs]
-        i2 = inf2[:, i][idxs]
-
-        pearson[i] = pearsonr(i1, i2)[0]
-        spearman[i] = spearmanr(i1, i2)[0]
-        r2[i] = r2_score(i1, i2)
-
-    means[0] = np.mean(pearson, axis=0)
-    means[1] = np.mean(spearman, axis=0)
-    # means[2] = np.mean(r2, axis=0)
-
-    sems[0] = sem(pearson, axis=0)
-    sems[1] = sem(spearman, axis=0)
-    # sems[2] = sem(r2, axis=0)
-
-    names = ['Pearson', 'Spearman']
-
-    logger.info(f'\nPearson: {means[0]:.5f} +/- {sems[0]:.5f}')
-    logger.info(f'Spearman: {means[1]:.5f} +/- {sems[1]:.5f}')
+    logger.info(f'\ntotal time: {time.time() - begin:.3f}s')
 
     # plot correlations
-    # fig, ax = plt.subplots()
+    fig, axs = plt.subplots(1, 2, figsize=(12, 4))
 
-    # sns.barplot(names, means, yerr=sems)
-    # ax.set_title(f'No. test: {pearson.shape[0]}')
-    # ax.set_ylabel('Avg. correlation')
+    mask = np.zeros_like(p_mean_mat)
+    mask[np.triu_indices_from(mask)] = True
 
-    # show_values_on_bars(ax)
+    ax = axs[0]
+    sns.heatmap(p_mean_mat, xticklabels=names, yticklabels=names, ax=ax,
+                cmap='YlGnBu', mask=mask, fmt='.3f', cbar=False, annot=True)
+    ax.set_title(f'Pearson (Avg. over {n_test} test)')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(out_dir, f'{args.method1}_{args.method2}.png'), bbox_inches='tight')
-    # plt.show()
+    ax = axs[1]
+    sns.heatmap(s_mean_mat, xticklabels=names, yticklabels=names, ax=ax,
+                cmap='YlGnBu', mask=mask, fmt='.3f', annot=True)
+    ax.set_title('Spearman')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
+    plt.show()
 
 
 def main(args):
-
-    # get method params and unique settings hash
-    _, hash_str1 = util.explainer_params_to_dict(args.method1, vars(args))
-    _, hash_str2 = util.explainer_params_to_dict(args.method2, vars(args))
 
     # experiment hash_str
     exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
                 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
     exp_hash = util.dict_to_hash(exp_dict)
 
-    # method1 dir
-    in_dir1 = os.path.join(args.in_dir,
-                           args.dataset,
-                           args.tree_type,
-                           f'exp_{exp_hash}',
-                           f'{args.method1}_{hash_str1}')
-
-    in_dir2 = os.path.join(args.in_dir,
-                           args.dataset,
-                           args.tree_type,
-                           f'exp_{exp_hash}',
-                           f'{args.method2}_{hash_str2}')
+    in_dir_list = []
+    for method in args.method:
+        _, method_hash = util.explainer_params_to_dict(method, vars(args))
+        in_dir = os.path.join(args.in_dir,
+                              args.dataset,
+                              args.tree_type,
+                              f'exp_{exp_hash}',
+                              f'{method}_{method_hash}')
+        in_dir_list.append((method, in_dir))
 
     # create output dir
     out_dir = os.path.join(args.out_dir,
+                           args.inf_obj)
+
+    log_dir = os.path.join(args.out_dir,
                            args.inf_obj,
-                           args.dataset)
+                           'logs')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, f'{args.method1}_{args.method2}.txt'))
+    logger = util.get_logger(os.path.join(log_dir, f'{args.dataset}.txt'))
     logger.info(args)
     logger.info(datetime.now())
 
-    experiment(args, logger, in_dir1, in_dir2, out_dir)
+    experiment(args, logger, in_dir_list, out_dir)
 
 
 if __name__ == '__main__':
@@ -194,8 +196,9 @@ if __name__ == '__main__':
     parser.add_argument('--n_test', type=int, default=100)  # local
     parser.add_argument('--remove_frac', type=float, default=0.05)
     parser.add_argument('--n_ckpt', type=int, default=50)
-    parser.add_argument('--method1', type=str, default='random')
-    parser.add_argument('--method2', type=str, default='boostin')
+    parser.add_argument('--method', type=str, nargs='+',
+                        default=['target', 'similarity', 'boostin2',
+                                 'trex', 'leaf_influence', 'loo', 'subsample'])  # no minority, loss
     parser.add_argument('--zoom', type=float, nargs='+', default=[1.0])
 
     args = parser.parse_args()
