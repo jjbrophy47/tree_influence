@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--out_dir', type=str, default='output/influence/')
+    parser.add_argument('--out_dir', type=str, default='output/influence2/')
 
     # Experiment settings
     parser.add_argument('--dataset', type=str, default='surgical')
