@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from .base import Explainer
@@ -7,9 +9,6 @@ from .parsers import util
 class BoostIn4(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles.
-
-    Global-Influence Semantics
-        - N/A
 
     Local-Influence Semantics
         - Inf.(x_i, x_t) = sum grad(x_t) * leaf_der w.r.t. x_i * learning_rate over all boosts.
@@ -72,7 +71,7 @@ class BoostIn4(Explainer):
         """
         raise ValueError('Global influence not implemented!')
 
-    def get_local_influence(self, X, y):
+    def get_local_influence(self, X, y, verbose=1):
         """
         - Computes effect of each train example on the loss of the test example.
 
@@ -88,6 +87,8 @@ class BoostIn4(Explainer):
             - Attribute train attribution to the test loss ONLY if the train example
                 is in the same leaf(s) as the test example.
         """
+        start = time.time()
+
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
         # result container, shape=(X.shape[0], no. train, no. class)
@@ -108,6 +109,11 @@ class BoostIn4(Explainer):
 
             # sum over boosts and classes
             influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+
+            # progress
+            if i > 0 and (i + 1) % 100 == 0 and self.logger and verbose:
+                self.logger.info(f'[INFO - BoostIn4] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                                 f'cum. time: {time.time() - start:.3f}s')
 
         return influence
 

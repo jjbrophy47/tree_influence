@@ -75,21 +75,7 @@ class SubSample(Explainer):
 
         return self
 
-    def get_global_influence(self, X=None, y=None):
-        """
-        - Provides a global importance to all training examples.
-
-        Input
-            X: 2d array of test data.
-            y: 2d array of test targets.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-        raise ValueError('Global influence not implemented!')
-
-    def get_local_influence(self, X, y):
+    def get_local_influence(self, X, y, verbose=1):
         """
         - Compute influence of each training instance on each test loss.
 

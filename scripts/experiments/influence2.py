@@ -26,20 +26,21 @@ def remove_and_evaluate(inf_obj, objective, ranking, tree,
     eval_fn = util.eval_pred
 
     # get list of remove fractions
-    remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)
-    n_remove = int((remove_frac / n_ckpt) * X_train.shape[0])
+    remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)[1:]
 
     # result container
     result = {}
     result['remove_frac'] = remove_frac_arr
     result['loss'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
+    result['acc'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
+    result['auc'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
 
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
+    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'Ckpt. {0:>5}: {0:>5.2f}%')
     result['loss'][0] = res['loss']
     result['acc'][0] = res['acc']
     result['auc'][0] = res['auc']
 
-    for i in range(1, n_ckpt):
+    for i in range(n_ckpt):
 
         remove_frac = remove_frac_arr[i]
         n_remove = int(X_train.shape[0] * remove_frac)
@@ -58,7 +59,7 @@ def remove_and_evaluate(inf_obj, objective, ranking, tree,
         else:
             new_tree = clone(tree).fit(new_X_train, new_y_train)
 
-            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.2f}%'
+            prefix = f'Ckpt. {i + 1:>5}: {remove_frac * 100:>5.2f}%'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
             result['loss'][i] = res['loss']
             result['acc'][i] = res['acc']
@@ -92,45 +93,61 @@ def experiment(args, logger, params, out_dir):
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
     fit_time = time.time() - start - explainer.parse_time_
 
-    logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s')
+    logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s\n')
 
     # compute influence
     start2 = time.time()
 
     if 'test' in args.strategy:
-        influence = explainer.get_local_influence(X_test, y_test)  # shape=(no. test,)
-        inf_time = time.time() - start2
+        local_influence = explainer.get_local_influence(X_test, y_test)  # shape=(no. test,)
 
         # aggregate local influences
-        influence_sum = np.sum(influence, axis=1)  # shape=(no. train,)
+        if args.strategy == 'test_sum':
+            influence = np.sum(local_influence, axis=1)  # shape=(no. train,)
+
+        elif args.strategy == 'test_mean':
+            influence = np.sum(local_influence, axis=1)  # shape=(no. train,)
+
+        elif args.strategy == 'test_abs_sum':
+            influence = np.sum(np.abs(local_influence), axis=1)  # shape=(no. train,)
+
+        else:
+            assert args.strategy == 'test_abs_mean'
+            influence = np.sum(np.abs(local_influence), axis=1)  # shape=(no. train,)
 
     else:
-        assert args.strategy == 'self'
-        influence = explainer.get_global_influence()  # shape=(no. train,)
-        inf_time = time.time() - start2
+        assert 'self' in args.strategy
+
+        # select batch size
+        batch_size = 100
+
+        if args.method in ['random', 'minority', 'loo', 'subsample']:
+            batch_size = X_train.shape[0]
+
+        influence = explainer.get_self_influence(X_train, y_train, batch_size=batch_size)  # shape=(no. train,)
+
+        if args.strategy == 'self_abs':
+            influence = np.abs(influence)
 
     inf_time = time.time() - start2
-    logger.info(f'[INFO] explainer influence time: {inf_time:.5f}s')
-    logger.info(f'[INFO] total time: {time.time() - begin:.5f}s')
+    logger.info(f'[INFO] explainer influence time: {inf_time:.5f}s\n')
 
     # get ranking
-    ranking = np.argsort(influence)  # shape=(no. train, no. test)
+    ranking = np.argsort(influence)[::-1]  # shape=(no. train,)
 
-    result = remove_and_evaluate(args.inf_obj, objective, ranking, tree,
-                                 X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                 args.remove_frac, args.n_ckpt, logger)
+    res = remove_and_evaluate(args.inf_obj, objective, ranking, tree,
+                              X_train, y_train, X_test, y_test,
+                              args.remove_frac, args.n_ckpt, logger)
 
-    cum_time = time.time() - start
-    logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
-                f', cum. time: {cum_time:.3f}s')
-
-    # combine results from each test example
-    result['remove_frac'] = res_list[0]['remove_frac']  # shape=(no. ckpts,)
-    result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
-    result['pred'] = [res['pred'] for res in res_list]  # shape=(no. test, no. completed ckpts, no class)
+    cum_time = time.time() - begin
+    logger.info(f'\n[INFO] total time: {cum_time:.3f}s')
 
     # save results
     result['influence'] = influence
+    result['remove_frac'] = res['remove_frac']  # shape=(no. ckpts,)
+    result['loss'] = res['loss']  # shape=(no. ckpts,)
+    result['acc'] = res['acc']  # shape=(no. ckpts,)
+    result['auc'] = res['auc']  # shape=(no. ckpts,)
     result['ranking'] = ranking
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['fit_time'] = fit_time
@@ -145,8 +162,8 @@ def experiment(args, logger, params, out_dir):
 def main(args):
 
     # get unique hash for this experiment setting
-    exp_dict = {'inf_obj': args.inf_obj, 'remove_frac': args.remove_frac,
-                'n_ckpt': args.n_ckpt}
+    exp_dict = {'inf_obj': args.inf_obj, 'strategy': args.strategy,
+                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
     exp_hash = util.dict_to_hash(exp_dict)
 
     # get unique hash for the explainer
@@ -186,6 +203,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default='surgical')
     parser.add_argument('--tree_type', type=str, default='lgb')
     parser.add_argument('--inf_obj', type=str, default='global')
+    parser.add_argument('--strategy', type=str, default='test_sum')
     parser.add_argument('--remove_frac', type=float, default=0.5)
     parser.add_argument('--n_ckpt', type=int, default=50)
 

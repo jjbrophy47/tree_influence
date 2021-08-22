@@ -9,9 +9,6 @@ class Target(Explainer):
     Explainer that randomly returns higher influence
         for train examples with similar targets to the test examples.
 
-    Global-Influence Semantics
-        - N/A
-
     Local-Influence Semantics
         - More positive values are assigned to train examples
             with similar targets to the test examples.
@@ -45,18 +42,6 @@ class Target(Explainer):
         self.objective_ = self.model_.objective
 
         return self
-
-    def get_global_influence(self, X=None, y=None):
-        """
-        Input
-            X: 2d array of test data.
-            y: 2d array of test targets.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-        raise ValueError('Global influence not suppored for Target explainer!')
 
     def get_local_influence(self, X, y):
         """

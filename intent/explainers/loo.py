@@ -13,12 +13,6 @@ class LOO(Explainer):
     Leave-one-out influence explainer. Retrains the model
     for each train example to get change in loss.
 
-    Global-Influence Semantics
-        - Influence of x_i on itself.
-        - Inf.(x_i, x_i) := L(y_t, f_{w/o x_i}(x_i)) - L(y_t, f(x_i))
-        - Pos. value means removing x_i increases loss (adding x_i decreases loss, helpful).
-        - Neg. value means removing x_i decreases loss (adding x_i increases loss, harmful).
-
     Local-Influence Semantics
         - Inf.(x_i, x_t) := L(y_t, f_{w/o x_i}(x_t)) - L(y_t, f(x_t))
         - Pos. value means removing x_i increases loss (adding x_i decreases loss, helpful).
@@ -78,35 +72,7 @@ class LOO(Explainer):
 
         return self
 
-    def get_global_influence(self, X=None, y=None):
-        """
-        - Provides a global importance to all training examples.
-
-        Input
-            X: 2d array of test data.
-            y: 2d array of test targets.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-
-        # compute influence of each train example on the test set loss
-        if self.global_op == 'expected':
-            assert X is not None and y is not None
-            X, y = util.check_data(X, y, objective=self.model_.objective)
-            batch = True
-
-        # compute influence of each train example on itself
-        else:
-            assert self.global_op == 'self'
-            batch = False
-
-        influence = self._run_loo(X_test=X, y_test=y, batch=batch, inf='global')  # shape=(no. train, 1)
-
-        return influence[:, 0]  # shape=(no. train,)
-
-    def get_local_influence(self, X, y):
+    def get_local_influence(self, X, y, verbose=1):
         """
         - Compute influence of each training instance on each test loss.
 

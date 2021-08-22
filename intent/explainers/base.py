@@ -1,7 +1,10 @@
 import time
 from abc import abstractmethod
 
+import numpy as np
+
 from .parsers import parse_model
+from .parsers import util
 
 
 class Explainer(object):
@@ -28,23 +31,49 @@ class Explainer(object):
         assert self.model_.objective in ['regression', 'binary', 'multiclass']
         self.parse_time_ = time.time() - start
 
-    @abstractmethod
-    def get_global_influence(self, X=None, y=None):
+    def get_self_influence(self, X, y, batch_size=100):
         """
-        - Provides a global importance to all training examples.
+        - Compute influence of each example on its own test loss.
 
         Input
-            X: 2d array of test examples.
-            y: 1d array of test targets.
+            X: 2d array of train data.
+            y: 2d array of train targets.
+            batch_size: No. examples to compute influence for at one time.
 
         Return
             - 1d array of shape=(no. train,).
-
-        Note
-            - If X and y are not None, then some explainers may provide
-                the effect of each train example on the test set loss.
+                * Arrays are returned in the same order as the traing data.
         """
-        pass
+        start = time.time()
+
+        self_influence = np.zeros(X.shape[0], dtype=util.dtype_t)  # shape=(X.shape[0],)
+
+        n_finish = 0
+        n_remain = X.shape[0]
+
+        # compute self-influence in small batches
+        while n_remain > 0:
+            n_batch = batch_size
+
+            if n_remain < batch_size:
+                n_batch = n_remain
+
+            idxs = np.arange(n_finish, n_finish + n_batch)
+            X_batch = X[idxs].copy()
+            y_batch = y[idxs].copy()
+
+            influence = self.get_local_influence(X_batch, y_batch, verbose=0)  # shape=(X.shape[0], batch_size)
+            self_influence[idxs] = np.diag(influence[idxs])
+
+            n_finish += n_batch
+            n_remain -= n_batch
+
+            # progress
+            if self.logger:
+                self.logger.info(f'[INFO] No. finished: {n_finish:>10,} / {X.shape[0]:,}, '
+                                 f'cum. time: {time.time() - start:.3f}s')
+
+        return self_influence
 
     @abstractmethod
     def get_local_influence(self, X, y):

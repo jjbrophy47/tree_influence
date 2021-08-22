@@ -2,7 +2,6 @@ from .boostin import BoostIn
 from .boostin2 import BoostIn2
 from .boostin3 import BoostIn3
 from .boostin4 import BoostIn4
-from .boostin2B import BoostIn2B
 from .trex import Trex
 from .leaf_influence import LeafInfluence
 from .leaf_influenceSP import LeafInfluenceSP
@@ -14,4 +13,3 @@ from .loss import Loss
 from .similarity import Similarity
 from .target import Target
 from .subsample import SubSample
-from .subsampleB import SubSampleB

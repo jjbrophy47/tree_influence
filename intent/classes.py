@@ -2,7 +2,6 @@ from .explainers import BoostIn
 from .explainers import BoostIn2
 from .explainers import BoostIn3
 from .explainers import BoostIn4
-from .explainers import BoostIn2B
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LeafInfluenceSP
@@ -14,7 +13,6 @@ from .explainers import Loss
 from .explainers import Similarity
 from .explainers import Target
 from .explainers import SubSample
-from .explainers import SubSampleB
 
 
 class TreeExplainer(object):
@@ -55,9 +53,6 @@ class TreeExplainer(object):
         elif method == 'boostin4':
             self.explainer = BoostIn4(**params, logger=logger)
 
-        elif method == 'boostin2B':
-            self.explainer = BoostIn2B(**params, logger=logger)
-
         elif method == 'trex':
             self.explainer = Trex(**params, logger=logger)
 
@@ -90,9 +85,6 @@ class TreeExplainer(object):
 
         elif method == 'subsample':
             self.explainer = SubSample(**params, logger=logger)
-
-        elif method == 'subsampleB':
-            self.explainer = SubSampleB(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')

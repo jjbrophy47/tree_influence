@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -16,13 +18,6 @@ class Trex(Explainer):
     """
     Tree-Ensemble Representer Examples: Explainer that adapts the
     Representer point method to tree ensembles.
-
-    Global-Influence Semantics
-        - Influence of x_i on itself.
-        - Inf.(x_i, x_i) := L(phi(sum_j * (alpha_{j=i}=0) K(x_i, x_i)) - L(phi(sum_i alpha_i k(x_i, x_i))).
-        - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-        - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
-
 
     Local-Influence Semantics
         - Inf.(x_i, x_t) := L(phi(sum_j * (alpha_{j=i}=0) K(x_i, x_t)) - L(phi(sum_i alpha_i k(x_i, x_t))).
@@ -128,82 +123,21 @@ class Trex(Explainer):
 
         return self
 
-    def get_global_influence(self, X=None, y=None):
-        """
-        - Provides a global importance to all training examples.
-
-        Input
-            X: 2d array of test data.
-            y: 2d array of test targets.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-        if self.global_op == 'alpha':
-            influence = np.abs(self.alpha_).sum(axis=1)  # sum over classes
-
-        # compute influence of each train example on the test set loss
-        elif self.global_op == 'expected':
-            assert X is not None and y is not None
-            X, y = util.check_data(X, y, objective=self.model_.objective)
-
-            X_test_ = self._kernel_transform(X)  # shape=(X.shape[0], no. feature)
-            sim = np.matmul(self.X_train_, X_test_.T)  # shape=(no. train, X.shape[0])
-
-            # intermediate result, shape=(no. train, X.shape[0], no. class)
-            rep_vals = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=util.dtype_t)
-
-            for class_idx in range(self.n_class_):  # per class
-                rep_vals[:, :, class_idx] = sim * self.alpha_[:, class_idx].reshape(-1, 1)
-
-            # compute pre-act. predictions with and without each train example
-            rep_vals_sum = np.sum(rep_vals, axis=0)  # sum over train, shape=(X.shape[0], no. class)
-            rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, X.shape[0], no. class)
-
-            # compute loss with and then without each train example
-            influence = np.zeros(self.X_train_.shape[0], dtype=util.dtype_t)  # shape=(no. train,)
-            original_loss = self.loss_fn_(y, rep_vals_sum, raw=True, batch=True)  # single float
-
-            # compute losses without each train example, and their influences
-            for train_idx in range(self.X_train_.shape[0]):
-                removed_loss = self.loss_fn_(y, rep_vals_delta[train_idx, :, :], raw=True, batch=True)  # single float
-                influence[train_idx] = removed_loss - original_loss  # single float
-
-        # compute influence of each train example on itself
-        else:
-            assert self.global_op == 'self'
-
-            X = self.X_train_
-            y = self.y_train_
-
-            # compute pre-act. predictions for each train example
-            W = np.matmul(X.T, self.alpha_)  # shape=(no. features, no. class)
-            rep_vals_sum = np.matmul(X, W)  # shape=(no. train, no. class)
-
-            sim = np.sum(X * X, axis=1, keepdims=True)  # shape=(no. train, 1)
-            rep_vals = sim * self.alpha_  # shape=(no. train, no. class)
-            rep_vals_delta = rep_vals_sum - rep_vals  # shape=(no. train, no. class)
-
-            original_losses = self.loss_fn_(y, rep_vals_sum, raw=True)  # shape=(no. train,)
-            removed_losses = self.loss_fn_(y, rep_vals_delta, raw=True)  # shape=(no. train,)
-
-            influence = removed_losses - original_losses  # shape=(no. train,)
-
-        return influence
-
-    def get_local_influence(self, X, y):
+    def get_local_influence(self, X, y, verbose=1):
         """
         - Compute influence of each train examples on each test example loss.
 
         Input
             X: 2d array of test data.
             y: 2d array of test targets.
+            verbose: int, verbosity.
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).
                 * Array is returned in the same order as the traing data.
         """
+        start = time.time()
+
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
         X_test_ = self._kernel_transform(X)  # shape=(X.shape[0], no. feature)
@@ -228,6 +162,11 @@ class Trex(Explainer):
             y_temp = np.tile(y[test_idx], (self.X_train_.shape[0], 1))  # shape=(no.train, no. class)
             removed_losses = self.loss_fn_(y_temp, rep_vals_delta[:, test_idx, :], raw=True)  # shape=(no. train,)
             influence[:, test_idx] = removed_losses - original_losses[test_idx]  # shape=(no. train,)
+
+            # progress
+            if test_idx > 0 and (test_idx + 1) % 100 == 0 and self.logger and verbose:
+                self.logger.info(f'[INFO - TREX] No. finished: {test_idx+1:>10,} / {X.shape[0]:>10,}, '
+                                 f'cum. time: {time.time() - start:.3f}s')
 
         return influence
 
