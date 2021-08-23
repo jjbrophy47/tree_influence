@@ -45,119 +45,77 @@ def process(args, out_dir, logger):
 
     color, line, label = pp_util.get_plot_dicts()
 
-    if args.inf_obj == 'global':
-        n_row = 2 if args.zoom > 0.0 and args.zoom < 1.0 else 1
-        height = 8 if args.zoom > 0.0 and args.zoom < 1.0 else 4
+    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
 
-        fig, axs = plt.subplots(n_row, 4, figsize=(16, height))
-        axs = axs.flatten()
+    for i, (method, res) in enumerate(results):
 
-        for i, metric in enumerate(args.metric):
+        if i == 0:
+            n_test = res['loss'].shape[0]
 
-            for method, res in results:
-                ax = axs[i]
+        else:
+            temp = res['loss'].shape[0]
+            assert n_test == temp, f'Inconsistent no. test: {temp:,} != {n_test:,}'
 
-                x, y = res['remove_frac'] * 100, res[metric]
+        is_reinf = reinf_list[i]
 
-                ax.plot(x, y, label=label[method], color=color[method],
-                        linestyle=line[method], alpha=0.75)
-                ax.set_xlabel('Train data removed (%)')
-                ax.set_ylabel(f'Test {metric}')
+        ax = axs[0]
 
-                # plot zoomed version
-                if args.zoom > 0.0 and args.zoom < 1.0:
-                    ax = axs[i + 4]
+        # TEMP
+        if res['remove_frac'].ndim == 1:
+            x = res['remove_frac'] * 100
+        else:
+            x = res['remove_frac'][0] * 100
 
-                    n = int(len(x) * args.zoom)
-                    x, y = x[:n], y[:n]
+        y = res['loss'].mean(axis=0)
+        y_err = sem(res['loss'], axis=0)
+        y_err = y_err if args.std_err else None
 
-                    ax.plot(x, y, label=label[method], color=color[method],
-                            linestyle=line[method], alpha=0.75)
-                    ax.set_xlabel('Train data removed (%)')
-                    ax.set_ylabel(f'Test {metric}')
+        if is_reinf:
+            linestyle = '-.'
+            labelstyle = f'{label[method]} (RI)'
+        else:
+            linestyle = line[method]
+            labelstyle = label[method]
 
-            if y[0] == -1:
-                fig.delaxes(ax=axs[i])
+        if args.plt == 'fill':
+            assert y_err is not None
 
-                if args.zoom > 0.0 and args.zoom < 1.0:
-                    fig.delaxes(ax=axs[i + 4])
+            ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
+            ax.fill_between(x, y - y_err, y + y_err, color=color[method],
+                            linestyle=linestyle, alpha=0.2)
 
-            elif i == 0 or i == 2:
-                axs[i].legend(fontsize=6)
+        else:
+            ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
+                        linestyle=linestyle, alpha=0.75)
 
-    # local
-    else:
-        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+        ax.set_xlabel('Train data removed (%)')
+        ax.set_ylabel(f'Avg. example test loss')
+        ax.legend(fontsize=6)
 
-        for i, (method, res) in enumerate(results):
+        if args.zoom > 0.0 and args.zoom < 1.0:
+            ax = axs[1]
 
-            if i == 0:
-                n_test = res['loss'].shape[0]
+            n = int(len(x) * args.zoom)
+            x, y = x[:n], y[:n]
 
-            else:
-                temp = res['loss'].shape[0]
-                assert n_test == temp, f'Inconsistent no. test: {temp:,} != {n_test:,}'
-
-            is_reinf = reinf_list[i]
-
-            ax = axs[0]
-
-            # TEMP
-            if res['remove_frac'].ndim == 1:
-                x = res['remove_frac'] * 100
-            else:
-                x = res['remove_frac'][0] * 100
-
-            y = res['loss'].mean(axis=0)
-            y_err = sem(res['loss'], axis=0)
-            y_err = y_err if args.std_err else None
-
-            if is_reinf:
-                linestyle = '-.'
-                labelstyle = f'{label[method]} (RI)'
-            else:
-                linestyle = line[method]
-                labelstyle = label[method]
+            if y_err is not None:
+                y_err = y_err[:n]
 
             if args.plt == 'fill':
                 assert y_err is not None
 
                 ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
-                ax.fill_between(x, y - y_err, y + y_err, color=color[method],
+                ax.fill_between(x, y - y_err, y + y_err, label=labelstyle, color=color[method],
                                 linestyle=linestyle, alpha=0.2)
-
             else:
                 ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
                             linestyle=linestyle, alpha=0.75)
 
             ax.set_xlabel('Train data removed (%)')
             ax.set_ylabel(f'Avg. example test loss')
-            ax.legend(fontsize=6)
 
-            if args.zoom > 0.0 and args.zoom < 1.0:
-                ax = axs[1]
-
-                n = int(len(x) * args.zoom)
-                x, y = x[:n], y[:n]
-
-                if y_err is not None:
-                    y_err = y_err[:n]
-
-                if args.plt == 'fill':
-                    assert y_err is not None
-
-                    ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
-                    ax.fill_between(x, y - y_err, y + y_err, label=labelstyle, color=color[method],
-                                    linestyle=linestyle, alpha=0.2)
-                else:
-                    ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
-                                linestyle=linestyle, alpha=0.75)
-
-                ax.set_xlabel('Train data removed (%)')
-                ax.set_ylabel(f'Avg. example test loss')
-
-        if args.zoom <= 0.0 or args.zoom >= 1.0:
-            fig.delaxes(axs[1])
+    if args.zoom <= 0.0 or args.zoom >= 1.0:
+        fig.delaxes(axs[1])
 
     exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
                 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
@@ -166,7 +124,6 @@ def process(args, out_dir, logger):
     custom_dir = 'reestimation' if reinf_exists else args.custom_dir
 
     plt_dir = os.path.join(args.out_dir,
-                           args.inf_obj,
                            args.tree_type,
                            f'exp_{exp_hash}',
                            custom_dir)
@@ -221,7 +178,7 @@ if __name__ == '__main__':
                         default=['minority', 'loss'])
     parser.add_argument('--leaf_scale', type=int, nargs='+', default=[-1.0])  # BoostIn
     parser.add_argument('--local_op', type=str, nargs='+', default=['normal'])  # BoostIn
-    parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
+    parser.add_argument('--update_set', type=int, nargs='+', default=[-1])  # LeafInfluence
 
     parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
 

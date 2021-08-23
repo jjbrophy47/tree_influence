@@ -11,7 +11,7 @@ from experiments import util as exp_util
 
 
 # public
-def get_results(args, in_dir, logger=None):
+def get_results(args, in_dir, logger=None, exp_hash=None):
     """
     Retrieve results for the multiple methods.
     """
@@ -50,9 +50,10 @@ def get_results(args, in_dir, logger=None):
                     'local_op': local_op,
                     'similarity': similarity}
 
-        exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
-                    'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
-        exp_hash = exp_util.dict_to_hash(exp_dict)
+        if exp_hash is None:
+            exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
+                        'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+            exp_hash = exp_util.dict_to_hash(exp_dict)
 
         _, hash_str = exp_util.explainer_params_to_dict(method, template)
 
@@ -83,7 +84,7 @@ def get_plot_dicts():
     """
     Return dict for color, line, and labels for each method.
     """
-    color = {'random_': 'blue', 'minority_': 'pink', 'target_': 'cyan', 'loss_': 'yellow'}
+    color = {'random_': 'blue', 'minority_': 'cyan', 'target_': 'cyan', 'loss_': 'yellow'}
     # color['boostin_5fa0dc231efe739492c9904ea2304460'] = 'orange'
     # color['boostin_814cd0d3199b076a65b67e6d3b017c5f'] = 'orange'
     # color['boostin_92588165d78cfa923e46d8af4451baf2'] = 'orange'

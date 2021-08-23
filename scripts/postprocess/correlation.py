@@ -29,8 +29,11 @@ def get_correlation(inf1, inf2):
     """
     Compute avg. correlation between the given influences.
     """
-    inf1 = np.where(inf1 == np.inf, 1000, inf1)
+    inf1 = np.where(inf1 == np.inf, 1000, inf1)  # replace inf with a large constant
     inf2 = np.where(inf2 == np.inf, 1000, inf2)
+
+    inf1 = np.nan_to_num(inf1)  # replace nan with a small number
+    inf2 = np.nan_to_num(inf2)
 
     pearson = np.zeros(inf1.shape[1], dtype=np.float32)
     spearman = np.zeros(inf1.shape[1], dtype=np.float32)
@@ -38,6 +41,11 @@ def get_correlation(inf1, inf2):
     for i in range(inf1.shape[1]):
         inf1i = inf1[:, i]
         inf2i = inf2[:, i]
+
+        # check if either array is constant
+        if np.all(inf1i == inf1i[0]) or np.all(inf2i == inf2i[0]):
+            print('Constant detected!')
+            continue
 
         pearson[i] = pearsonr(inf1i, inf2i)[0]
         spearman[i] = spearmanr(inf1i, inf2i)[0]
@@ -97,8 +105,10 @@ def experiment(args, logger, in_dir_list, out_dir):
     # plot correlations
     fig, axs = plt.subplots(1, 2, figsize=(12, 4))
 
-    mask = np.zeros_like(p_mean_mat)
-    mask[np.triu_indices_from(mask)] = True
+    # mask = np.zeros_like(p_mean_mat)
+    # mask[np.triu_indices_from(mask)] = True
+
+    mask = None
 
     ax = axs[0]
     sns.heatmap(p_mean_mat, xticklabels=names, yticklabels=names, ax=ax,
@@ -135,12 +145,8 @@ def main(args):
         in_dir_list.append((method, in_dir))
 
     # create output dir
-    out_dir = os.path.join(args.out_dir,
-                           args.inf_obj)
-
-    log_dir = os.path.join(args.out_dir,
-                           args.inf_obj,
-                           'logs')
+    out_dir = os.path.join(args.out_dir, args.tree_type)
+    log_dir = os.path.join(args.out_dir, args.tree_type, 'logs')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
@@ -198,7 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_ckpt', type=int, default=50)
     parser.add_argument('--method', type=str, nargs='+',
                         default=['target', 'similarity', 'boostin2',
-                                 'trex', 'leaf_influence', 'loo', 'subsample'])  # no minority, loss
+                                 'trex', 'leaf_influenceSP', 'loo', 'subsample'])  # no minority, loss
     parser.add_argument('--zoom', type=float, nargs='+', default=[1.0])
 
     args = parser.parse_args()
