@@ -123,6 +123,9 @@ class SubSample(Explainer):
             in_loss = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=util.dtype_t)
             out_loss = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=util.dtype_t)
 
+            in_count = np.zeros(X_train.shape[0], dtype=np.int32)
+            out_count = np.zeros(X_train.shape[0], dtype=np.int32)
+
             # trackers
             fits_completed = 0
             fits_remaining = n_iter
@@ -145,6 +148,9 @@ class SubSample(Explainer):
                         in_loss[in_idxs, test_idx] += loss
                         out_loss[out_idxs, test_idx] += loss
 
+                        in_count[in_idxs] += 1
+                        out_count[out_idxs] += 1
+
                 fits_completed += n
                 fits_remaining -= n
 
@@ -154,7 +160,7 @@ class SubSample(Explainer):
                                      f', cum. time: {cum_time:.3f}s')
 
         # compute difference in expected losses
-        influence = (out_loss / n_iter) - (in_loss / n_iter)
+        influence = (out_loss / out_count.reshape(-1, 1)) - (in_loss / in_count.reshape(-1, 1))
 
         return influence
 

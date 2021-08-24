@@ -116,20 +116,18 @@ class BoostIn2(Explainer):
         Return
             - 3d array of shape=(X.shape[0], no. boost, no. class).
         """
-        n_train = X.shape[0]
-
         trees = self.model_.trees
         n_boost = self.model_.n_boost_
         n_class = self.model_.n_class_
         bias = self.model_.bias
 
-        current_approx = np.tile(bias, (n_train, 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
-        gradients = np.zeros((n_train, n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
+        current_approx = np.tile(bias, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
+        gradients = np.zeros((X.shape[0], n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
 
-            gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
+            gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
 
             # update approximation
             for class_idx in range(n_class):
