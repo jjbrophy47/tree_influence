@@ -1,5 +1,3 @@
-import numpy as np
-
 from .base import Explainer
 from .parsers import util
 
@@ -10,12 +8,7 @@ class Loss(Explainer):
         for train examples with larger loss.
 
     Global-Influence Semantics
-        - More positive values are assigned to train examples with
-            higher loss.
-
-    Local-Influence Semantics
-        - More positive values are assigned to train examples with
-            higher loss AND are in the same leaf as the test example.
+        - More positive values are assigned to train examples with higher loss.
 
     Note
         - Supports GBDTs and RFs.
@@ -48,11 +41,12 @@ class Loss(Explainer):
 
         return self
 
-    def get_global_influence(self, X=None, y=None):
+    def get_self_influence(self, X, y, batch_size=None):
         """
         Input
             X: 2d array of test data.
             y: 2d array of test targets.
+            batch_size: Unused, exists for compatibility.
 
         Return
             - 1d array of shape=(no. train,).

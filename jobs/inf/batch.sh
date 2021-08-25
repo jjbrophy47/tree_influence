@@ -38,7 +38,7 @@ mds='dshap'
 ms='similarity'
 ml='loss'
 mtg='target'
-msb='subsampleB'
+msb='subsample'
 
 ps='short'
 pl='long'

@@ -25,7 +25,16 @@ sys.path.insert(0, here + '/../')
 from experiments import util
 
 
-def get_correlation(inf1, inf2):
+def jaccard_similarity(inf1, inf2):
+    """
+    Return |inf1 intersect inf2| / |inf1 union inf2|.
+    """
+    s1 = set(inf1)
+    s2 = set(inf2)
+    return len(s1.intersection(s2)) / len(s1.union(s2))
+
+
+def get_correlation(inf1, inf2, jaccard_frac=0.1):
     """
     Compute avg. correlation between the given influences.
     """
@@ -37,6 +46,7 @@ def get_correlation(inf1, inf2):
 
     pearson = np.zeros(inf1.shape[1], dtype=np.float32)
     spearman = np.zeros(inf1.shape[1], dtype=np.float32)
+    jaccard = np.zeros(inf1.shape[1], dtype=np.float32)
 
     for i in range(inf1.shape[1]):
         inf1i = inf1[:, i]
@@ -50,13 +60,18 @@ def get_correlation(inf1, inf2):
         pearson[i] = pearsonr(inf1i, inf2i)[0]
         spearman[i] = spearmanr(inf1i, inf2i)[0]
 
+        n_cutoff = int(len(inf1i) * jaccard_frac)
+        jaccard[i] = jaccard_similarity(np.argsort(inf1i)[-n_cutoff:], np.argsort(inf2i)[-n_cutoff:])
+
     mean_p = np.mean(pearson)
     mean_s = np.mean(spearman)
+    mean_j = np.mean(jaccard)
 
     std_p = np.std(pearson)
     std_s = np.std(spearman)
+    std_j = np.std(jaccard)
 
-    return mean_p, std_p, mean_s, std_s
+    return mean_p, std_p, mean_s, std_s, mean_j, std_j
 
 
 def experiment(args, logger, in_dir_list, out_dir):
@@ -65,10 +80,14 @@ def experiment(args, logger, in_dir_list, out_dir):
     begin = time.time()
 
     n_method = len(in_dir_list)
+
     p_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
     s_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+    j_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+
     p_std_mat = np.full((n_method, n_method), 1, dtype=np.float32)
     s_std_mat = np.full((n_method, n_method), 1, dtype=np.float32)
+    j_std_mat = np.full((n_method, n_method), 1, dtype=np.float32)
 
     logger.info(f'\nno. methods: {n_method:,}, no. comparisons: {n_method ** 2}')
 
@@ -88,12 +107,15 @@ def experiment(args, logger, in_dir_list, out_dir):
                 continue
 
             inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
-            mean_p, std_p, mean_s, std_s = get_correlation(inf_res1['influence'], inf_res2['influence'])
+            mean_p, std_p, mean_s, std_s, mean_j, std_j = get_correlation(inf_res1['influence'], inf_res2['influence'])
 
             p_mean_mat[i, j] = mean_p
             s_mean_mat[i, j] = mean_s
+            j_mean_mat[i, j] = mean_j
+
             p_std_mat[i, j] = std_p
             s_std_mat[i, j] = std_s
+            j_std_mat[i, j] = std_j
 
             n_finish += 1
             logger.info(f'no. finish: {n_finish:>10,} / {n_method ** 2}, cum. time: {time.time() - begin:.3f}s')
@@ -103,7 +125,7 @@ def experiment(args, logger, in_dir_list, out_dir):
     logger.info(f'\ntotal time: {time.time() - begin:.3f}s')
 
     # plot correlations
-    fig, axs = plt.subplots(1, 2, figsize=(12, 4))
+    fig, axs = plt.subplots(1, 3, figsize=(18, 5))
 
     # mask = np.zeros_like(p_mean_mat)
     # mask[np.triu_indices_from(mask)] = True
@@ -112,14 +134,20 @@ def experiment(args, logger, in_dir_list, out_dir):
 
     ax = axs[0]
     sns.heatmap(p_mean_mat, xticklabels=names, yticklabels=names, ax=ax,
-                cmap='YlGnBu', mask=mask, fmt='.3f', cbar=False, annot=True)
+                cmap='YlGnBu', mask=mask, fmt='.2f', cbar=True, annot=True)
     ax.set_title(f'Pearson (Avg. over {n_test} test)')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[1]
     sns.heatmap(s_mean_mat, xticklabels=names, yticklabels=names, ax=ax,
-                cmap='YlGnBu', mask=mask, fmt='.3f', annot=True)
+                cmap='YlGnBu', mask=mask, fmt='.2f', annot=True)
     ax.set_title('Spearman')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
+    ax = axs[2]
+    sns.heatmap(j_mean_mat, xticklabels=names, yticklabels=names, ax=ax,
+                cmap='YlGnBu', mask=mask, fmt='.2f', annot=True)
+    ax.set_title('Jaccard (first 10% of sorted)')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     plt.tight_layout()

@@ -67,28 +67,28 @@ goe='expected'  # TREX, LOO, and DShap
 goa='alpha'  # TREX only
 
 # adult
-./jobs/cf/primer.sh     $dad $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random
-# ./jobs/cf/primer.sh     $dad $tt $mm  $tf $us1 $iol $lno $gos 3  600    $ps  # minority
-./jobs/cf/primer.sh     $dad $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # target
-./jobs/cf/primer.sh     $dad $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # similarity
-# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin
-# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
-./jobs/cf/primer.sh     $dad $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
-# ./jobs/cf/primer.sh     $dad $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
-./jobs/cf/primer.sh     $dad $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
-./jobs/cf/primer.sh     $dad $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # leaf_influenceSP
-./jobs/cf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # trex
-# ./jobs/cf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
-# ./jobs/cf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
+./jobs/cf/primer.sh     $dad $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # random
+# ./jobs/cf/primer.sh     $dad $tt $mm  $tf $us1 $iol $lno $gos 3  1440    $ps  # minority
+./jobs/cf/primer.sh     $dad $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # target
+./jobs/cf/primer.sh     $dad $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # similarity
+# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin
+# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dad $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
+./jobs/cf/primer.sh     $dad $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
+# ./jobs/cf/primer.sh     $dad $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin3
+./jobs/cf/primer.sh     $dad $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin4
+./jobs/cf/primer.sh     $dad $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # leaf_influenceSP
+./jobs/cf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # trex
+# ./jobs/cf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
+# ./jobs/cf/primer.sh     $dad $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
 # ./jobs/cf/primer.sh     $dad $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
-./jobs/cf/primer.sh     $dad $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  600  $ps
-./jobs/cf/primer.sh     $dad $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  600  $ps  # loo
-# ./jobs/cf/primer.sh $dad $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
-./jobs/cf/primer.sh     $dad $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  600  $ps  # subsample
+# ./jobs/cf/primer.sh     $dad $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
+./jobs/cf/primer.sh     $dad $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # loo
+# ./jobs/cf/primer.sh $dad $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 1440   $ps
+./jobs/cf/primer.sh     $dad $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # subsample
 # ./jobs/cf/primer.sh $dad $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 1440  $ps  # dshap
 # ./jobs/cf/primer.sh $dad $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 1440  $ps
 
@@ -431,56 +431,56 @@ goa='alpha'  # TREX only
 # ./jobs/cf/primer.sh $dnv $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 600  $ps
 
 # no_show
-./jobs/cf/primer.sh     $dns $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random
-# ./jobs/cf/primer.sh     $dns $tt $mm  $tf $us1 $iol $lno $gos 3  600    $ps  # minority
-./jobs/cf/primer.sh     $dns $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # target
-./jobs/cf/primer.sh     $dns $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # similarity
-# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin
-# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
-./jobs/cf/primer.sh     $dns $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
-# ./jobs/cf/primer.sh     $dns $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
-./jobs/cf/primer.sh     $dns $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
-./jobs/cf/primer.sh     $dns $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # leaf_influenceSP
-./jobs/cf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # trex
-# ./jobs/cf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
-# ./jobs/cf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
-# ./jobs/cf/primer.sh     $dns $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  600 $p2  # leaf_influence
-./jobs/cf/primer.sh     $dns $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  600  $ps
-./jobs/cf/primer.sh     $dns $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  600  $ps  # loo
-# ./jobs/cf/primer.sh $dns $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
-./jobs/cf/primer.sh     $dns $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  600  $ps  # subsample
-# ./jobs/cf/primer.sh $dns $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 600  $ps  # dshap
-# ./jobs/cf/primer.sh $dns $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 600  $ps
+./jobs/cf/primer.sh     $dns $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # random
+# ./jobs/cf/primer.sh     $dns $tt $mm  $tf $us1 $iol $lno $gos 3  1440    $ps  # minority
+./jobs/cf/primer.sh     $dns $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # target
+./jobs/cf/primer.sh     $dns $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # similarity
+# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin
+# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dns $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
+./jobs/cf/primer.sh     $dns $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
+# ./jobs/cf/primer.sh     $dns $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin3
+./jobs/cf/primer.sh     $dns $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin4
+./jobs/cf/primer.sh     $dns $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # leaf_influenceSP
+./jobs/cf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # trex
+# ./jobs/cf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
+# ./jobs/cf/primer.sh     $dns $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
+# ./jobs/cf/primer.sh     $dns $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440 $p2  # leaf_influence
+# ./jobs/cf/primer.sh     $dns $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
+./jobs/cf/primer.sh     $dns $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # loo
+# ./jobs/cf/primer.sh $dns $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 1440   $ps
+./jobs/cf/primer.sh     $dns $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # subsample
+# ./jobs/cf/primer.sh $dns $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 1440  $ps  # dshap
+# ./jobs/cf/primer.sh $dns $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 1440  $ps
 
 # obesity
-./jobs/cf/primer.sh     $dob $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random
-# ./jobs/cf/primer.sh     $dob $tt $mm  $tf $us1 $iol $lno $gos 3  600    $ps  # minority
-./jobs/cf/primer.sh     $dob $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # target
-./jobs/cf/primer.sh     $dob $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # similarity
-# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin
-# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  600    $ps
-# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  600    $ps
-./jobs/cf/primer.sh     $dob $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin2
-# ./jobs/cf/primer.sh     $dob $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin3
-./jobs/cf/primer.sh     $dob $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # boostin4
-./jobs/cf/primer.sh     $dob $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  600    $ps  # leaf_influenceSP
-./jobs/cf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # trex
-# ./jobs/cf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  600    $ps
-# ./jobs/cf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  600    $ps
-# ./jobs/cf/primer.sh     $dob $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  600 $p2  # leaf_influence
-./jobs/cf/primer.sh     $dob $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  600  $ps
-./jobs/cf/primer.sh     $dob $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  600  $ps  # loo
-# ./jobs/cf/primer.sh $dob $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 600   $ps
-./jobs/cf/primer.sh     $dob $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  600  $ps  # subsample
-# ./jobs/cf/primer.sh $dob $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 600  $ps  # dshap
-# ./jobs/cf/primer.sh $dob $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 600  $ps
+./jobs/cf/primer.sh     $dob $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # random
+# ./jobs/cf/primer.sh     $dob $tt $mm  $tf $us1 $iol $lno $gos 3  1440    $ps  # minority
+./jobs/cf/primer.sh     $dob $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # target
+./jobs/cf/primer.sh     $dob $tt $ms  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # similarity
+# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin
+# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
+# ./jobs/cf/primer.sh     $dob $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
+./jobs/cf/primer.sh     $dob $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
+# ./jobs/cf/primer.sh     $dob $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin3
+./jobs/cf/primer.sh     $dob $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin4
+./jobs/cf/primer.sh     $dob $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # leaf_influenceSP
+./jobs/cf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # trex
+# ./jobs/cf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
+# ./jobs/cf/primer.sh     $dob $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
+# ./jobs/cf/primer.sh     $dob $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  1440 $p2  # leaf_influence
+# ./jobs/cf/primer.sh     $dob $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
+./jobs/cf/primer.sh     $dob $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # loo
+# ./jobs/cf/primer.sh $dob $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 1440   $ps
+./jobs/cf/primer.sh     $dob $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # subsample
+# ./jobs/cf/primer.sh $dob $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 1440  $ps  # dshap
+# ./jobs/cf/primer.sh $dob $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 1440  $ps
 
 # power
 ./jobs/cf/primer.sh     $dpw $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random
@@ -509,30 +509,30 @@ goa='alpha'  # TREX only
 # ./jobs/cf/primer.sh $dpw $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 600  $ps
 
 # protein
-./jobs/cf/primer.sh     $dpr $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # random
-# ./jobs/cf/primer.sh     $dpr $tt $mm  $tf $us1 $iol $lno $gos 3  1440    $ps  # minority
-./jobs/cf/primer.sh     $dpr $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # target
-./jobs/cf/primer.sh     $dpr $tt $ms  $tf $us1 $sc1 $iol $lno $gos 5  1440    $ps  # similarity
-# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin
-# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps
-# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  1440    $ps
-# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  1440    $ps
-# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  1440    $ps
-# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  1440    $ps
-./jobs/cf/primer.sh     $dpr $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin2
-# ./jobs/cf/primer.sh     $dpr $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin3
-./jobs/cf/primer.sh     $dpr $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # boostin4
-./jobs/cf/primer.sh     $dpr $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  1440    $ps  # leaf_influenceSP
-./jobs/cf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  1440    $ps  # trex
-# ./jobs/cf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  1440    $ps
-# ./jobs/cf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  1440    $ps
+./jobs/cf/primer.sh     $dpr $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  2880    $pl  # random
+# ./jobs/cf/primer.sh     $dpr $tt $mm  $tf $us1 $iol $lno $gos 3  2880    $pl  # minority
+./jobs/cf/primer.sh     $dpr $tt $mtg $tf $us1 $sc1 $iol $lno $gos 3  2880    $pl  # target
+./jobs/cf/primer.sh     $dpr $tt $ms  $tf $us1 $sc1 $iol $lno $gos 5  2880    $pl  # similarity
+# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc0 $iol $lno $gos 3  2880    $pl  # boostin
+# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc1 $iol $lno $gos 3  2880    $pl
+# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc2 $iol $lno $gos 3  2880    $pl
+# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc0 $iol $lsg $gos 3  2880    $pl
+# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc1 $iol $lsg $gos 3  2880    $pl
+# ./jobs/cf/primer.sh     $dpr $tt $mbi $tf $us1 $sc2 $iol $lsg $gos 3  2880    $pl
+./jobs/cf/primer.sh     $dpr $tt $mb2 $tf $us1 $sc0 $iol $lno $gos 3  2880    $pl  # boostin2
+# ./jobs/cf/primer.sh     $dpr $tt $mb3 $tf $us1 $sc0 $iol $lno $gos 3  2880    $pl  # boostin3
+./jobs/cf/primer.sh     $dpr $tt $mb4 $tf $us1 $sc0 $iol $lno $gos 3  2880    $pl  # boostin4
+./jobs/cf/primer.sh     $dpr $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  2880    $pl  # leaf_influenceSP
+./jobs/cf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $gos 3  2880    $pl  # trex
+# ./jobs/cf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $goe 6  2880    $pl
+# ./jobs/cf/primer.sh     $dpr $tt $mtx $tf $us1 $sc1 $iol $lno $goa 3  2880    $pl
 # ./jobs/cf/primer.sh     $dpr $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
-./jobs/cf/primer.sh     $dpr $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  1440  $ps
-./jobs/cf/primer.sh     $dpr $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # loo
-# ./jobs/cf/primer.sh $dpr $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 1440   $ps
-./jobs/cf/primer.sh     $dpr $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  1440  $ps  # subsample
-# ./jobs/cf/primer.sh $dpr $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 1440  $ps  # dshap
-# ./jobs/cf/primer.sh $dpr $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 1440  $ps
+# ./jobs/cf/primer.sh     $dpr $tt $mli $tf $us0 $sc1 $iol $lno $gos 3  2880  $pl
+./jobs/cf/primer.sh     $dpr $tt $mlo $tf $us1 $sc1 $iol $lno $gos 3  2880  $pl  # loo
+# ./jobs/cf/primer.sh $dpr $tt $mlo $tf $us1 $sc1 $iol $lno $goe 28 2880   $pl
+./jobs/cf/primer.sh     $dpr $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  2880  $pl  # subsample
+# ./jobs/cf/primer.sh $dpr $tt $mds $tf $us1 $sc1 $iol $lno $gos 28 2880  $pl  # dshap
+# ./jobs/cf/primer.sh $dpr $tt $mds $tf $us1 $sc1 $iol $lno $goe 28 2880  $pl
 
 # spambase
 ./jobs/cf/primer.sh     $dsb $tt $mr  $tf $us1 $sc1 $iol $lno $gos 3  600    $ps  # random

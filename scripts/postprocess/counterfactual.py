@@ -72,7 +72,7 @@ def experiment(args, logger, out_dir):
 
     plt.tight_layout()
     plt.savefig(fp + suffix + '.png', bbox_inches='tight')
-    plt.show()
+    # plt.show()
 
 
 def main(args):

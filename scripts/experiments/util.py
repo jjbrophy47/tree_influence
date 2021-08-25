@@ -58,6 +58,13 @@ def get_logger(filename=''):
     return logger
 
 
+def remove_logger(logger):
+    """
+    Clear all of the logger handlers.
+    """
+    logger.handlers = []
+
+
 def clear_dir(in_dir):
     """
     Clear contents of directory.
@@ -105,11 +112,16 @@ def reset_stdout_stderr(logfile, stdout, stderr):
     logfile.close()
 
 
-def get_data(data_dir, dataset):
+def get_data(data_dir, dataset, adaptation=False):
     """
     Return train and test data for the specified dataset.
     """
-    data = np.load(os.path.join(data_dir, dataset, 'data.npy'), allow_pickle=True)[()]
+    if adaptation:
+        data = np.load(os.path.join(data_dir, dataset, 'data_ood.npy'), allow_pickle=True)[()]
+        X_val, y_val = data['X_val'].astype(dtype_t), data['y_val'].astype(dtype_t)
+
+    else:
+        data = np.load(os.path.join(data_dir, dataset, 'data.npy'), allow_pickle=True)[()]
 
     X_train, y_train = data['X_train'].astype(dtype_t), data['y_train'].astype(dtype_t)
     X_test, y_test = data['X_test'].astype(dtype_t), data['y_test'].astype(dtype_t)
@@ -136,7 +148,13 @@ def get_data(data_dir, dataset):
     if objective == '':
         raise ValueError(f'No objetive for dataset: {dataset}')
 
-    return X_train, X_test, y_train, y_test, objective
+    if adaptation:
+        result = X_train, X_test, y_train, y_test, X_val, y_val, objective
+
+    else:
+        result = X_train, X_test, y_train, y_test, objective
+
+    return result
 
 
 def get_toy_data(dataset, objective, random_state, test_size=0.2):
