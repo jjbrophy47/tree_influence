@@ -8,11 +8,11 @@ ncpu=$7
 time=$8
 partition=$9
 
-noise_frac=(0.1 0.2 0.3 0.4)
+noise_frac_list=(0.1 0.2 0.3 0.4)
 
-for rs in ${rs_list[@]}; do
+for noise_frac in ${noise_frac_list[@]}; do
 
-    job_name=N_${dataset}_${tree_type}_${method}_${rs}
+    job_name=N_${dataset}_${tree_type}_${method}_${noise_frac}_${rs}
 
     sbatch --cpus-per-task=$ncpu \
            --time=$time \
