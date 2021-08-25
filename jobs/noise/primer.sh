@@ -12,7 +12,7 @@ noise_frac_list=(0.1 0.2 0.3 0.4)
 
 for noise_frac in ${noise_frac_list[@]}; do
 
-    job_name=N_${dataset}_${tree_type}_${method}_${noise_frac}_${rs}
+    job_name=N_${dataset}_${tree_type}_${method}_${noise_frac}
 
     sbatch --cpus-per-task=$ncpu \
            --time=$time \
