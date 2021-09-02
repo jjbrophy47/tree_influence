@@ -19,4 +19,4 @@ python3 scripts/experiments/resources.py \
   --trunc_frac $trunc_frac \
   --update_set $update_set \
   --seed $seed \
-  --n_repeats 1 \
+  --n_repeat 1 \
