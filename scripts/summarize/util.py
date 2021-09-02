@@ -108,6 +108,7 @@ def get_plot_dicts():
     color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
     color['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = 'brown'
     color['similarity_da2995ca8d4801840027a5128211b2d0'] = 'gray'
+    color['similarity2_da2995ca8d4801840027a5128211b2d0'] = 'gray'
 
     line = {'random_': '-', 'minority_': '-', 'target_': '-', 'loss_': '-'}
     # line['boostin_5fa0dc231efe739492c9904ea2304460'] = '-'
@@ -130,6 +131,7 @@ def get_plot_dicts():
     line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
     line['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = ':'
     line['similarity_da2995ca8d4801840027a5128211b2d0'] = '-'
+    line['similarity2_da2995ca8d4801840027a5128211b2d0'] = '-'
 
     label = {'random_': 'Random', 'minority_': 'Minority', 'target_': 'Target', 'loss_': 'Loss'}
     # label['boostin_5fa0dc231efe739492c9904ea2304460'] = 'BoostIn_0'
@@ -152,6 +154,7 @@ def get_plot_dicts():
     label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
     label['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = 'LeafInf_SP2'
     label['similarity_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'
+    label['similarity2_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'
 
     return color, line, label
 

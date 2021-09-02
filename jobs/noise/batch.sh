@@ -35,7 +35,7 @@ mli='leaf_influence'
 mls='leaf_influenceSP'
 mlo='loo'
 mds='dshap'
-ms='similarity'
+ms='similarity2'
 ml='loss'
 mtg='target'
 msb='subsample'
@@ -54,7 +54,7 @@ st2='test_sum' # strategy
 # adult
 ./jobs/noise/primer.sh $dad $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dad $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dad $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dad $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dad $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dad $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dad $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -64,7 +64,7 @@ st2='test_sum' # strategy
 # bank_marketing
 ./jobs/noise/primer.sh $dbm $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dbm $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dbm $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dbm $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dbm $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dbm $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dbm $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -74,7 +74,7 @@ st2='test_sum' # strategy
 # bean
 ./jobs/noise/primer.sh $dbn $tt $mr  $tf $us1 $st2 3  600  $ps  # random
 ./jobs/noise/primer.sh $dbn $tt $ml  $tf $us1 $st1 3  600  $ps  # loss
-./jobs/noise/primer.sh $dbn $tt $ms  $tf $us1 $st2 3  600  $ps  # similarity
+./jobs/noise/primer.sh $dbn $tt $ms  $tf $us1 $st2 3  600  $ps  # similarity2
 ./jobs/noise/primer.sh $dbn $tt $mb2 $tf $us1 $st2 3  600  $ps  # boostin2
 ./jobs/noise/primer.sh $dbn $tt $mls $tf $us0 $st2 3  600  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dbn $tt $mtx $tf $us1 $st2 6  600  $ps  # trex
@@ -84,7 +84,7 @@ st2='test_sum' # strategy
 # compas
 ./jobs/noise/primer.sh $dco $tt $mr  $tf $us1 $st2 3  600  $ps  # random
 ./jobs/noise/primer.sh $dco $tt $ml  $tf $us1 $st1 3  600  $ps  # loss
-./jobs/noise/primer.sh $dco $tt $ms  $tf $us1 $st2 3  600  $ps  # similarity
+./jobs/noise/primer.sh $dco $tt $ms  $tf $us1 $st2 3  600  $ps  # similarity2
 ./jobs/noise/primer.sh $dco $tt $mb2 $tf $us1 $st2 3  600  $ps  # boostin2
 ./jobs/noise/primer.sh $dco $tt $mls $tf $us0 $st2 3  600  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dco $tt $mtx $tf $us1 $st2 6  600  $ps  # trex
@@ -94,7 +94,7 @@ st2='test_sum' # strategy
 # concrete
 ./jobs/noise/primer.sh $dcn $tt $mr  $tf $us1 $st2 3  600  $ps  # random
 ./jobs/noise/primer.sh $dcn $tt $ml  $tf $us1 $st1 3  600  $ps  # loss
-./jobs/noise/primer.sh $dcn $tt $ms  $tf $us1 $st2 3  600  $ps  # similarity
+./jobs/noise/primer.sh $dcn $tt $ms  $tf $us1 $st2 3  600  $ps  # similarity2
 ./jobs/noise/primer.sh $dcn $tt $mb2 $tf $us1 $st2 3  600  $ps  # boostin2
 ./jobs/noise/primer.sh $dcn $tt $mls $tf $us0 $st2 3  600  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dcn $tt $mtx $tf $us1 $st2 6  600  $ps  # trex
@@ -104,7 +104,7 @@ st2='test_sum' # strategy
 # credit_card
 ./jobs/noise/primer.sh $dcc $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dcc $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dcc $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dcc $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dcc $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dcc $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dcc $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -114,7 +114,7 @@ st2='test_sum' # strategy
 # diabetes
 ./jobs/noise/primer.sh $ddb $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $ddb $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $ddb $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $ddb $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $ddb $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $ddb $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $ddb $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -124,7 +124,7 @@ st2='test_sum' # strategy
 # energy
 ./jobs/noise/primer.sh $den $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $den $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $den $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $den $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $den $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $den $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $den $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -134,7 +134,7 @@ st2='test_sum' # strategy
 # flight_delays
 ./jobs/noise/primer.sh $dfd $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dfd $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dfd $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dfd $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dfd $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dfd $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dfd $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -154,7 +154,7 @@ st2='test_sum' # strategy
 # htru2
 ./jobs/noise/primer.sh $dht $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dht $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dht $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dht $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dht $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dht $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dht $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -164,7 +164,7 @@ st2='test_sum' # strategy
 # life
 ./jobs/noise/primer.sh $dlf $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dlf $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dlf $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dlf $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dlf $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dlf $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dlf $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -174,7 +174,7 @@ st2='test_sum' # strategy
 # msd
 ./jobs/noise/primer.sh $dms $tt $mr  $tf $us1 $st2 20  600   $ps  # random
 ./jobs/noise/primer.sh $dms $tt $ml  $tf $us1 $st1 20  600   $ps  # loss
-./jobs/noise/primer.sh $dms $tt $ms  $tf $us1 $st2 20  1440  $ps  # similarity
+./jobs/noise/primer.sh $dms $tt $ms  $tf $us1 $st2 20  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dms $tt $mb2 $tf $us1 $st2 20  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dms $tt $mls $tf $us0 $st2 20  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dms $tt $mtx $tf $us1 $st2 20  1440  $ps  # trex
@@ -184,7 +184,7 @@ st2='test_sum' # strategy
 # naval
 ./jobs/noise/primer.sh $dnv $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dnv $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dnv $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dnv $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dnv $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dnv $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dnv $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -194,7 +194,7 @@ st2='test_sum' # strategy
 # no_show
 ./jobs/noise/primer.sh $dns $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dns $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dns $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dns $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dns $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dns $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dns $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -204,7 +204,7 @@ st2='test_sum' # strategy
 # obesity
 ./jobs/noise/primer.sh $dob $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dob $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dob $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dob $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dob $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dob $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dob $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -214,7 +214,7 @@ st2='test_sum' # strategy
 # power
 ./jobs/noise/primer.sh $dpw $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dpw $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dpw $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dpw $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dpw $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dpw $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dpw $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -224,7 +224,7 @@ st2='test_sum' # strategy
 # protein
 ./jobs/noise/primer.sh $dpr $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dpr $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dpr $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dpr $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dpr $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dpr $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dpr $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -234,7 +234,7 @@ st2='test_sum' # strategy
 # spambase
 ./jobs/noise/primer.sh $dsb $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dsb $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dsb $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dsb $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dsb $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dsb $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dsb $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -244,7 +244,7 @@ st2='test_sum' # strategy
 # surgical
 ./jobs/noise/primer.sh $dsg $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dsg $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dsg $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dsg $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dsg $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dsg $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dsg $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -254,7 +254,7 @@ st2='test_sum' # strategy
 # twitter
 ./jobs/noise/primer.sh $dtw $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dtw $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dtw $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dtw $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dtw $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dtw $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dtw $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -264,7 +264,7 @@ st2='test_sum' # strategy
 # vaccine
 ./jobs/noise/primer.sh $dvc $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dvc $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dvc $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dvc $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dvc $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dvc $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dvc $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex
@@ -274,7 +274,7 @@ st2='test_sum' # strategy
 # wine
 ./jobs/noise/primer.sh $dwn $tt $mr  $tf $us1 $st2 3  600   $ps  # random
 ./jobs/noise/primer.sh $dwn $tt $ml  $tf $us1 $st1 3  600   $ps  # loss
-./jobs/noise/primer.sh $dwn $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity
+./jobs/noise/primer.sh $dwn $tt $ms  $tf $us1 $st2 3  1440  $ps  # similarity2
 ./jobs/noise/primer.sh $dwn $tt $mb2 $tf $us1 $st2 3  1440  $ps  # boostin2
 ./jobs/noise/primer.sh $dwn $tt $mls $tf $us0 $st2 3  1440  $ps  # leaf_influenceSP
 ./jobs/noise/primer.sh $dwn $tt $mtx $tf $us1 $st2 6  1440  $ps  # trex

@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['trex', 'similarity', 'boostin2', 'leaf_influenceSP', 'subsample', 'loo'])
+                        default=['trex', 'similarity2', 'boostin2', 'leaf_influenceSP', 'subsample', 'loo'])
     parser.add_argument('--skip', type=str, nargs='+', default=[])
     parser.add_argument('--leaf_scale', type=int, nargs='+', default=[-1.0])  # BoostIn
     parser.add_argument('--local_op', type=str, nargs='+', default=['normal'])  # BoostIn

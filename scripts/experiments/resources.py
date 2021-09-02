@@ -74,6 +74,14 @@ def main(args):
 
     for random_state in range(1, args.n_repeat + 1):
 
+        # select seed
+        if args.seed > 0:
+            assert args.n_repeat == 1
+            seed = args.seed
+
+        else:
+            seed = random_state
+
         # get unique hash for the explainer
         params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
 
@@ -86,7 +94,7 @@ def main(args):
         out_dir = os.path.join(args.out_dir,
                                args.dataset,
                                args.tree_type,
-                               f'random_state_{random_state}',
+                               f'random_state_{seed}',
                                f'{args.method}_{hash_str}')
 
         # create output directory and clear previous contents
@@ -97,7 +105,7 @@ def main(args):
         logger.info(args)
         logger.info(f'\ntimestamp: {datetime.now()}')
 
-        experiment(args, logger, params, random_state, out_dir)
+        experiment(args, logger, params, seed, out_dir)
 
         util.remove_logger(logger)
 
@@ -140,6 +148,7 @@ if __name__ == '__main__':
 
     # Additional settings
     parser.add_argument('--n_repeat', type=int, default=5)
+    parser.add_argument('--seed', type=int, default=-1)
 
     args = parser.parse_args()
     main(args)

@@ -203,7 +203,7 @@ def experiment(args, logger, in_dir, out_dir):
         res_list = []
 
         while n_remain > 0:
-            n = min(min(10, n_jobs), n_remain)
+            n = min(n_jobs, n_remain)
 
             results = parallel(joblib.delayed(remove_and_evaluate)
                                              (idx, args.inf_obj, objective,
