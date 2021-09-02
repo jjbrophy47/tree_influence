@@ -205,7 +205,7 @@ def experiment(args, logger, out_dir):
     result = {}
     result['model'] = args.model
     result['model_params'] = model.get_params()
-    result['mse'] = res['mse']
+    result['loss'] = res['loss']
     result['auc'] = res['auc']
     result['acc'] = res['acc']
     result['tune_time'] = tune_time

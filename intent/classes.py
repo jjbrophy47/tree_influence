@@ -11,6 +11,7 @@ from .explainers import Random
 from .explainers import Minority
 from .explainers import Loss
 from .explainers import Similarity
+from .explainers import Similarity2
 from .explainers import Target
 from .explainers import SubSample
 
@@ -79,6 +80,9 @@ class TreeExplainer(object):
 
         elif method == 'similarity':
             self.explainer = Similarity(**params, logger=logger)
+
+        elif method == 'similarity2':
+            self.explainer = Similarity2(**params, logger=logger)
 
         elif method == 'target':
             self.explainer = Target(**params, logger=logger)

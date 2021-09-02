@@ -112,7 +112,7 @@ def reset_stdout_stderr(logfile, stdout, stderr):
     logfile.close()
 
 
-def get_data(data_dir, dataset, adaptation=False):
+def get_data(data_dir, dataset, adaptation=False, feature=False):
     """
     Return train and test data for the specified dataset.
     """
@@ -125,6 +125,7 @@ def get_data(data_dir, dataset, adaptation=False):
 
     X_train, y_train = data['X_train'].astype(dtype_t), data['y_train'].astype(dtype_t)
     X_test, y_test = data['X_test'].astype(dtype_t), data['y_test'].astype(dtype_t)
+    feature_names = data['feature']
 
     # get objective for the given dataset
     d = {}
@@ -149,7 +150,12 @@ def get_data(data_dir, dataset, adaptation=False):
         raise ValueError(f'No objetive for dataset: {dataset}')
 
     if adaptation:
+        assert not feature
         result = X_train, X_test, y_train, y_test, X_val, y_val, objective
+
+    elif feature:
+        assert not adaptation
+        result = X_train, X_test, y_train, y_test, feature_names, objective
 
     else:
         result = X_train, X_test, y_train, y_test, objective
@@ -207,7 +213,7 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
 
     elif tree_type == 'lgb':
         class_fn = LGBMRegressor if objective == 'regression' else LGBMClassifier
-        tree = class_fn(n_estimators=n_tree, max_depth=max_depth, num_leaves=2**max_depth,
+        tree = class_fn(n_estimators=n_tree, max_depth=max_depth, num_leaves=2 ** max_depth,
                         random_state=random_state)
 
     elif tree_type == 'skgbm':
@@ -401,6 +407,10 @@ def explainer_params_to_dict(explainer, exp_params):
         params['similarity'] = exp_params['similarity']
         params['kernel'] = exp_params['kernel']
 
+    elif explainer == 'similarity2':
+        params['similarity'] = exp_params['similarity']
+        params['kernel'] = exp_params['kernel']
+
     # create hash string based on the chosen hyperparameters
     hash_str = dict_to_hash(params, skip=['n_jobs', 'random_state', 'atol'])
 
@@ -420,7 +430,7 @@ def get_hyperparams(tree_type, dataset):
     lgb['adult'] = {'n_estimators': 100, 'num_leaves': 31, 'max_depth': -1}
     lgb['bank_marketing'] = {'n_estimators': 50, 'num_leaves': 31, 'max_depth': -1}
     lgb['bean'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
-    lgb['compas'] = {'n_estimators': 10, 'num_leaves': 15, 'max_depth': -1}
+    lgb['compas'] = {'n_estimators': 25, 'num_leaves': 91, 'max_depth': -1}
     lgb['concrete'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
     lgb['credit_card'] = {'n_estimators': 50, 'num_leaves': 15, 'max_depth': -1}
     lgb['diabetes'] = {'n_estimators': 200, 'num_leaves': 31, 'max_depth': -1}
@@ -446,7 +456,7 @@ def get_hyperparams(tree_type, dataset):
     cb['adult'] = {'n_estimators': 200, 'max_depth': 7}
     cb['bank_marketing'] = {'n_estimators': 200, 'max_depth': 7}
     cb['bean'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['compas'] = {'n_estimators': 50, 'max_depth': 7}
+    cb['compas'] = {'n_estimators': 200, 'max_depth': 7}
     cb['concrete'] = {'n_estimators': 200, 'max_depth': 7}
     cb['credit_card'] = {'n_estimators': 200, 'max_depth': 5}
     cb['diabetes'] = {'n_estimators': 200, 'max_depth': 7}
@@ -471,7 +481,7 @@ def get_hyperparams(tree_type, dataset):
     xgb['adult'] = {'n_estimators': 200, 'max_depth': 3}
     xgb['bank_marketing'] = {'n_estimators': 100, 'max_depth': 3}
     xgb['bean'] = {'n_estimators': 25, 'max_depth': 5}
-    xgb['compas'] = {'n_estimators': 10, 'max_depth': 3}
+    xgb['compas'] = {'n_estimators': 50, 'max_depth': 3}
     xgb['concrete'] = {'n_estimators': 200, 'max_depth': 3}
     xgb['credit_card'] = {'n_estimators': 10, 'max_depth': 3}
     xgb['diabetes'] = {'n_estimators': 200, 'max_depth': 3}
@@ -496,7 +506,7 @@ def get_hyperparams(tree_type, dataset):
     skrf['adult'] = {'n_estimators': 200, 'max_depth': 7}
     skrf['bank_marketing'] = {'n_estimators': 100, 'max_depth': 7}
     skrf['bean'] = {'n_estimators': 200, 'max_depth': 7}
-    skrf['compas'] = {'n_estimators': 100, 'max_depth': 5}
+    skrf['compas'] = {'n_estimators': 100, 'max_depth': 7}
     skrf['concrete'] = {'n_estimators': 100, 'max_depth': 7}
     skrf['credit_card'] = {'n_estimators': 50, 'max_depth': 7}
     skrf['diabetes'] = {'n_estimators': 200, 'max_depth': 7}

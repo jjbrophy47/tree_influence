@@ -75,11 +75,14 @@ def get_correlation(inf1, inf2, jaccard_frac=0.1):
 
 
 def experiment(args, logger, in_dir_list, out_dir):
-
-    # initialize experiment
     begin = time.time()
 
-    n_method = len(in_dir_list)
+    idx_dict = {'trex': 0, 'similarity': 1, 'boostin2': 2, 'leaf_influenceSP': 3,
+                'subsample': 4, 'loo': 5, 'target': 6}
+
+    names = ['trex', ' similarity', 'boostin2', 'leaf_influenceSP', 'subsample', 'loo', 'target']
+
+    n_method = len(idx_dict)
 
     p_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
     s_mean_mat = np.full((n_method, n_method), 1, dtype=np.float32)
@@ -92,12 +95,10 @@ def experiment(args, logger, in_dir_list, out_dir):
     logger.info(f'\nno. methods: {n_method:,}, no. comparisons: {n_method ** 2}')
 
     # get influence results
-    names = []
     n_finish = 0
 
     for i, (method1, in_dir1) in enumerate(in_dir_list):
         inf_res1 = np.load(os.path.join(in_dir1, 'results.npy'), allow_pickle=True)[()]
-        names.append(method1)
 
         for j, (method2, in_dir2) in enumerate(in_dir_list):
 
@@ -109,13 +110,16 @@ def experiment(args, logger, in_dir_list, out_dir):
             inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
             mean_p, std_p, mean_s, std_s, mean_j, std_j = get_correlation(inf_res1['influence'], inf_res2['influence'])
 
-            p_mean_mat[i, j] = mean_p
-            s_mean_mat[i, j] = mean_s
-            j_mean_mat[i, j] = mean_j
+            idx1 = idx_dict[method1]
+            idx2 = idx_dict[method2]
 
-            p_std_mat[i, j] = std_p
-            s_std_mat[i, j] = std_s
-            j_std_mat[i, j] = std_j
+            p_mean_mat[idx1, idx2] = mean_p
+            s_mean_mat[idx1, idx2] = mean_s
+            j_mean_mat[idx1, idx2] = mean_j
+
+            p_std_mat[idx1, idx2] = std_p
+            s_std_mat[idx1, idx2] = std_s
+            j_std_mat[idx1, idx2] = std_j
 
             n_finish += 1
             logger.info(f'no. finish: {n_finish:>10,} / {n_method ** 2}, cum. time: {time.time() - begin:.3f}s')
@@ -126,9 +130,6 @@ def experiment(args, logger, in_dir_list, out_dir):
 
     # plot correlations
     fig, axs = plt.subplots(1, 3, figsize=(18, 5))
-
-    # mask = np.zeros_like(p_mean_mat)
-    # mask[np.triu_indices_from(mask)] = True
 
     mask = None
 
@@ -150,9 +151,24 @@ def experiment(args, logger, in_dir_list, out_dir):
     ax.set_title('Jaccard (first 10% of sorted)')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
+    logger.info(f'\nSaving results to {out_dir}...')
+
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
-    plt.show()
+    plt.savefig(os.path.join(out_dir, f'plot.png'), bbox_inches='tight')
+
+    result = {}
+    result['p_mean_mat'] = p_mean_mat
+    result['s_mean_mat'] = s_mean_mat
+    result['j_mean_mat'] = j_mean_mat
+    result['p_std_mat'] = p_std_mat
+    result['s_std_mat'] = s_std_mat
+    result['j_std_mat'] = j_std_mat
+    result['idx_dict'] = idx_dict
+
+    logger.info(f'\nResults:\n{result}')
+    np.save(os.path.join(out_dir, 'results.npy'), result)
+
+    logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
 
 def main(args):
@@ -173,14 +189,12 @@ def main(args):
         in_dir_list.append((method, in_dir))
 
     # create output dir
-    out_dir = os.path.join(args.out_dir, args.tree_type)
-    log_dir = os.path.join(args.out_dir, args.tree_type, 'logs')
+    out_dir = os.path.join(args.out_dir, args.tree_type, args.dataset)
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
-    os.makedirs(log_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(log_dir, f'{args.dataset}.txt'))
+    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
     logger.info(datetime.now())
 

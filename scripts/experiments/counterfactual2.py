@@ -1,5 +1,5 @@
 """
-Compute min. counterfactual influence set (editing examples).
+Compute min. counterfactual influence set (removing examples).
 """
 import os
 import sys
@@ -19,29 +19,29 @@ import intent
 import util
 
 
-def edit_labels(y, flip_idxs, objective, adv_label, y_median=None):
-    """
-    Change the labels in y for `flip_idxs` indices based on the `adv_label`.
-    """
-    new_y = y.copy()
+# def edit_labels(y, flip_idxs, objective, adv_label, y_median=None):
+#     """
+#     Change the labels in y for `flip_idxs` indices based on the `adv_label`.
+#     """
+#     new_y = y.copy()
 
-    for flip_idx in flip_idxs:
+#     for flip_idx in flip_idxs:
 
-        if objective == 'binary':
-            new_y[flip_idx] = adv_label
+#         if objective == 'binary':
+#             new_y[flip_idx] = adv_label
 
-        elif objective == 'regression':
-            assert y_median is not None
-            if adv_label == 0:
-                new_y[flip_idx] = y_median - (y_median / 2)
-            else:
-                new_y[flip_idx] = y_median + (y_median / 2)
+#         elif objective == 'regression':
+#             assert y_median is not None
+#             if adv_label == 0:
+#                 new_y[flip_idx] = y_median - (y_median / 2)
+#             else:
+#                 new_y[flip_idx] = y_median + (y_median / 2)
 
-        else:
-            assert objective == 'multiclass'
-            new_y[flip_idx] = adv_label
+#         else:
+#             assert objective == 'multiclass'
+#             new_y[flip_idx] = adv_label
 
-    return new_y
+#     return new_y
 
 
 def get_label(y, pred, objective, y_median=False):
@@ -114,10 +114,11 @@ def remove_and_evaluate(test_idx, inf_obj, objective, ranking, tree,
 
     for i in range(1, X_train.shape[0]):
 
-        flip_idxs = ranking[:i]
-        new_y_train = edit_labels(y_train, flip_idxs, objective, adv_lbl, y_train_median)
+        drop_idxs = ranking[:i]
+        new_X_train = np.delete(X_train, drop_idxs, axis=0)
+        new_y_train = np.delete(y_train, drop_idxs)
 
-        # print(flip_idxs, y_train[flip_idxs], new_y_train[flip_idxs])
+        # print(drop_idxs, y_train[drop_idxs])
 
         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')
@@ -132,16 +133,16 @@ def remove_and_evaluate(test_idx, inf_obj, objective, ranking, tree,
             break
 
         else:
-            edit_frac = i / X_train.shape[0]
-            if edit_frac * 100 > 10.0:
-                logger.info('Editing more than 10% of train, failed...')
+            drop_frac = i / X_train.shape[0]
+            if drop_frac * 100 > 10.0:
+                logger.info('Dropping more than 10% of train, failed...')
                 result['status'] = 'fail'
                 result['status_code'] = 1
                 break
 
-            new_tree = clone(tree).fit(X_train, new_y_train)
+            new_tree = clone(tree).fit(new_X_train, new_y_train)
 
-            prefix = f'Labels flipped: {i:>5} ({edit_frac * 100:>5.3f}%)'
+            prefix = f'Examples dropped: {i:>5} ({drop_frac * 100:>5.3f}%)'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
 
             new_lbl, new_pred_val, _, _, _ = get_label(y_test[0], res['pred'], objective, y_train_median)
@@ -149,8 +150,8 @@ def remove_and_evaluate(test_idx, inf_obj, objective, ranking, tree,
             if new_lbl != pred_lbl:
                 result['end_pred'] = new_pred_val
                 result['end_pred_label'] = new_lbl
-                result['n_edits'] = i
-                result['frac_edits'] = float(edit_frac)
+                result['n_drops'] = i
+                result['frac_drops'] = float(drop_frac)
                 result['status'] = 'success'
                 result['status_code'] = 0
                 break
@@ -184,6 +185,19 @@ def experiment(args, logger, in_dir, out_dir):
 
     # get ranking
     ranking = np.argsort(influence, axis=0)[::-1]  # shape=(no. train, no. test)
+
+    # inf = influence[:, 0]
+    # inf2 = inf[np.argsort(inf)[::-1]]
+
+    # inf = influence[:, 0][ranking[:, 0]]
+    # print(inf)
+    # print(inf2)
+    # idxs = ranking[:, 0]
+    # print(idxs)
+    # print(y_train[idxs])
+    # print(y_test[test_idxs[0]])
+    # print(tree.predict_proba(X_test)[test_idxs[0]])
+    # exit(0)
 
     # get no. jobs to run in parallel
     if args.n_jobs == -1:
@@ -275,7 +289,7 @@ if __name__ == '__main__':
     # I/O settings
     parser.add_argument('--data_dir', type=str, default='data/')
     parser.add_argument('--in_dir', type=str, default='output/influence/')
-    parser.add_argument('--out_dir', type=str, default='output/counterfactual/')
+    parser.add_argument('--out_dir', type=str, default='output/counterfactual2/')
 
     # Experiment settings
     parser.add_argument('--dataset', type=str, default='surgical')

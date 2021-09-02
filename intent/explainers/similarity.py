@@ -8,11 +8,7 @@ from .parsers import util
 class Similarity(Explainer):
     """
     Explainer that randomly returns higher influence
-        for train examples with larger loss.
-
-    Global-Influence Semantics
-        - More positive values are assigned to train examples with
-            higher loss.
+        for train examples with larger similarity.
 
     Local-Influence Semantics
         - More positive values are assigned to train examples with
@@ -66,18 +62,6 @@ class Similarity(Explainer):
 
         return self
 
-    def get_global_influence(self, X=None, y=None):
-        """
-        Input
-            X: 2d array of test data.
-            y: 2d array of test targets.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-        raise ValueError('Global influence not supported for Similarity explainer.')
-
     def get_local_influence(self, X, y):
         """
         Input
@@ -113,12 +97,10 @@ class Similarity(Explainer):
             if self.objective_ in ['binary', 'multiclass']:
                 sgn = np.where(self.y_train_ == y[test_idx], 1.0, -1.0)  # shape=(no. train,)
 
-            else:  # if train and test targets both on same side of median target, then pos. influence
+            else:  # if train and test targets both on same side of the prediction, then pos. influence
                 assert self.objective_ == 'regression'
                 pred = self.original_model_.predict(X[[test_idx]])
                 test_sgn = 1.0 if pred >= y[test_idx] else -1.0
-                # med = np.median(self.y_train_)
-                # test_sgn = 1.0 if y[test_idx] >= med else -1.0
                 train_sgn = np.where(self.y_train_ >= pred, 1.0, -1.0)  # shape=(no. train,)
                 sgn = np.where(train_sgn != test_sgn, 1.0, -1.0)
 

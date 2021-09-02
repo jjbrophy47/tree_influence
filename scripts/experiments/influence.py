@@ -133,6 +133,8 @@ def experiment(args, logger, params, out_dir):
     influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
     inf_time = time.time() - start2
 
+    np.save(f'influence_{args.method}.npy', influence)
+
     logger.info(f'[INFO] explainer influence time: {inf_time:.5f}s')
     logger.info(f'[INFO] total time: {time.time() - begin:.5f}s')
 
