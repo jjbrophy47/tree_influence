@@ -302,6 +302,7 @@ class Trex(Explainer):
 
         if self.logger:
             self.logger.info(f'\n[INFO] computing alpha values...')
+            start = time.time()
 
         # train
         for epoch in range(self.n_epoch):
@@ -335,7 +336,8 @@ class Trex(Explainer):
 
             if epoch % 100 == 0 and self.logger:
                 self.logger.info(f'[INFO] Epoch: {epoch:4d}, loss: {util.to_np(loss):.7f}'
-                                 f', phi_loss: {phi_loss:.7f}, grad: {grad_loss:.7f}')
+                                 f', phi_loss: {phi_loss:.7f}, grad: {grad_loss:.7f}'
+                                 f', cum. time: {time.time() - start:.3f}s')
 
         # compute alpha based on the representer theorem's decomposition
         output = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)

@@ -12,6 +12,7 @@ from .explainers import Minority
 from .explainers import Loss
 from .explainers import Similarity
 from .explainers import Similarity2
+from .explainers import InputSimilarity
 from .explainers import Target
 from .explainers import SubSample
 
@@ -83,6 +84,9 @@ class TreeExplainer(object):
 
         elif method == 'similarity2':
             self.explainer = Similarity2(**params, logger=logger)
+
+        elif method == 'input_similarity':
+            self.explainer = InputSimilarity(**params, logger=logger)
 
         elif method == 'target':
             self.explainer = Target(**params, logger=logger)

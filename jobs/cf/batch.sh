@@ -230,7 +230,7 @@ goa='alpha'  # TREX only
 ./jobs/cf/primer.sh     $ddb $tt $mls $tf $us1 $sc0 $iol $lno $gos 3  4320  $pl  # leaf_influenceSP
 ./jobs/cf/primer.sh     $ddb $tt $mtx $tf $us1 $sc1 $iol $lno $gos 9  4320  $pl  # trex
 # ./jobs/cf/primer.sh     $ddb $tt $mli $tf $us1 $sc1 $iol $lno $gos 3  10080 $p2  # leaf_influence
-./jobs/cf/primer.sh     $ddb $tt $mlo $tf $us1 $sc1 $iol $lno $gos 6  4320  $pl  # loo
+./jobs/cf/primer.sh     $ddb $tt $mlo $tf $us1 $sc1 $iol $lno $gos 15 4320  $pl  # loo
 ./jobs/cf/primer.sh     $ddb $tt $msb $tf $us1 $sc1 $iol $lno $gos 3  4320  $pl  # subsample
 
 # energy

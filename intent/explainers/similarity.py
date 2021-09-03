@@ -12,7 +12,7 @@ class Similarity(Explainer):
 
     Local-Influence Semantics
         - More positive values are assigned to train examples with
-            higher loss AND are in the same leaf as the test example.
+            n the same leaf as the test example.
 
     Note
         - Supports GBDTs and RFs.
@@ -90,8 +90,9 @@ class Similarity(Explainer):
 
             else:
                 assert self.similarity == 'euclidean'
-                sim = 1.0 / norm(self.X_train_ - X_test_[test_idx], axis=1)  # shape=(no. train,)
-                sim = np.nan_to_num(sim)  # value is inf. for any examples the same as training
+                with np.errstate(divide='ignore'):
+                    sim = 1.0 / norm(self.X_train_ - X_test_[test_idx], axis=1)  # shape=(no. train,)
+                    sim = np.nan_to_num(sim)  # value is inf. for any examples the same as training
 
             # determine if each train example helps or hurts test loss
             if self.objective_ in ['binary', 'multiclass']:

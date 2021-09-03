@@ -145,12 +145,12 @@ us1=-1
 ./jobs/ru/primer.sh $dlf $tt $msb $tf $us1 3  1440  $ps  # subsample
 
 # msd
-./jobs/ru/primer.sh $dms $tt $ms  $tf $us1 20  1440  $ps  # similarity
-./jobs/ru/primer.sh $dms $tt $mb2 $tf $us1 20  1440  $ps  # boostin2
-./jobs/ru/primer.sh $dms $tt $mls $tf $us0 20  1440  $ps  # leaf_influenceSP
-./jobs/ru/primer.sh $dms $tt $mtx $tf $us1 20  1440  $ps  # trex
-./jobs/ru/primer.sh $dms $tt $mlo $tf $us1 20  1440  $ps  # loo
-./jobs/ru/primer.sh $dms $tt $msb $tf $us1 20  1440  $ps  # subsample
+./jobs/ru/primer.sh  $dms $tt $ms  $tf $us1 20  1440  $ps  # similarity
+./jobs/ru/primer.sh  $dms $tt $mb2 $tf $us1 20  1440  $ps  # boostin2
+./jobs/ru/primer.sh  $dms $tt $mls $tf $us0 20  1440  $ps  # leaf_influenceSP
+./jobs/ru/primer2.sh $dms $tt $mtx $tf $us1 28  1440  $ps  # trex
+./jobs/ru/primer.sh  $dms $tt $mlo $tf $us1 20  1440  $ps  # loo
+./jobs/ru/primer2.sh $dms $tt $msb $tf $us1 20  1440  $ps  # subsample
 
 # naval
 ./jobs/ru/primer.sh $dnv $tt $ms  $tf $us1 3  1440  $ps  # similarity
@@ -161,20 +161,20 @@ us1=-1
 ./jobs/ru/primer.sh $dnv $tt $msb $tf $us1 3  1440  $ps  # subsample
 
 # no_show
-./jobs/ru/primer.sh $dns $tt $ms  $tf $us1 3  1440  $ps  # similarity
-./jobs/ru/primer.sh $dns $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
-./jobs/ru/primer.sh $dns $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
-./jobs/ru/primer.sh $dns $tt $mtx $tf $us1 6  1440  $ps  # trex
-./jobs/ru/primer.sh $dns $tt $mlo $tf $us1 3  1440  $ps  # loo
-./jobs/ru/primer.sh $dns $tt $msb $tf $us1 3  1440  $ps  # subsample
+./jobs/ru/primer.sh  $dns $tt $ms  $tf $us1 3  1440  $ps  # similarity
+./jobs/ru/primer.sh  $dns $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
+./jobs/ru/primer.sh  $dns $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
+./jobs/ru/primer.sh  $dns $tt $mtx $tf $us1 6  1440  $ps  # trex
+./jobs/ru/primer2.sh $dns $tt $mlo $tf $us1 3  1440  $ps  # loo
+./jobs/ru/primer.sh  $dns $tt $msb $tf $us1 3  1440  $ps  # subsample
 
 # obesity
-./jobs/ru/primer.sh $dob $tt $ms  $tf $us1 3  1440  $ps  # similarity
-./jobs/ru/primer.sh $dob $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
-./jobs/ru/primer.sh $dob $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
-./jobs/ru/primer.sh $dob $tt $mtx $tf $us1 6  1440  $ps  # trex
-./jobs/ru/primer.sh $dob $tt $mlo $tf $us1 3  1440  $ps  # loo
-./jobs/ru/primer.sh $dob $tt $msb $tf $us1 3  1440  $ps  # subsample
+./jobs/ru/primer.sh  $dob $tt $ms  $tf $us1 3  1440  $ps  # similarity
+./jobs/ru/primer.sh  $dob $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
+./jobs/ru/primer.sh  $dob $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
+./jobs/ru/primer.sh  $dob $tt $mtx $tf $us1 6  1440  $ps  # trex
+./jobs/ru/primer2.sh $dob $tt $mlo $tf $us1 3  1440  $ps  # loo
+./jobs/ru/primer.sh  $dob $tt $msb $tf $us1 3  1440  $ps  # subsample
 
 # power
 ./jobs/ru/primer.sh $dpw $tt $ms  $tf $us1 3  1440  $ps  # similarity
@@ -209,12 +209,12 @@ us1=-1
 ./jobs/ru/primer.sh $dsg $tt $msb $tf $us1 3  1440  $ps  # subsample
 
 # twitter
-./jobs/ru/primer.sh $dtw $tt $ms  $tf $us1 3  1440  $ps  # similarity
-./jobs/ru/primer.sh $dtw $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
-./jobs/ru/primer.sh $dtw $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
-./jobs/ru/primer.sh $dtw $tt $mtx $tf $us1 6  1440  $ps  # trex
-./jobs/ru/primer.sh $dtw $tt $mlo $tf $us1 3  1440  $ps  # loo
-./jobs/ru/primer.sh $dtw $tt $msb $tf $us1 3  1440  $ps  # subsample
+./jobs/ru/primer.sh  $dtw $tt $ms  $tf $us1 3  1440  $ps  # similarity
+./jobs/ru/primer.sh  $dtw $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
+./jobs/ru/primer.sh  $dtw $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
+./jobs/ru/primer2.sh $dtw $tt $mtx $tf $us1 28 1440  $ps  # trex
+./jobs/ru/primer.sh  $dtw $tt $mlo $tf $us1 3  1440  $ps  # loo
+./jobs/ru/primer2.sh $dtw $tt $msb $tf $us1 3  1440  $ps  # subsample
 
 # vaccine
 ./jobs/ru/primer.sh $dvc $tt $ms  $tf $us1 3  1440  $ps  # similarity

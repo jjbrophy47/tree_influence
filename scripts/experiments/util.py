@@ -411,6 +411,9 @@ def explainer_params_to_dict(explainer, exp_params):
         params['similarity'] = exp_params['similarity']
         params['kernel'] = exp_params['kernel']
 
+    elif explainer == 'input_similarity':
+        params['measure'] = exp_params['measure']
+
     # create hash string based on the chosen hyperparameters
     hash_str = dict_to_hash(params, skip=['n_jobs', 'random_state', 'atol'])
 
