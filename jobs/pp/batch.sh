@@ -54,12 +54,13 @@ tf=1.0
 
 ./jobs/pp/primer.sh 'synth_regression' 'svm' $tf 3 300 'short'
 
+./jobs/pp/primer.sh 'twitter' 'lgb'  $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'cb'   $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'xgb'  $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'skrf' $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'lr'   $tf  7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'dt'   $tf  7 1440 'short'
-./jobs/pp/primer.sh 'twitter' 'knn'  0.05 7 1440 'short'
+./jobs/pp/primer.sh 'twitter' 'knn'  0.1  7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'svm'  0.01 7 1440 'short'
 ./jobs/pp/primer.sh 'twitter' 'mlp'  $tf  7 1440 'short'
 
