@@ -51,7 +51,6 @@ us1=-1
 
 # adult
 ./jobs/poison/primer.sh     $dad $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dad $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dad $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dad $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dad $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -63,7 +62,6 @@ us1=-1
 
 # bank_marketing
 ./jobs/poison/primer.sh     $dbm $tt $mr  $tf $us1 3  600    $ps  # random
-./jobs/poison/primer.sh     $dbm $tt $mtg $tf $us1 3  600    $ps  # target
 ./jobs/poison/primer.sh     $dbm $tt $ms  $tf $us1 3  600    $ps  # similarity2
 ./jobs/poison/primer.sh     $dbm $tt $mis $tf $us1 3  600    $ps  # input_similarity
 ./jobs/poison/primer.sh     $dbm $tt $mb2 $tf $us1 3  600    $ps  # boostin2
@@ -75,7 +73,6 @@ us1=-1
 
 # bean
 ./jobs/poison/primer.sh     $dbn $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dbn $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dbn $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dbn $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dbn $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -87,7 +84,6 @@ us1=-1
 
 # compas
 ./jobs/poison/primer.sh     $dco $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dco $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dco $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dco $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dco $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -99,7 +95,6 @@ us1=-1
 
 # concrete
 ./jobs/poison/primer.sh     $dcn $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dcn $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dcn $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dcn $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dcn $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -111,7 +106,6 @@ us1=-1
 
 # credit_card
 ./jobs/poison/primer.sh     $dcc $tt $mr  $tf $us1 3  600    $ps  # random
-./jobs/poison/primer.sh     $dcc $tt $mtg $tf $us1 3  600    $ps  # target
 ./jobs/poison/primer.sh     $dcc $tt $ms  $tf $us1 3  600    $ps  # similarity2
 ./jobs/poison/primer.sh     $dcc $tt $mis $tf $us1 3  600    $ps  # input_similarity
 ./jobs/poison/primer.sh     $dcc $tt $mb2 $tf $us1 3  600    $ps  # boostin2
@@ -123,7 +117,6 @@ us1=-1
 
 # diabetes
 ./jobs/poison/primer.sh     $ddb $tt $mr  $tf $us1 3  1440    $ps  # random
-./jobs/poison/primer.sh     $ddb $tt $mtg $tf $us1 3  1440    $ps  # target
 ./jobs/poison/primer.sh     $ddb $tt $ms  $tf $us1 3  1440    $ps  # similarity2
 ./jobs/poison/primer.sh     $ddb $tt $mis $tf $us1 3  1440    $ps  # input_similarity
 ./jobs/poison/primer.sh     $ddb $tt $mb2 $tf $us1 3  1440    $ps  # boostin2
@@ -135,7 +128,6 @@ us1=-1
 
 # energy
 ./jobs/poison/primer.sh     $den $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $den $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $den $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $den $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $den $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -147,7 +139,6 @@ us1=-1
 
 # flight_delays
 ./jobs/poison/primer.sh     $dfd $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dfd $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dfd $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dfd $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dfd $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -159,7 +150,6 @@ us1=-1
 
 # german_credit
 ./jobs/poison/primer.sh     $dgc $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dgc $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dgc $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dgc $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dgc $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -171,7 +161,6 @@ us1=-1
 
 # htru2
 ./jobs/poison/primer.sh     $dht $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dht $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dht $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dht $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dht $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -183,7 +172,6 @@ us1=-1
 
 # life
 ./jobs/poison/primer.sh     $dlf $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dlf $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dlf $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dlf $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dlf $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -195,7 +183,6 @@ us1=-1
 
 # msd
 ./jobs/poison/primer.sh     $dms $tt $mr  $tf $us1 20  1440  $ps  # random
-./jobs/poison/primer.sh     $dms $tt $mtg $tf $us1 20  1440  $ps  # target
 ./jobs/poison/primer.sh     $dms $tt $ms  $tf $us1 20  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dms $tt $mis $tf $us1 20  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dms $tt $mb2 $tf $us1 20  1440  $ps  # boostin2
@@ -207,7 +194,6 @@ us1=-1
 
 # naval
 ./jobs/poison/primer.sh     $dnv $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dnv $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dnv $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dnv $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dnv $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -219,7 +205,6 @@ us1=-1
 
 # no_show
 ./jobs/poison/primer.sh     $dns $tt $mr  $tf $us1 3  600   $ps  # random
-./jobs/poison/primer.sh     $dns $tt $mtg $tf $us1 3  600   $ps  # target
 ./jobs/poison/primer.sh     $dns $tt $ms  $tf $us1 3  600   $ps  # similarity2
 ./jobs/poison/primer.sh     $dns $tt $mis $tf $us1 3  600   $ps  # input_similarity
 ./jobs/poison/primer.sh     $dns $tt $mb2 $tf $us1 3  600   $ps  # boostin2
@@ -231,7 +216,6 @@ us1=-1
 
 # obesity
 ./jobs/poison/primer.sh     $dob $tt $mr  $tf $us1 3  600   $ps  # random
-./jobs/poison/primer.sh     $dob $tt $mtg $tf $us1 3  600   $ps  # target
 ./jobs/poison/primer.sh     $dob $tt $ms  $tf $us1 3  600   $ps  # similarity2
 ./jobs/poison/primer.sh     $dob $tt $mis $tf $us1 3  600   $ps  # input_similarity
 ./jobs/poison/primer.sh     $dob $tt $mb2 $tf $us1 3  600   $ps  # boostin2
@@ -243,7 +227,6 @@ us1=-1
 
 # power
 ./jobs/poison/primer.sh     $dpw $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dpw $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dpw $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dpw $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dpw $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -255,7 +238,6 @@ us1=-1
 
 # protein
 ./jobs/poison/primer.sh     $dpr $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dpr $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dpr $tt $ms  $tf $us1 5  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dpr $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dpr $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -267,7 +249,6 @@ us1=-1
 
 # spambase
 ./jobs/poison/primer.sh     $dsb $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dsb $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dsb $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dsb $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dsb $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -279,7 +260,6 @@ us1=-1
 
 # surgical
 ./jobs/poison/primer.sh     $dsg $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dsg $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dsg $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dsg $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dsg $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -291,7 +271,6 @@ us1=-1
 
 # twitter
 ./jobs/poison/primer.sh     $dtw $tt $mr  $tf $us1 11  1440  $ps  # random
-./jobs/poison/primer.sh     $dtw $tt $mtg $tf $us1 11  1440  $ps  # target
 ./jobs/poison/primer.sh     $dtw $tt $ms  $tf $us1 11  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dtw $tt $mis $tf $us1 11  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dtw $tt $mb2 $tf $us1 11  1440  $ps  # boostin2
@@ -303,7 +282,6 @@ us1=-1
 
 # vaccine
 ./jobs/poison/primer.sh     $dvc $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dvc $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dvc $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dvc $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dvc $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
@@ -315,7 +293,6 @@ us1=-1
 
 # wine
 ./jobs/poison/primer.sh     $dwn $tt $mr  $tf $us1 3  1440  $ps  # random
-./jobs/poison/primer.sh     $dwn $tt $mtg $tf $us1 3  1440  $ps  # target
 ./jobs/poison/primer.sh     $dwn $tt $ms  $tf $us1 3  1440  $ps  # similarity2
 ./jobs/poison/primer.sh     $dwn $tt $mis $tf $us1 3  1440  $ps  # input_similarity
 ./jobs/poison/primer.sh     $dwn $tt $mb2 $tf $us1 3  1440  $ps  # boostin2

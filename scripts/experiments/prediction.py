@@ -193,8 +193,21 @@ def experiment(args, logger, out_dir):
     logger.info('\ntune time: {:.3f}s'.format(tune_time))
 
     # train model
+    if args.train_frac < 1.0:
+        assert args.train_frac > 0.0
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=2,
+                                     train_size=args.train_frac,
+                                     random_state=args.random_state)
+        train_indices, _ = list(sss.split(X_train, y_train))[0]
+
+        X_train_sub, y_train_sub = X_train[train_indices].copy(), y_train[train_indices].copy()
+        logger.info('train instances: {:,}'.format(X_train_sub.shape[0]))
+
+    else:
+        X_train_sub, y_train_sub = X_train.copy(), y_train.copy()
+
     start = time.time()
-    model = model.fit(X_train, y_train)
+    model = model.fit(X_train_sub, y_train_sub)
     train_time = time.time() - start
     logger.info('train time: {:.3f}s\n'.format(train_time))
 
@@ -265,6 +278,7 @@ if __name__ == '__main__':
     parser.add_argument('--no_tune', action='store_true', default=False)
     parser.add_argument('--cv', type=int, default=5)
     parser.add_argument('--tune_frac', type=float, default=1.0)
+    parser.add_argument('--train_frac', type=float, default=1.0)
 
     # Tree hyperparameters
     parser.add_argument('--n_estimators', type=int, default=100)
