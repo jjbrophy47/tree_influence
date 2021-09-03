@@ -11,7 +11,7 @@ method=$3
 trunc_frac=$4
 update_set=$5
 
-python3 scripts/experiments/influence.py \
+python3 scripts/experiments/poison.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \

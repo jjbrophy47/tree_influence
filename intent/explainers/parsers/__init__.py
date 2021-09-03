@@ -55,6 +55,13 @@ def parse_model(model, X, y):
 def _check_predictions(original_model, model, X, y):
     """
     Check to make sure both models produce the same predictions.
+
+    WARNING
+        - XGB: The representation given by `model.get_booster().get_dump()` is
+            sometimes slightly different than the actual internal `model`.
+            * This results in train examples sometimes going into DIFFERENT leaves
+                between the standardized and original model, resulting in slightly
+                different predictions for some examples.
     """
     if model.objective == 'regression':
         p1 = original_model.predict(X)
