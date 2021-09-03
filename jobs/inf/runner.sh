@@ -8,20 +8,14 @@ conda activate jbrophy-20210713
 dataset=$1
 tree_type=$2
 method=$3
-inf_obj=$4
-trunc_frac=$5
-update_set=$6
-leaf_scale=$7
-local_op=$8
-global_op=$9
+trunc_frac=$4
+update_set=$5
+n_epoch=$6
 
 python3 scripts/experiments/influence.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
-  --inf_obj $inf_obj \
   --trunc_frac $trunc_frac \
   --update_set $update_set \
-  --leaf_scale $leaf_scale \
-  --local_op $local_op \
-  --global_op $global_op \
+  --n_epoch $n_epoch \
