@@ -22,7 +22,8 @@ def get_results(args, in_dir, logger=None, exp_hash=None, temp_dir=None, progres
     experiment_settings = list(product(*[args.method, args.leaf_scale, args.update_set,
                                          args.kernel, args.target, args.lmbd, args.n_epoch, args.trunc_frac,
                                          args.check_every, args.sub_frac, args.n_iter,
-                                         args.global_op, args.local_op, args.similarity]))
+                                         args.global_op, args.local_op, args.similarity,
+                                         args.measure]))
 
     visited = set()
     results = []
@@ -30,7 +31,7 @@ def get_results(args, in_dir, logger=None, exp_hash=None, temp_dir=None, progres
     for items in tqdm(experiment_settings, disable=not progress_bar):
 
         method, leaf_scale, update_set, kernel, target, lmbd, n_epoch,\
-            trunc_frac, check_every, sub_frac, n_iter, global_op, local_op, similarity = items
+            trunc_frac, check_every, sub_frac, n_iter, global_op, local_op, similarity, measure = items
 
         template = {'method': method,
                     'leaf_scale': leaf_scale,
@@ -48,7 +49,8 @@ def get_results(args, in_dir, logger=None, exp_hash=None, temp_dir=None, progres
                     'n_jobs': args.n_jobs,
                     'global_op': global_op,
                     'local_op': local_op,
-                    'similarity': similarity}
+                    'similarity': similarity,
+                    'measure': measure}
 
         if exp_hash is None:
             exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
@@ -108,6 +110,8 @@ def get_plot_dicts():
     color['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'brown'
     color['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = 'brown'
     color['similarity_da2995ca8d4801840027a5128211b2d0'] = 'gray'
+    color['similarity2_da2995ca8d4801840027a5128211b2d0'] = 'gray'
+    color['input_similarity_1edfa114070a90bb762993ab47712d68'] = 'gray'
 
     line = {'random_': '-', 'minority_': '-', 'target_': '-', 'loss_': '-'}
     # line['boostin_5fa0dc231efe739492c9904ea2304460'] = '-'
@@ -130,6 +134,8 @@ def get_plot_dicts():
     line['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = '--'
     line['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = ':'
     line['similarity_da2995ca8d4801840027a5128211b2d0'] = '-'
+    line['similarity2_da2995ca8d4801840027a5128211b2d0'] = '-'
+    line['input_similarity_1edfa114070a90bb762993ab47712d68'] = '--'
 
     label = {'random_': 'Random', 'minority_': 'Minority', 'target_': 'Target', 'loss_': 'Loss'}
     # label['boostin_5fa0dc231efe739492c9904ea2304460'] = 'BoostIn_0'
@@ -152,6 +158,8 @@ def get_plot_dicts():
     label['leaf_influence_cfcd208495d565ef66e7dff9f98764da'] = 'LeafInf_SP'
     label['leaf_influenceSP_fea087517c26fadd409bd4b9dc642555'] = 'LeafInf_SP2'
     label['similarity_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'
+    label['similarity2_da2995ca8d4801840027a5128211b2d0'] = 'Sim.'
+    label['input_similarity_1edfa114070a90bb762993ab47712d68'] = 'Input Sim.'
 
     return color, line, label
 

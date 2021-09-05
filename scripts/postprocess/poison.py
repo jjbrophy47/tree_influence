@@ -21,7 +21,7 @@ from experiments import util
 from leaf_analysis import filter_results
 
 
-def process(args, exp_dir, logger):
+def process(args, exp_dir, out_dir, logger):
 
     # get dataset
     color, line, label = pp_util.get_plot_dicts()
@@ -33,8 +33,11 @@ def process(args, exp_dir, logger):
 
     for method, res in res_list:
 
+        # TEMP
+        poison_frac = np.array([0.0] + list(res['poison_frac']), dtype=np.float32)
+
         ax = axs[0]
-        ax.errorbar(res['poison_frac'] * 100, res['loss'], linestyle=line[method],
+        ax.errorbar(poison_frac * 100, res['loss'], linestyle=line[method],
                     color=color[method], label=label[method])
         ax.axhline(res['loss'][0], color='k', linestyle='--')
         ax.set_ylabel('Test loss')
@@ -43,7 +46,7 @@ def process(args, exp_dir, logger):
         ax.legend(fontsize=6)
 
         ax = axs[1]
-        ax.errorbar(res['poison_frac'] * 100, res['acc'], linestyle=line[method],
+        ax.errorbar(poison_frac * 100, res['acc'], linestyle=line[method],
                     color=color[method], label=label[method])
         ax.axhline(res['acc'][0], color='k', linestyle='--')
         ax.set_ylabel('Test accuracy')
@@ -51,7 +54,7 @@ def process(args, exp_dir, logger):
         ax.set_title(f'Accuracy')
 
         ax = axs[2]
-        ax.errorbar(res['poison_frac'] * 100, res['auc'], linestyle=line[method],
+        ax.errorbar(poison_frac * 100, res['auc'], linestyle=line[method],
                     color=color[method], label=label[method])
         ax.axhline(res['auc'][0], color='k', linestyle='--')
         ax.set_ylabel('Test AUC')
@@ -69,7 +72,8 @@ def main(args):
     exp_dict = {'poison_frac': args.poison_frac, 'val_frac': args.val_frac}
     exp_hash = util.dict_to_hash(exp_dict)
 
-    exp_dir = os.path.join(args.out_dir,
+    exp_dir = os.path.join(args.in_dir,
+                           args.dataset,
                            args.tree_type,
                            f'exp_{exp_hash}')
 
@@ -77,7 +81,7 @@ def main(args):
                            args.tree_type,
                            f'exp_{exp_hash}')
 
-    log_dir = os.path.join(args.out_dir, 'logs')
+    log_dir = os.path.join(out_dir, 'logs')
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)
@@ -100,11 +104,8 @@ if __name__ == '__main__':
     # experiment settings
     parser.add_argument('--dataset', type=str, default='surgical')
     parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
-    parser.add_argument('--noise', type=str, default='target')
-    parser.add_argument('--noise_frac', type=float, default=0.1)
+    parser.add_argument('--poison_frac', type=float, nargs='+', default=[0.01, 0.05, 0.1, 0.2, 0.3])
     parser.add_argument('--val_frac', type=float, default=0.1)
-    parser.add_argument('--check_frac', type=float, default=0.1)
 
     # additional settings
     parser.add_argument('--random_state', type=int, nargs='+', default=[1, 2, 3, 4, 5])
@@ -112,8 +113,8 @@ if __name__ == '__main__':
 
     # method settings
     parser.add_argument('--method', type=str, nargs='+',
-                        default=['loss', 'trex', 'similarity', 'similarity', 'boostin2',
-                                 'leaf_influenceSP', 'subsample', 'loo', 'target', 'random'])
+                        default=['trex', 'similarity2', 'input_similarity', 'boostin2',
+                                 'leaf_influenceSP', 'subsample', 'loo', 'random'])
     parser.add_argument('--skip', type=str, nargs='+', default=[])
     parser.add_argument('--leaf_scale', type=int, nargs='+', default=[-1.0])  # BoostIn
     parser.add_argument('--local_op', type=str, nargs='+', default=['normal'])  # BoostIn

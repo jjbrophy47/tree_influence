@@ -52,6 +52,8 @@ us1=-1
 ne1=3000  # trex, n_epoch
 ne2=200
 
+./jobs/inf/primer.sh --array=1-22 'random' 3 1440 $ps  # random
+
 # adult
 ./jobs/inf/primer.sh     $dad $tt $mr  $tf $us1 $ne1 3  1440  $ps  # random
 ./jobs/inf/primer.sh     $dad $tt $mtg $tf $us1 $ne1 3  1440  $ps  # target

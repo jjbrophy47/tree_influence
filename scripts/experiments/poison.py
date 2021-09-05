@@ -107,7 +107,7 @@ def experiment(args, logger, params, random_state, out_dir):
     # save results
     result['influence'] = influence
     result['poison_idxs'] = poison_idxs
-    result['poison_frac'] = np.array(args.poison_frac, dtype=np.float32)
+    result['poison_frac'] = np.array([0.0] + args.poison_frac, dtype=np.float32)
     result['loss'] = np.array(loss, dtype=np.float32)
     result['acc'] = np.array(acc, dtype=np.float32)
     result['auc'] = np.array(auc, dtype=np.float32)

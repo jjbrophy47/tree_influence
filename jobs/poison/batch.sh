@@ -61,12 +61,12 @@ us1=-1
 ./jobs/poison/primer.sh     $dad $tt $msb $tf $us1 5  1440  $ps  # subsample
 
 # bank_marketing
-./jobs/poison/primer.sh     $dbm $tt $mr  $tf $us1 3  600    $ps  # random
-./jobs/poison/primer.sh     $dbm $tt $ms  $tf $us1 3  600    $ps  # similarity2
-./jobs/poison/primer.sh     $dbm $tt $mis $tf $us1 3  600    $ps  # input_similarity
-./jobs/poison/primer.sh     $dbm $tt $mb2 $tf $us1 3  600    $ps  # boostin2
-./jobs/poison/primer.sh     $dbm $tt $mls $tf $us0 3  600    $ps  # leaf_influenceSP
-./jobs/poison/primer.sh     $dbm $tt $mtx $tf $us1 6  600    $ps  # trex
+./jobs/poison/primer.sh     $dbm $tt $mr  $tf $us1 3  600   $ps  # random
+./jobs/poison/primer.sh     $dbm $tt $ms  $tf $us1 3  600   $ps  # similarity2
+./jobs/poison/primer.sh     $dbm $tt $mis $tf $us1 3  600   $ps  # input_similarity
+./jobs/poison/primer.sh     $dbm $tt $mb2 $tf $us1 3  600   $ps  # boostin2
+./jobs/poison/primer.sh     $dbm $tt $mls $tf $us0 3  600   $ps  # leaf_influenceSP
+./jobs/poison/primer.sh     $dbm $tt $mtx $tf $us1 6  600   $ps  # trex
 # ./jobs/poison/primer.sh     $dbm $tt $mli $tf $us1 3  10080 $p2  # leaf_influence
 ./jobs/poison/primer.sh     $dbm $tt $mlo $tf $us1 5  1440  $ps  # loo
 ./jobs/poison/primer.sh     $dbm $tt $msb $tf $us1 5  1440  $ps  # subsample
@@ -105,23 +105,23 @@ us1=-1
 ./jobs/poison/primer.sh     $dcn $tt $msb $tf $us1 5  1440  $ps  # subsample
 
 # credit_card
-./jobs/poison/primer.sh     $dcc $tt $mr  $tf $us1 3  600    $ps  # random
-./jobs/poison/primer.sh     $dcc $tt $ms  $tf $us1 3  600    $ps  # similarity2
-./jobs/poison/primer.sh     $dcc $tt $mis $tf $us1 3  600    $ps  # input_similarity
-./jobs/poison/primer.sh     $dcc $tt $mb2 $tf $us1 3  600    $ps  # boostin2
-./jobs/poison/primer.sh     $dcc $tt $mls $tf $us0 3  600    $ps  # leaf_influenceSP
-./jobs/poison/primer.sh     $dcc $tt $mtx $tf $us1 6  600    $ps  # trex
+./jobs/poison/primer.sh     $dcc $tt $mr  $tf $us1 3  600   $ps  # random
+./jobs/poison/primer.sh     $dcc $tt $ms  $tf $us1 3  600   $ps  # similarity2
+./jobs/poison/primer.sh     $dcc $tt $mis $tf $us1 3  600   $ps  # input_similarity
+./jobs/poison/primer.sh     $dcc $tt $mb2 $tf $us1 3  600   $ps  # boostin2
+./jobs/poison/primer.sh     $dcc $tt $mls $tf $us0 3  600   $ps  # leaf_influenceSP
+./jobs/poison/primer.sh     $dcc $tt $mtx $tf $us1 6  600   $ps  # trex
 # ./jobs/poison/primer.sh     $dcc $tt $mli $tf $us1 3  10080 $p2  # leaf_influence
 ./jobs/poison/primer.sh     $dcc $tt $mlo $tf $us1 5  1440  $ps  # loo
 ./jobs/poison/primer.sh     $dcc $tt $msb $tf $us1 5  1440  $ps  # subsample
 
 # diabetes
-./jobs/poison/primer.sh     $ddb $tt $mr  $tf $us1 3  1440    $ps  # random
-./jobs/poison/primer.sh     $ddb $tt $ms  $tf $us1 3  1440    $ps  # similarity2
-./jobs/poison/primer.sh     $ddb $tt $mis $tf $us1 3  1440    $ps  # input_similarity
-./jobs/poison/primer.sh     $ddb $tt $mb2 $tf $us1 3  1440    $ps  # boostin2
-./jobs/poison/primer.sh     $ddb $tt $mls $tf $us0 3  1440    $ps  # leaf_influenceSP
-./jobs/poison/primer.sh     $ddb $tt $mtx $tf $us1 9  1440    $ps  # trex
+./jobs/poison/primer.sh     $ddb $tt $mr  $tf $us1 3  1440  $ps  # random
+./jobs/poison/primer.sh     $ddb $tt $ms  $tf $us1 3  1440  $ps  # similarity2
+./jobs/poison/primer.sh     $ddb $tt $mis $tf $us1 3  1440  $ps  # input_similarity
+./jobs/poison/primer.sh     $ddb $tt $mb2 $tf $us1 3  1440  $ps  # boostin2
+./jobs/poison/primer.sh     $ddb $tt $mls $tf $us0 3  1440  $ps  # leaf_influenceSP
+./jobs/poison/primer.sh     $ddb $tt $mtx $tf $us1 9  1440  $ps  # trex
 # ./jobs/poison/primer.sh     $ddb $tt $mli $tf $us1 3  10080 $p2  # leaf_influence
 ./jobs/poison/primer.sh     $ddb $tt $mlo $tf $us1 7  1440  $ps  # loo
 ./jobs/poison/primer.sh     $ddb $tt $msb $tf $us1 5  1440  $ps  # subsample
@@ -182,15 +182,15 @@ us1=-1
 ./jobs/poison/primer.sh     $dlf $tt $msb $tf $us1 5  1440  $ps  # subsample
 
 # msd
-./jobs/poison/primer.sh     $dms $tt $mr  $tf $us1 20  1440  $ps  # random
-./jobs/poison/primer.sh     $dms $tt $ms  $tf $us1 20  1440  $ps  # similarity2
-./jobs/poison/primer.sh     $dms $tt $mis $tf $us1 20  1440  $ps  # input_similarity
-./jobs/poison/primer.sh     $dms $tt $mb2 $tf $us1 20  1440  $ps  # boostin2
-./jobs/poison/primer.sh     $dms $tt $mls $tf $us0 20  1440  $ps  # leaf_influenceSP
-./jobs/poison/primer.sh     $dms $tt $mtx $tf $us1 28  1440  $ps  # trex
-# ./jobs/poison/primer.sh     $dms $tt $mli $tf $us1 20  1440  $ps  # leaf_influence
-./jobs/poison/primer.sh     $dms $tt $mlo $tf $us1 28  1440  $ps  # loo
-./jobs/poison/primer.sh     $dms $tt $msb $tf $us1 20  1440  $ps  # subsample
+# ./jobs/poison/primer.sh     $dms $tt $mr  $tf $us1 20  1440  $ps  # random
+# ./jobs/poison/primer.sh     $dms $tt $ms  $tf $us1 20  1440  $ps  # similarity2
+# ./jobs/poison/primer.sh     $dms $tt $mis $tf $us1 20  1440  $ps  # input_similarity
+# ./jobs/poison/primer.sh     $dms $tt $mb2 $tf $us1 20  1440  $ps  # boostin2
+# ./jobs/poison/primer.sh     $dms $tt $mls $tf $us0 20  1440  $ps  # leaf_influenceSP
+# ./jobs/poison/primer.sh     $dms $tt $mtx $tf $us1 28  1440  $ps  # trex
+# # ./jobs/poison/primer.sh     $dms $tt $mli $tf $us1 20  1440  $ps  # leaf_influence
+# ./jobs/poison/primer.sh     $dms $tt $mlo $tf $us1 28  1440  $ps  # loo
+# ./jobs/poison/primer.sh     $dms $tt $msb $tf $us1 20  1440  $ps  # subsample
 
 # naval
 ./jobs/poison/primer.sh     $dnv $tt $mr  $tf $us1 3  1440  $ps  # random
