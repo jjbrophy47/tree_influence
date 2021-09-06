@@ -1,6 +1,9 @@
 # C extensions
 cython==0.29.23
 
+# input management
+configargparse==1.5.2
+
 # data processors
 xlrd==2.0.1  # reading excel
 openpyxl==3.0.7  # reading excel

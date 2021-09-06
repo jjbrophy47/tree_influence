@@ -17,7 +17,7 @@ from .parsers import util
 class Trex(Explainer):
     """
     Tree-Ensemble Representer Examples: Explainer that adapts the
-    Representer point method to tree ensembles.
+    Representer-point method for deep-learning models to tree ensembles.
 
     Local-Influence Semantics
         - Inf.(x_i, x_t) := L(phi(sum_j * (alpha_{j=i}=0) K(x_i, x_t)) - L(phi(sum_i alpha_i k(x_i, x_t))).
@@ -35,11 +35,11 @@ class Trex(Explainer):
     Note
         - Supports both GBDTs and RFs.
         - Ordering of local influence using loss approx. magnitude is not necessarily the
-            same as using the magniutde of representer values as the activation of the
+            same as using the magniutde of representer values since the activation of the
             loss function can cause slightly differing orderings.
     """
     def __init__(self, kernel='lpw', target='actual', lmbd=0.003, n_epoch=3000,
-                 global_op='self', random_state=1, logger=None):
+                 random_state=1, logger=None):
         """
         Input
             kernel: str, Transformation of the input using the tree-ensemble structure.
@@ -57,22 +57,16 @@ class Trex(Explainer):
                 'predicted': Predicted targets from the tree-ensemble.
             lmbd: float, Regularizer for the linear model; necessary for the Representer decomposition.
             n_epoch: int, Max. no. epochs to train the linear model.
-            global_op: str, Type of global influence to provide.
-                'alpha': Use the learned train weights as the global importance measure.
-                'global': Compute effect of each train example on the test set loss.
-                'self': Compute effect of each train example on itself.
             random_state: int, Random state seed to generate reproducible results.
             logger: object, If not None, output to logger.
         """
         assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
         assert target in ['actual', 'predicted']
-        assert global_op in ['alpha', 'expected', 'self']
         assert isinstance(lmbd, float)
         self.kernel = kernel
         self.target = target
         self.lmbd = lmbd
         self.n_epoch = n_epoch
-        self.global_op = global_op
         self.random_state = random_state
         self.logger = logger
 

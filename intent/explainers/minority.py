@@ -9,10 +9,6 @@ class Minority(Explainer):
     Explainer that randomly returns higher influence
         values for minority class train examples.
 
-    Global-Influence Semantics
-        - More positive values are assigned to minority classes
-            than majority classes.
-
     Local-Influence Semantics
         - More positive values are assigned to minority classes
             than majority classes.

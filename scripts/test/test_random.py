@@ -14,9 +14,6 @@ def main(args):
     kwargs = {'random_state': args.random_state}
 
     # tests
-    test_util.test_global_influence_regression(args, Random, 'random', kwargs)
-    test_util.test_global_influence_binary(args, Random, 'random', kwargs)
-    test_util.test_global_influence_multiclass(args, Random, 'random', kwargs)
     test_util.test_local_influence_regression(args, Random, 'random', kwargs)
     test_util.test_local_influence_binary(args, Random, 'random', kwargs)
     test_util.test_local_influence_multiclass(args, Random, 'random', kwargs)

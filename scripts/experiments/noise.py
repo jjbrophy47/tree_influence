@@ -15,50 +15,20 @@ from sklearn.model_selection import train_test_split
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
+sys.path.insert(0, here + '/../')
+from poison import poison
 import intent
 import util
+from config import exp_args
 
 
-def jaccard_similarity(inf1, inf2):
+def add_noise(X, y, objective, rng, frac=0.1):
     """
-    Return |inf1 intersect inf2| / |inf1 union inf2|.
+    Add noise to a random subset of examples.
     """
-    s1 = set(inf1)
-    s2 = set(inf2)
-    return len(s1.intersection(s2)) / len(s1.union(s2))
-
-
-def add_target_noise(y, objective, rng, frac=0.1):
-    """
-    Add noise to ground-truth targets.
-    """
-    result = y.copy()
-
-    # select exmaples to add noise to
-    idxs = rng.choice(np.arange(len(y)), size=int(len(y) * frac))
-
-    # add gaussian noise to selected targets
-    if objective == 'regression':
-        result[idxs] += rng.normal(np.median(y), np.std(y))
-
-    # flip selected targets
-    elif objective == 'binary':
-        result[idxs] = np.where(y[idxs] == 0, 1, 0)
-
-    # change selected targets to a different random label
-    else:
-        assert objective == 'multiclass'
-        labels = np.unique(y)
-
-        for idx in idxs:
-            remain_labels = np.setdiff1d(labels, y[idx])
-            result[idx] = rng.choice(remain_labels, size=1)
-
-    return result, idxs
-
-
-def add_feature_noise(X, objective):
-    pass
+    target_idxs = rng.choice(np.arange(len(y)), size=int(len(y) * frac))
+    new_X, new_y = poison(X, y, objective, rng, target_idxs)
+    return new_X, new_y, target_idxs
 
 
 def experiment(args, logger, params, random_state, out_dir):
@@ -72,14 +42,7 @@ def experiment(args, logger, params, random_state, out_dir):
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
 
     # add noise to a subset of the train examples
-    if args.noise == 'target':
-        X_train_noise = X_train
-        y_train_noise, noise_idxs = add_target_noise(y_train, objective, rng, frac=args.noise_frac)
-
-    else:
-        assert args.noise == 'feature'
-        y_train_noise = y_train
-        X_train_noise, noise_idxs = add_feature_noise(X_train, objective, rng, frac=args.noise_frac)
+    X_train_noise, y_train_noise, noise_idxs = add_noise(X_train, y_train, objective, rng, frac=args.noise_frac)
 
     # use a fraction of the test data for validation
     stratify = None if objective == 'regression' else y_test
@@ -174,12 +137,12 @@ def main(args):
     for random_state in range(1, args.n_repeat + 1):
 
         # get unique hash for this experiment setting
-        exp_dict = {'noise': args.noise, 'noise_frac': args.noise_frac,
-                    'val_frac': args.val_frac, 'check_frac': args.check_frac}
+        exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac,
+                    'check_frac': args.check_frac}
         exp_hash = util.dict_to_hash(exp_dict)
 
         # get unique hash for the explainer
-        params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
+        params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
         # special cases
         if args.method == 'leaf_influence':
@@ -193,7 +156,7 @@ def main(args):
                                f'exp_{exp_hash}',
                                args.strategy,
                                f'random_state_{random_state}',
-                               f'{args.method}_{hash_str}')
+                               f'{args.method}_{method_hash}')
 
         # create output directory and clear previous contents
         os.makedirs(out_dir, exist_ok=True)
@@ -209,48 +172,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--out_dir', type=str, default='output/noise/')
-
-    # Experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--strategy', type=str, default='test_sum')
-    parser.add_argument('--noise', type=str, default='target')
-    parser.add_argument('--noise_frac', type=float, default=0.2)
-    parser.add_argument('--val_frac', type=float, default=0.1)
-    parser.add_argument('--check_frac', type=float, default=0.1)
-
-    # Explainer settings
-    parser.add_argument('--method', type=str, default='random')
-
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, default='dot_prod')  # Similarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
-
-    # Additional settings
-    parser.add_argument('--n_repeat', type=int, default=5)
-
-    args = parser.parse_args()
-    main(args)
+    main(exp_args.get_noise_args().parse_args())

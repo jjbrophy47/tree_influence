@@ -5,7 +5,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class InputSimilarity(Explainer):
+class InputSim(Explainer):
     """
     Explainer that returns higher influence for train examples with
         larger similarity (in input space).

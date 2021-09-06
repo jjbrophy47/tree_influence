@@ -14,8 +14,10 @@ from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
+sys.path.insert(0, here + '/../')
 import intent
 import util
+from config import exp_args
 
 
 def experiment(args, logger, params, random_state, out_dir):
@@ -111,44 +113,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--out_dir', type=str, default='output/resources/')
-
-    # Experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-
-    # Explainer settings
-    parser.add_argument('--method', type=str, default='random')
-
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, default='dot_prod')  # Similarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--n_jobs', type=int, default=1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
-
-    # Additional settings
-    parser.add_argument('--n_repeat', type=int, default=5)
-    parser.add_argument('--seed', type=int, default=-1)
-
-    args = parser.parse_args()
-    main(args)
+    main(exp_args.get_resources_args().parse_args())

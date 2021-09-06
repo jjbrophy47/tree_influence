@@ -8,9 +8,6 @@ class Random(Explainer):
     """
     Explainer that returns random influence values.
 
-    Global-Influence Semantics
-        - Pos. and neg. values are arbitrary.
-
     Local-Influence Semantics
         - Pos. and neg. values are arbitrary.
 

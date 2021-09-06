@@ -14,8 +14,10 @@ from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
+sys.path.insert(0, here + '/../')
 import intent
 import util
+from config import exp_args
 
 
 def select_elements(arr, rng, n):
@@ -46,7 +48,7 @@ def select_elements(arr, rng, n):
     return result
 
 
-def remove_and_evaluate(inf_obj, objective, ranking, tree,
+def remove_and_evaluate(objective, ranking, tree,
                         X_train, y_train, X_test, y_test,
                         remove_frac, n_ckpt, logger):
 
@@ -160,8 +162,7 @@ def experiment(args, logger, params, out_dir):
             n = min(min(10, n_jobs), n_remain)
 
             results = parallel(joblib.delayed(remove_and_evaluate)
-                                             (args.inf_obj, objective,
-                                              ranking[:, n_finish + i], tree,
+                                             (objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
                                               args.remove_frac, args.n_ckpt, logger)
                                               for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
@@ -179,7 +180,6 @@ def experiment(args, logger, params, out_dir):
         # combine results from each test example
         result['remove_frac'] = res_list[0]['remove_frac']  # shape=(no. ckpts,)
         result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
-        result['pred'] = [res['pred'] for res in res_list]  # shape=(no. test, no. completed ckpts, no class)
 
     # store ALL train and test predictions
     if objective == 'regression':
@@ -199,7 +199,6 @@ def experiment(args, logger, params, out_dir):
     result['influence'] = influence
     result['ranking'] = ranking
     result['test_idxs'] = test_idxs
-    result['y_train_pred'] = y_train_pred
     result['y_test_pred'] = y_test_pred
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['fit_time'] = fit_time
@@ -215,12 +214,12 @@ def experiment(args, logger, params, out_dir):
 def main(args):
 
     # get unique hash for this experiment setting
-    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
-                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
+                'n_ckpt': args.n_ckpt}
     exp_hash = util.dict_to_hash(exp_dict)
 
     # get unique hash for the explainer
-    params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
+    params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
     # special cases
     if args.method == 'leaf_influence':
@@ -232,7 +231,7 @@ def main(args):
                            args.dataset,
                            args.tree_type,
                            f'exp_{exp_hash}',
-                           f'{args.method}_{hash_str}')
+                           f'{args.method}_{method_hash}')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
@@ -246,45 +245,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--out_dir', type=str, default='output/influence/')
-
-    # Experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.05)
-    parser.add_argument('--n_ckpt', type=int, default=50)
-
-    # Explainer settings
-    parser.add_argument('--method', type=str, default='random')
-
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, default='dot_prod')  # Similarity & Similarity2
-    parser.add_argument('--measure', type=str, default='euclidean')  # InputSimilarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
-
-    args = parser.parse_args()
-    main(args)
+    main(exp_args.get_influence_args().parse_args())

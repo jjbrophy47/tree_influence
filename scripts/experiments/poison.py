@@ -15,8 +15,10 @@ from sklearn.model_selection import train_test_split
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
+sys.path.insert(0, here + '/../')
 import intent
 import util
+from config import exp_args
 
 
 def poison(X, y, objective, rng, target_idxs):
@@ -128,7 +130,7 @@ def main(args):
     exp_hash = util.dict_to_hash(exp_dict)
 
     # get unique hash for the explainer
-    params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
+    params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
     # special cases
     if args.method == 'leaf_influence':
@@ -140,7 +142,7 @@ def main(args):
                            args.dataset,
                            args.tree_type,
                            f'exp_{exp_hash}',
-                           f'{args.method}_{hash_str}')
+                           f'{args.method}_{method_hash}')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
@@ -156,43 +158,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--out_dir', type=str, default='output/poison/')
-
-    # Experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--poison_frac', type=float, nargs='+', default=[0.01, 0.05, 0.1, 0.2, 0.3])
-    parser.add_argument('--val_frac', type=float, default=0.1)
-
-    # Explainer settings
-    parser.add_argument('--method', type=str, default='random')
-
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, default='dot_prod')  # Similarity & Similarity2
-    parser.add_argument('--measure', type=str, default='euclidean')  # InputSimilarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
-
-    args = parser.parse_args()
-    main(args)
+    main(exp_args.get_poison_args().parse_args())

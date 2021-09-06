@@ -22,17 +22,13 @@ class LOO(Explainer):
         - Supports both GBDTs and RFs.
         - Supports parallelization.
     """
-    def __init__(self, global_op='self', n_jobs=1, logger=None):
+    def __init__(self, n_jobs=1, logger=None):
         """
         Input
-            global_op: str, Type of global influence to provide.
-                'global': Compute effect of each train example on the test set loss.
-                'self': Compute effect of each train example on itself.
             n_jobs: int, No. processes to run in parallel.
                 -1 means use the no. of available CPU cores.
             logger: object, If not None, output to logger.
         """
-        self.global_op = global_op
         self.n_jobs = n_jobs
         self.logger = logger
 

@@ -12,12 +12,9 @@ def main(args):
 
     # explainer arguments
     kwargs = {'kernel': args.kernel, 'target': args.target,
-              'lmbd': args.lmbd, 'global_op': args.global_op}
+              'lmbd': args.lmbd, 'n_epoch': args.n_epoch}
 
     # tests
-    test_util.test_global_influence_regression(args, Trex, 'trex', kwargs)
-    test_util.test_global_influence_binary(args, Trex, 'trex', kwargs)
-    test_util.test_global_influence_multiclass(args, Trex, 'trex', kwargs)
     test_util.test_local_influence_regression(args, Trex, 'trex', kwargs)
     test_util.test_local_influence_binary(args, Trex, 'trex', kwargs)
     test_util.test_local_influence_multiclass(args, Trex, 'trex', kwargs)
@@ -45,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--kernel', type=str, default='lpw')
     parser.add_argument('--target', type=str, default='actual')
     parser.add_argument('--lmbd', type=float, default=0.003)
-    parser.add_argument('--global_op', type=str, default='self')
+    parser.add_argument('--n_epoch', type=int, default=3000)
 
     args = parser.parse_args()
 

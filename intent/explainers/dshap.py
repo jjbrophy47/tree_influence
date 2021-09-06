@@ -13,13 +13,6 @@ class DShap(Explainer):
     Explainer that approx. data Shapley values using
     the TMC-Shapley algorithm.
 
-    Global-Influence Semantics
-        - Average influence of x_i on itself.
-        - Inf.(x_i, x_i) = Avg. L(y_i, f_{w/o x_i}(x_i)) - L(y_i, f(x_i))
-            over all possible permutations of the training data.
-        - Pos. value means a decrease in loss (a.k.a. proponent, helpful).
-        - Neg. value means an increase in loss (a.k.a. opponent, harmful).
-
     Local-Influence Semantics
         - Inf.(x_i, x_t) = Avg. L(y_i, f_{w/o x_i}(x_t)) - L(y_i, f(x_t))
             over all possible permutations of the training data.
@@ -39,21 +32,17 @@ class DShap(Explainer):
             for early truncation.
             * However, we can use a hard truncation limit via `trunc_frac`.
     """
-    def __init__(self, trunc_frac=0.25, global_op='self', n_jobs=1,
+    def __init__(self, trunc_frac=0.25, n_jobs=1,
                  check_every=100, random_state=1, logger=None):
         """
         Input
             trunc_frac: float, fraction of instances to compute marginals for per iter.
-            global_op: str, Type of global influence to provide.
-                'global': Compute effect of each train example on the test set loss.
-                'self': Compute effect of each train example on itself.
             n_jobs: int, no. iterations / processes to run in parallel.
             check_every: int, no. iterations to run between checking convergence.
             random_state: int, random seed to enhance reproducibility.
             logger: object, If not None, output to logger.
         """
         self.trunc_frac = trunc_frac
-        self.global_op = global_op
         self.n_jobs = n_jobs
         self.check_every = check_every
         self.random_state = random_state
@@ -83,31 +72,6 @@ class DShap(Explainer):
         self.random_loss_ = self._get_random_loss()
 
         return self
-
-    def get_global_influence(self, X=None, y=None):
-        """
-        - Provides a global importance to all training examples.
-
-        Input
-            X: 2d array of test data.
-            y: 2d array of test targets.
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-        if self.global_op == 'expected':
-            assert X is not None and y is not None
-            X, y = util.check_data(X, y, objective=self.model_.objective)
-            batch = True
-
-        else:
-            assert self.global_op == 'self'
-            batch = False
-        
-        influence = self._run_tmc_shapley(X_test=X, y_test=y, batch=batch, inf='global')  # shape=(no. train, 1)
-
-        return influence[:, 0]  # shape=(no. train,)
 
     def get_local_influence(self, X, y):
         """

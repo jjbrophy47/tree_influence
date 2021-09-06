@@ -227,17 +227,18 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
     elif tree_type == 'xgb':
 
         if objective == 'regression':
-            tree = XGBRegressor(n_estimators=n_tree, max_depth=max_depth, random_state=random_state)
+            tree = XGBRegressor(n_estimators=n_tree, max_depth=max_depth,
+                                random_state=random_state, tree_method='hist')
 
         elif objective == 'binary':
             tree = XGBClassifier(n_estimators=n_tree, max_depth=max_depth,
-                                 random_state=random_state, use_label_encoder=False,
-                                 eval_metric='logloss')
+                                 random_state=random_state, tree_method='hist',
+                                 use_label_encoder=False, eval_metric='logloss')
 
         elif objective == 'multiclass':
             tree = XGBClassifier(n_estimators=n_tree, max_depth=max_depth,
-                                 random_state=random_state, use_label_encoder=False,
-                                 eval_metric='mlogloss')
+                                 random_state=random_state, tree_method='hist',
+                                 use_label_encoder=False, eval_metric='mlogloss')
         else:
             raise ValueError(f'Unknown objective {objective}')
 
@@ -348,71 +349,48 @@ def explainer_params_to_dict(explainer, exp_params):
     params = {}
 
     if explainer == 'boostin':
-        params['leaf_scale'] = exp_params['leaf_scale']
-        params['local_op'] = exp_params['local_op']
-
-    elif explainer == 'boostin2':
-        params['local_op'] = exp_params['local_op']
-
-    elif explainer == 'boostin3':
-        params['local_op'] = exp_params['local_op']
-
-    elif explainer == 'boostin4':
-        params['local_op'] = exp_params['local_op']
-
-    elif explainer == 'boostin2B':
-        params['local_op'] = exp_params['local_op']
+        pass
 
     elif explainer == 'leaf_influence':
-        params['update_set'] = exp_params['update_set']
+        params['update_set'] = exp_params['leaf_inf_update_set']
 
     elif explainer == 'leaf_influenceSP':
-        params['local_op'] = exp_params['local_op']
+        pass
 
     elif explainer == 'trex':
-        params['kernel'] = exp_params['kernel']
-        params['target'] = exp_params['target']
-        params['lmbd'] = exp_params['lmbd']
-        params['n_epoch'] = exp_params['n_epoch']
-        params['global_op'] = exp_params['global_op']
+        params['kernel'] = exp_params['tree_kernel']
+        params['target'] = exp_params['trex_target']
+        params['lmbd'] = exp_params['trex_lmbd']
+        params['n_epoch'] = exp_params['trex_n_epoch']
         params['random_state'] = exp_params['random_state']
 
     elif explainer == 'loo':
-        params['global_op'] = exp_params['global_op']
         params['n_jobs'] = exp_params['n_jobs']
 
     elif explainer == 'dshap':
-        params['trunc_frac'] = exp_params['trunc_frac']
-        params['global_op'] = exp_params['global_op']
+        params['trunc_frac'] = exp_params['dshap_trunc_frac']
+        params['check_every'] = exp_params['dshap_check_every']
         params['n_jobs'] = exp_params['n_jobs']
-        params['check_every'] = exp_params['check_every']
         params['random_state'] = exp_params['random_state']
 
     elif explainer == 'subsample':
-        params['sub_frac'] = exp_params['sub_frac']
-        params['n_iter'] = exp_params['n_iter']
-        params['n_jobs'] = exp_params['n_jobs']
-        params['random_state'] = exp_params['random_state']
-
-    elif explainer == 'subsampleB':
-        params['sub_frac'] = exp_params['sub_frac']
-        params['n_iter'] = exp_params['n_iter']
+        params['sub_frac'] = exp_params['subsample_sub_frac']
+        params['n_iter'] = exp_params['subsample_n_iter']
         params['n_jobs'] = exp_params['n_jobs']
         params['random_state'] = exp_params['random_state']
 
     elif explainer == 'random':
         params['random_state'] = exp_params['random_state']
 
-    elif explainer == 'similarity':
-        params['similarity'] = exp_params['similarity']
-        params['kernel'] = exp_params['kernel']
+    elif explainer == 'input_sim':
+        params['measure'] = exp_params['input_sim_measure']
 
-    elif explainer == 'similarity2':
-        params['similarity'] = exp_params['similarity']
-        params['kernel'] = exp_params['kernel']
+    elif explainer == 'tree_sim':
+        params['measure'] = exp_params['tree_sim_measure']
+        params['kernel'] = exp_params['tree_kernel']
 
-    elif explainer == 'input_similarity':
-        params['measure'] = exp_params['measure']
+    elif explainer == 'leaf_sim':
+        pass
 
     # create hash string based on the chosen hyperparameters
     hash_str = dict_to_hash(params, skip=['n_jobs', 'random_state', 'atol'])
@@ -489,18 +467,17 @@ def get_hyperparams(tree_type, dataset):
     xgb['credit_card'] = {'n_estimators': 10, 'max_depth': 3}
     xgb['diabetes'] = {'n_estimators': 200, 'max_depth': 3}
     xgb['energy'] = {'n_estimators': 200, 'max_depth': 5}
-    xgb['flight_delays'] = {'n_estimators': 200, 'max_depth': 5}
+    xgb['flight_delays'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['german_credit'] = {'n_estimators': 10, 'max_depth': 3}
-    xgb['htru2'] = {'n_estimators': 50, 'max_depth': 3}
+    xgb['htru2'] = {'n_estimators': 100, 'max_depth': 2}
     xgb['life'] = {'n_estimators': 200, 'max_depth': 5}
-    xgb['msd'] = {'n_estimators': 200, 'max_depth': 5}
     xgb['naval'] = {'n_estimators': 100, 'max_depth': 7}
     xgb['no_show'] = {'n_estimators': 100, 'max_depth': 5}
     xgb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['power'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['protein'] = {'n_estimators': 200, 'max_depth': 7}
-    xgb['spambase'] = {'n_estimators': 50, 'max_depth': 7}
-    xgb['surgical'] = {'n_estimators': 25, 'max_depth': 7}
+    xgb['spambase'] = {'n_estimators': 200, 'max_depth': 2}
+    xgb['surgical'] = {'n_estimators': 50, 'max_depth': 5}
     xgb['twitter'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['vaccine'] = {'n_estimators': 100, 'max_depth': 3}
     xgb['wine'] = {'n_estimators': 100, 'max_depth': 7}

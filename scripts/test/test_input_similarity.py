@@ -5,7 +5,7 @@ import argparse
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import InputSimilarity
+from intent.explainers import InputSim
 
 
 def main(args):
@@ -14,9 +14,9 @@ def main(args):
     kwargs = {'measure': args.measure}
 
     # tests
-    test_util.test_local_influence_regression(args, InputSimilarity, 'InputSimilarity', kwargs)
-    test_util.test_local_influence_binary(args, InputSimilarity, 'InputSimilarity', kwargs)
-    test_util.test_local_influence_multiclass(args, InputSimilarity, 'InputSimilarity', kwargs)
+    test_util.test_local_influence_regression(args, InputSim, 'InputSim', kwargs)
+    test_util.test_local_influence_binary(args, InputSim, 'InputSim', kwargs)
+    test_util.test_local_influence_multiclass(args, InputSim, 'InputSim', kwargs)
 
 
 if __name__ == '__main__':

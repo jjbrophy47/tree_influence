@@ -1,7 +1,4 @@
 from .explainers import BoostIn
-from .explainers import BoostIn2
-from .explainers import BoostIn3
-from .explainers import BoostIn4
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LeafInfluenceSP
@@ -10,9 +7,9 @@ from .explainers import DShap
 from .explainers import Random
 from .explainers import Minority
 from .explainers import Loss
-from .explainers import Similarity
-from .explainers import Similarity2
-from .explainers import InputSimilarity
+from .explainers import TreeSim
+from .explainers import LeafSim
+from .explainers import InputSim
 from .explainers import Target
 from .explainers import SubSample
 

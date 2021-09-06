@@ -10,14 +10,8 @@ from .parsers import util
 
 class SubSample(Explainer):
     """
-    Approximate Data Shapley. Trains many models on different
-    subsets of the data to obtain expected memorization and influence.
-
-    Global-Influence Semantics (i.e. memorization)
-        - Expected change in loss of x_i on itself.
-        - Inf.(x_i, x_i) := E[L(y_t, f_{w/o x_i}(x_i))] - E[L(y_t, f(x_i))]
-        - Pos. value means removing x_i increases loss (adding x_i decreases loss, helpful).
-        - Neg. value means removing x_i decreases loss (adding x_i increases loss, harmful).
+    Explainer that approximates data Shapley values. Trains many models on different
+    subsets of the data to obtain expected marginal influence values.
 
     Local-Influence Semantics (i.e. influence)
         - Inf.(x_i, x_t) := E[L(y_t, f_{w/o x_i}(x_t))] - E[L(y_t, f(x_t))]

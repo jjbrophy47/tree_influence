@@ -5,10 +5,10 @@ from .base import Explainer
 from .parsers import util
 
 
-class Similarity(Explainer):
+class TreeSim(Explainer):
     """
-    Explainer that randomly returns higher influence
-        for train examples with larger similarity.
+    Explainer that returns higher influence for train examples with
+        the same target and larger similarity in a chosen tree-kernel space.
 
     Local-Influence Semantics
         - More positive values are assigned to train examples with
@@ -17,10 +17,10 @@ class Similarity(Explainer):
     Note
         - Supports GBDTs and RFs.
     """
-    def __init__(self, similarity='dot_prod', kernel='lpw', logger=None):
+    def __init__(self, measure='dot_prod', kernel='lpw', logger=None):
         """
         Input
-            similarity: str, Similarity mettric to use.
+            measure: str, Similarity metric to use.
                 'dot_prod': Dot product between examples.
                 'cosine': Cosine similarity between examples.
                 'euclidean': Similarity is defined as 1 / euclidean distance.
@@ -36,9 +36,9 @@ class Similarity(Explainer):
                 'fow': Weighted feature output; like 'fo' but replaces leaf 1s with 1 / leaf values.
             logger: object, If not None, output to logger.
         """
-        assert similarity in ['dot_prod', 'cosine', 'euclidean']
+        assert measure in ['dot_prod', 'cosine', 'euclidean']
         assert kernel in ['to_', 'lp_', 'lpw', 'lo_', 'low', 'fp_', 'fpw', 'fo_', 'fow']
-        self.similarity = similarity
+        self.measure = measure
         self.kernel = kernel
         self.logger = logger
 
@@ -81,15 +81,15 @@ class Similarity(Explainer):
         for test_idx in range(X.shape[0]):
 
             # compute similarity to the test example
-            if self.similarity == 'dot_prod':
+            if self.measure == 'dot_prod':
                 sim = np.dot(self.X_train_, X_test_[test_idx])  # shape=(no. train,)
 
-            elif self.similarity == 'cosine':
+            elif self.measure == 'cosine':
                 normalizer = (norm(self.X_train_, axis=1) * norm(X_test_[test_idx]))
                 sim = np.dot(self.X_train_, X_test_[test_idx]) / normalizer  # shape=(no. train,)
 
             else:
-                assert self.similarity == 'euclidean'
+                assert self.measure == 'euclidean'
                 with np.errstate(divide='ignore'):
                     sim = 1.0 / norm(self.X_train_ - X_test_[test_idx], axis=1)  # shape=(no. train,)
                     sim = np.nan_to_num(sim)  # value is inf. for any examples the same as training

@@ -254,17 +254,18 @@ def _get_model(args):
     elif args.tree_type == 'xgb':
 
         if args.model_type == 'regressor':
-            tree = XGBRegressor(n_estimators=args.n_tree, max_depth=args.max_depth, random_state=args.rs)
+            tree = XGBRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
+                                tree_method='hist', random_state=args.rs)
 
         elif args.model_type == 'binary':
             tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                                 random_state=args.rs, use_label_encoder=False,
-                                 eval_metric='logloss')
+                                 random_state=args.rs, tree_method='hist',
+                                 use_label_encoder=False, eval_metric='logloss')
 
         elif args.model_type == 'multiclass':
             tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                                 random_state=args.rs, use_label_encoder=False,
-                                 eval_metric='mlogloss')
+                                 random_state=args.rs, tree_method='hist',
+                                 use_label_encoder=False, eval_metric='mlogloss')
         else:
             raise ValueError(f'Unknown model_type {args.model_type}')
 

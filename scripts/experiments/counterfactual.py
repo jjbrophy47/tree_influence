@@ -15,8 +15,10 @@ from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
+sys.path.insert(0, here + '/../')
 import intent
 import util
+from config import exp_args
 
 
 def edit_labels(y, flip_idxs, objective, adv_label, y_median=None):
@@ -83,9 +85,9 @@ def get_label(y, pred, objective, y_median=False):
     return pred_label, pred_val, target_label, adv_label, is_correct
 
 
-def remove_and_evaluate(test_idx, inf_obj, objective, ranking, tree,
+def remove_and_evaluate(test_idx, objective, ranking, tree,
                         X_train, y_train, X_test, y_test,
-                        remove_frac, n_ckpt, logger):
+                        remove_frac, step_size, logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
@@ -95,7 +97,7 @@ def remove_and_evaluate(test_idx, inf_obj, objective, ranking, tree,
     y_train_median = np.median(y_train)
     pred_lbl, pred_val, tgt_lbl, adv_lbl, is_correct = get_label(y_test[0], res['pred'], objective, y_train_median)
 
-    logger.info(f'\n[Test {test_idx}], '
+    logger.info(f'\n[Test ID {test_idx}], '
                 f'pred.: {pred_val:.5f}, pred. label: {pred_lbl} '
                 f'target: {y_test[0]:.5f}, target_label {tgt_lbl}, '
                 f'is_correct: {is_correct}, adv. target: {adv_lbl}')
@@ -112,7 +114,7 @@ def remove_and_evaluate(test_idx, inf_obj, objective, ranking, tree,
         result['status_code'] = -1
         return result
 
-    for i in range(1, X_train.shape[0]):
+    for i in range(10, X_train.shape[0], step_size):
 
         flip_idxs = ranking[:i]
         new_y_train = edit_labels(y_train, flip_idxs, objective, adv_lbl, y_train_median)
@@ -206,10 +208,9 @@ def experiment(args, logger, in_dir, out_dir):
             n = min(n_jobs, n_remain)
 
             results = parallel(joblib.delayed(remove_and_evaluate)
-                                             (idx, args.inf_obj, objective,
-                                              ranking[:, n_finish + i], tree,
+                                             (idx, objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.remove_frac, args.n_ckpt, logger)
+                                              args.remove_frac, args.step_size, logger)
                                               for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
@@ -237,25 +238,29 @@ def experiment(args, logger, in_dir, out_dir):
 
 def main(args):
 
-    # get unique hash for this experiment setting
-    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
-                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
-    exp_hash = util.dict_to_hash(exp_dict)
-
     # get unique hash for the explainer
     _, method_hash = util.explainer_params_to_dict(args.method, vars(args))
+
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
+                'n_ckpt': args.n_ckpt}
+
+    # get input dir., get unique hash for the influence experiment setting
+    in_exp_hash = util.dict_to_hash(exp_dict)
 
     exp_dir = os.path.join(args.in_dir,
                            args.dataset,
                            args.tree_type,
-                           f'exp_{exp_hash}',
+                           f'exp_{in_exp_hash}',
                            f'{args.method}_{method_hash}')
 
-    # create output dir
+    # create output dir., get unique hash for the influence experiment setting
+    exp_dict['step_size'] = args.step_size
+    out_exp_hash = util.dict_to_hash(exp_dict)
+
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
                            args.tree_type,
-                           f'exp_{exp_hash}',
+                           f'exp_{out_exp_hash}',
                            f'{args.method}_{method_hash}')
 
     # create output directory and clear previous contents
@@ -270,45 +275,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='output/influence/')
-    parser.add_argument('--out_dir', type=str, default='output/counterfactual/')
-
-    # Experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.05)
-    parser.add_argument('--n_ckpt', type=int, default=50)
-
-    # Explainer settings
-    parser.add_argument('--method', type=str, default='random')
-
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, default='dot_prod')  # Similarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-    parser.add_argument('--global_op', type=str, default='self')  # Trex, loo, DShap
-
-    args = parser.parse_args()
-    main(args)
+    main(exp_args.get_counterfactual_args().parse_args())

@@ -8,12 +8,12 @@ from .parsers import util
 
 class LeafInfluenceSP(Explainer):
     """
-    Explainer that adapts the TracIn method to tree ensembles.
+    Efficient implementation of LeafInfluence (single point) method.
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) = sum grad(x_t) * leaf_der w.r.t. x_i * learning_rate over all boosts.
-        - Pos. value means a decrease in test loss (a.k.a. proponent, helpful).
-        - Neg. value means an increase in test loss (a.k.a. opponent, harmful).
+        - Inf.(x_i, x_t) := L(y, F_{w/o x_i}(x_t)) - L(y, F(x_t))
+        - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
+        - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
 
     Reference
         - https://github.com/frederick0329/TracIn
@@ -24,14 +24,11 @@ class LeafInfluenceSP(Explainer):
     Note
         - Only support GBDTs.
     """
-    def __init__(self, local_op='normal', logger=None):
+    def __init__(self, logger=None):
         """
         Input
-            local_op: str, Configures how the local influence is computed.
             logger: object, If not None, output to logger.
         """
-        assert local_op in ['normal']
-        self.local_op = local_op
         self.logger = logger
 
     def fit(self, model, X, y):

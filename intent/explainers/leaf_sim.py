@@ -4,10 +4,11 @@ from .base import Explainer
 from .parsers import util
 
 
-class Similarity2(Explainer):
+class LeafSim(Explainer):
     """
-    Explainer that randomly returns higher influence
-        for train examples with larger similarity.
+    Explainer that returns higher influence for train examples with
+        the same target and larger similarity in the
+        "weighted leaf path" tree-kernel space.
 
     Local-Influence Semantics
         - More positive values are assigned to train examples with
@@ -15,19 +16,14 @@ class Similarity2(Explainer):
 
     Note
         - Supports GBDTs and RFs.
+        - More efficient version of the TreeSim explainer using the
+            'weighted leaf path' tree kernel.
     """
-    def __init__(self, similarity='dot_prod', kernel='lpw', logger=None):
+    def __init__(self, logger=None):
         """
         Input
-            similarity: str, Similarity metric to use.
-                'dot_prod': Dot product between examples.
-            kernel: str, Transformation of the input using the tree-ensemble structure.
-                'lpw': Weighted leaf path; like 'lp' but replaces 1s with 1 / leaf count.
-            leaf_scale: float, raises leaf count by this value (e.g. n_leaf ^ leaf_scale).
             logger: object, If not None, output to logger.
         """
-        assert similarity == 'dot_prod'
-        assert kernel == 'lpw'
         self.logger = logger
 
     def fit(self, model, X, y):
