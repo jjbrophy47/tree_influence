@@ -114,7 +114,7 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
         result['status_code'] = -1
         return result
 
-    for i in range(10, X_train.shape[0], step_size):
+    for i in range(step_size, X_train.shape[0], step_size):
 
         flip_idxs = ranking[:i]
         new_y_train = edit_labels(y_train, flip_idxs, objective, adv_lbl, y_train_median)

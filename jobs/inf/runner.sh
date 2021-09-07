@@ -15,5 +15,5 @@ dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
 python3 scripts/experiments/influence.py \
   --dataset $dataset \
-  --method $method \
   --tree_type $tree_type \
+  --method $method \

@@ -96,7 +96,7 @@ class BoostIn(Explainer):
 
             # progress
             if i > 0 and (i + 1) % 100 == 0 and self.logger and verbose:
-                self.logger.info(f'[INFO - BoostIn2] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                  f'cum. time: {time.time() - start:.3f}s')
 
         return influence
