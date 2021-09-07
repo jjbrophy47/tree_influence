@@ -49,7 +49,7 @@ us1=-1
 ne1=3000  # trex, n_epoch
 ne2=200
 
-./jobs/inf/runner.sh --array=1-22 --cpus-per-task=3 --time=1440 --partition='short' 'random' 'lgb'
+sbatch -a 1-22 -c 3 -t 1440 -p 'short' -o 'jobs/logs/inf/random-%a.out' jobs/inf/runner.sh 'random' 'lgb'
 
 # adult
 ./jobs/inf/primer.sh     $dad $tt $mr  $tf $us1 $ne1 3  1440  $ps  # random
