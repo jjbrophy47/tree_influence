@@ -136,6 +136,14 @@ def main(args):
 
     for random_state in range(1, args.n_repeat + 1):
 
+        # select seed
+        if args.seed > 0:
+            assert args.n_repeat == 1
+            seed = args.seed
+
+        else:
+            seed = random_state
+
         # get unique hash for this experiment setting
         exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac,
                     'check_frac': args.check_frac}
@@ -155,7 +163,7 @@ def main(args):
                                args.tree_type,
                                f'exp_{exp_hash}',
                                args.strategy,
-                               f'random_state_{random_state}',
+                               f'random_state_{seed}',
                                f'{args.method}_{method_hash}')
 
         # create output directory and clear previous contents
@@ -166,7 +174,7 @@ def main(args):
         logger.info(args)
         logger.info(f'\ntimestamp: {datetime.now()}')
 
-        experiment(args, logger, params, random_state, out_dir)
+        experiment(args, logger, params, seed, out_dir)
 
         util.remove_logger(logger)
 
