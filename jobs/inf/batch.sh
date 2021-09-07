@@ -27,15 +27,12 @@ dwn='wine'
 mr='random'
 mm='minority'
 mbi='boostin'
-mb2='boostin2'
-mb3='boostin3'
-mb4='boostin4'
 mtx='trex'
 mli='leaf_influence'
 mls='leaf_influenceSP'
 mlo='loo'
 mds='dshap'
-ms='similarity2'
+ms='leaf_sim'
 mis='input_similarity'
 ml='loss'
 mtg='target'
@@ -52,7 +49,7 @@ us1=-1
 ne1=3000  # trex, n_epoch
 ne2=200
 
-./jobs/inf/primer.sh --array=1-22 'random' 3 1440 $ps  # random
+./jobs/inf/runner.sh --array=1-22 --cpus-per-task=3 --time=1440 --partition='short' 'random' 'lgb'
 
 # adult
 ./jobs/inf/primer.sh     $dad $tt $mr  $tf $us1 $ne1 3  1440  $ps  # random
