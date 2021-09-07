@@ -1,3 +1,5 @@
+#!/bin/bash
+
 declare -A datasets
 datasets[1]='adult'
 datasets[2]='bank_marketing'
