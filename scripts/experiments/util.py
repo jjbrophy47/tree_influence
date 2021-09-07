@@ -351,10 +351,10 @@ def explainer_params_to_dict(explainer, exp_params):
     if explainer == 'boostin':
         pass
 
-    elif explainer == 'leaf_influence':
+    elif explainer == 'leaf_inf':
         params['update_set'] = exp_params['leaf_inf_update_set']
 
-    elif explainer == 'leaf_influenceSP':
+    elif explainer == 'leaf_infSP':
         pass
 
     elif explainer == 'trex':

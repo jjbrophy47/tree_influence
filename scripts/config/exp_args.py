@@ -30,7 +30,7 @@ def get_explainer_args(cmd=None):
     if cmd is None:
         cmd = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     cmd.add('--method', type=str, default='random')
-    cmd.add('--leaf_inf_update_set', type=int, default=0)  # LeafInfluence
+    cmd.add('--leaf_inf_update_set', type=int, default=-1)  # LeafInfluence
     cmd.add('--input_sim_measure', type=str, default='euclidean')  # InputSim
     cmd.add('--tree_sim_measure', type=str, default='dot_prod')  # TreeSim
     cmd.add('--tree_kernel', type=str, default='lpw')  # Trex, TreeSim

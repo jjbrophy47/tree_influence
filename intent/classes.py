@@ -43,22 +43,13 @@ class TreeExplainer(object):
         if method == 'boostin':
             self.explainer = BoostIn(**params, logger=logger)
 
-        elif method == 'boostin2':
-            self.explainer = BoostIn2(**params, logger=logger)
-
-        elif method == 'boostin3':
-            self.explainer = BoostIn3(**params, logger=logger)
-
-        elif method == 'boostin4':
-            self.explainer = BoostIn4(**params, logger=logger)
-
         elif method == 'trex':
             self.explainer = Trex(**params, logger=logger)
 
-        elif method == 'leaf_influence':
+        elif method == 'leaf_inf':
             self.explainer = LeafInfluence(**params, logger=logger)
 
-        elif method == 'leaf_influenceSP':
+        elif method == 'leaf_infSP':
             self.explainer = LeafInfluenceSP(**params, logger=logger)
 
         elif method == 'loo':
@@ -76,13 +67,13 @@ class TreeExplainer(object):
         elif method == 'loss':
             self.explainer = Loss(**params, logger=logger)
 
-        elif method == 'similarity':
-            self.explainer = Similarity(**params, logger=logger)
+        elif method == 'tree_sim':
+            self.explainer = TreeSim(**params, logger=logger)
 
-        elif method == 'similarity2':
-            self.explainer = Similarity2(**params, logger=logger)
+        elif method == 'leaf_sim':
+            self.explainer = LeafSim(**params, logger=logger)
 
-        elif method == 'input_similarity':
+        elif method == 'input_sim':
             self.explainer = InputSimilarity(**params, logger=logger)
 
         elif method == 'target':
