@@ -33,6 +33,8 @@ datasets[20]='twitter'
 datasets[21]='vaccine'
 datasets[22]='wine'
 
+echo $SLURM_ARRAY_TASK_ID
+
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
 python3 scripts/experiments/influence.py \
