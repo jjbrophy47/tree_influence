@@ -33,7 +33,7 @@ tree_type=$2
 # datasets[21]='vaccine'
 # datasets[22]='wine'
 
-. ../config.sh
+. jobs/config.sh
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
