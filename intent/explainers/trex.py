@@ -296,6 +296,7 @@ class Trex(Explainer):
         # optimization settings
         min_loss = 10000.0
         optimizer = optim.SGD([model.W], lr=1.0)
+        prev_grad_loss = -1.0
 
         if self.logger:
             self.logger.info(f'\n[INFO] computing alpha values...')
@@ -329,12 +330,25 @@ class Trex(Explainer):
                         self.logger.info(f'[INFO] stopping criteria reached in epoch: {epoch}')
                     break
 
-            self._backtracking_line_search(model, model.W.grad, X, y, loss)
+            # stop early if grad. has not changed
+            if epoch % 100 == 0:
 
-            if epoch % 100 == 0 and self.logger:
-                self.logger.info(f'[INFO] Epoch: {epoch:4d}, loss: {util.to_np(loss):.7f}'
-                                 f', phi_loss: {phi_loss:.7f}, grad: {grad_loss:.7f}'
-                                 f', cum. time: {time.time() - start:.3f}s')
+                if grad_loss == prev_grad_loss:
+                    if self.logger:
+                        self.logger.info(f'[INFO] Epoch: {epoch:4d}, loss: {util.to_np(loss):.7f}'
+                                         f', phi_loss: {phi_loss:.7f}, grad: {grad_loss:.7f}'
+                                         f', cum. time: {time.time() - start:.3f}s')
+                        self.logger.info(f'[INFO] grad. has not changed in 100 epochs, stopping early...')
+                    break
+
+                else:
+                    if self.logger:
+                        self.logger.info(f'[INFO] Epoch: {epoch:4d}, loss: {util.to_np(loss):.7f}'
+                                         f', phi_loss: {phi_loss:.7f}, grad: {grad_loss:.7f}'
+                                         f', cum. time: {time.time() - start:.3f}s')
+                    prev_grad_loss = grad_loss
+
+            self._backtracking_line_search(model, model.W.grad, X, y, loss)
 
         # compute alpha based on the representer theorem's decomposition
         output = torch.matmul(X, Variable(best_W))  # shape=(no. train, no. class)

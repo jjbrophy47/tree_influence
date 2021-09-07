@@ -12,7 +12,7 @@ sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t
 sbatch -a 1-21  -c 9  -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'
 sbatch -a 1-21  -c 5  -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
 sbatch -a 1-21  -c 5  -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 2,3,4,5,10,11,12,13,16,18,19,20,21 -c 3 -t 1440 -p 'short' -o '${o}${t}_leaf_inf-%a.out' $run $t 'leaf_inf'
+sbatch -a 2,3,4,5,10,11,12,13,16,18,19,20,21 -c 3 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out' $run $t 'leaf_inf'
 
 sbatch -a 22-22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'
 sbatch -a 22-22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'
