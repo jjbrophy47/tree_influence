@@ -149,13 +149,15 @@ def main(args):
                     'check_frac': args.check_frac}
         exp_hash = util.dict_to_hash(exp_dict)
 
+        # special cases
+        if args.method == 'leaf_inf':
+            if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
+                args.leaf_inf_atol = 1e-1
+            elif args.tree_type == 'cb' and args.dataset == 'bean':
+                args.leaf_inf_atol = 1e-1
+
         # get unique hash for the explainer
         params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
-
-        # special cases
-        if args.method == 'leaf_influence':
-            if args.dataset == 'flight_delays':
-                params['atol'] = 1e-1
 
         # create output dir
         out_dir = os.path.join(args.out_dir,

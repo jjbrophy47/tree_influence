@@ -238,6 +238,13 @@ def experiment(args, logger, in_dir, out_dir):
 
 def main(args):
 
+    # special cases
+    if args.method == 'leaf_inf':
+        if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
+            args.leaf_inf_atol = 1e-1
+        elif args.tree_type == 'cb' and args.dataset == 'bean':
+            args.leaf_inf_atol = 1e-1
+
     # get unique hash for the explainer
     _, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
