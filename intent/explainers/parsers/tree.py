@@ -45,12 +45,6 @@ class Tree(object):
             self.tree_ = _Tree32(children_left, children_right, feature, threshold,
                                  leaf_vals, lt_op)
         else:
-            # print(children_left.dtype)
-            # print(children_right.dtype)
-            # print(feature.dtype)
-            # print(threshold.dtype)
-            # print(leaf_vals.dtype)
-            # exit(0)
             self.tree_ = _Tree64(children_left, children_right, feature, threshold,
                                  leaf_vals, lt_op)
 
@@ -62,8 +56,6 @@ class Tree(object):
         Return 1d array of leaf values, shape=(X.shape[0],).
         """
         assert X.ndim == 2
-        print('predict')
-        print(self.tree_)
         return self.tree_.predict(X)
 
     def apply(self, X):
@@ -145,8 +137,6 @@ class TreeEnsemble(object):
         self.l2_leaf_reg = l2_leaf_reg
         self.factor = factor
 
-        print(self.trees.shape)
-
         # validate
         if self.objective in ['regression', 'binary']:
             assert self.trees.shape[1] == 1
@@ -187,7 +177,6 @@ class TreeEnsemble(object):
 
         for boost_idx in range(self.n_boost_):  # per boosting round
             for class_idx in range(self.n_class_):  # per class
-                print(boost_idx, class_idx)
                 pred[:, class_idx] += self.trees[boost_idx, class_idx].predict(X)
 
         # transform predictions based on the tree type and objective

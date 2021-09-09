@@ -65,7 +65,6 @@ cdef class _Tree64:
         """
         Predict leaf values for x in X.
         """
-        printf('begin\n')
 
         # In / out
         cdef SIZE_t n_samples = X.shape[0]
@@ -75,12 +74,9 @@ cdef class _Tree64:
         cdef SIZE_t i = 0
         cdef Node*  node = NULL
 
-        printf('start\n')
-
         with nogil:
 
             for i in range(n_samples):
-                printf('sample %lu\n', i)
                 node = self.root_
 
                 while not node.is_leaf:
