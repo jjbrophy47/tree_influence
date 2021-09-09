@@ -1,7 +1,10 @@
+"""
+32-bit-precision tree.
+"""
 import numpy as np
 cimport numpy as np
 
-ctypedef np.npy_float64 DTYPE_t          # Type of X
+ctypedef np.npy_float32 DTYPE_t          # Type of X
 ctypedef np.npy_intp    SIZE_t           # Type for indices and counters
 ctypedef np.npy_int32   INT32_t          # Signed 32 bit integer
 ctypedef np.npy_uint32  UINT32_t         # Unsigned 32 bit integer
@@ -29,7 +32,7 @@ cdef struct IntList:
     SIZE_t* arr
     SIZE_t  n
 
-cdef class _Tree:
+cdef class _Tree32:
     """
     The Tree object is a binary tree structure constructed by the
     TreeBuilder. The tree structure is used for predictions.
@@ -41,6 +44,7 @@ cdef class _Tree:
     cdef SIZE_t[:]  feature
     cdef DTYPE_t[:] threshold
     cdef DTYPE_t[:] leaf_vals
+    cdef bint       lt_op
     cdef Node*      root_
     cdef SIZE_t     node_count_
     cdef SIZE_t     leaf_count_
@@ -60,5 +64,6 @@ cdef class _Tree:
     cdef Node* _initialize_node(self, SIZE_t node_id, SIZE_t depth, bint is_left) nogil
     cdef void  _get_leaf_values(self, Node* node, DTYPE_t* leaf_values) nogil
     cdef void  _get_leaf_weights(self, Node* node, DTYPE_t* leaf_weights, DTYPE_t leaf_scale) nogil
+    cdef bint  _test_threshold(self, DTYPE_t fvalue, DTYPE_t threshold) nogil
     cdef void  _dealloc(self, Node *node) nogil
     cdef str   _tree_str(self, Node* node, str s)

@@ -3,10 +3,6 @@ import numpy as np
 from .tree import Tree
 
 
-# DEBUG
-# g = 0
-
-
 def parse_xgb_ensemble(model):
     """
     Parse XGBoost model based on its string representation.
@@ -45,7 +41,7 @@ def parse_xgb_ensemble(model):
         assert model_params['objective'] == 'reg:squarederror'
         assert model_params['scale_pos_weight'] == 1
         trees = trees.reshape(-1, 1)  # shape=(no. trees, 1)
-        bias = model.get_params()['base_score']  # 0.5 for some reason
+        bias = model.get_params()['base_score']  # 0.5
         objective = 'regression'
         factor = 0.0
 
@@ -61,7 +57,7 @@ def parse_xgb_ensemble(model):
 
 
 # private
-def _parse_xgb_tree(tree_str):
+def _parse_xgb_tree(tree_str, lt_op=1, is_float32=True):
     """
     Data has format:
     '
@@ -76,18 +72,13 @@ def _parse_xgb_tree(tree_str):
     Desired format:
         https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html#sphx-glr-auto-examples-tree-plot-unveil-tree-structure-py
     """
+    # print(tree_str)
 
     children_left = []
     children_right = []
     feature = []
     threshold = []
     leaf_vals = []
-
-    # DEBUG
-    # global g
-    # if g == 14:
-    #     print(tree_str)
-    # g += 1
 
     # each line is a node, the no. preceeding tabs indicates its depth
     lines = tree_str.split('\n')
@@ -145,7 +136,7 @@ def _parse_xgb_tree(tree_str):
 
             node_id += 1
 
-    result = Tree(children_left, children_right, feature, threshold, leaf_vals)
+    result = Tree(children_left, children_right, feature, threshold, leaf_vals, lt_op, is_float32)
 
     return result
 
@@ -180,7 +171,7 @@ def _get_string_data_from_xgb_model(model):
     Parse CatBoost model based on its json representation.
     """
     assert 'XGB' in str(model)
-    string_data = model.get_booster().get_dump()  # 1d list of tree strings
+    string_data = model.get_booster().get_dump(dump_format='text')  # 1d list of tree strings
     return string_data
 
 
@@ -201,17 +192,14 @@ def _parse_line(line):
     return res
 
 
-def _parse_decision_node_line(line, tol=1e-8):
+def _parse_decision_node_line(line):
     """
     Return feature index and threshold given the string representation of a decision node.
-
-    Note:
-        - Border is subtracted by `tol` to convert XGB's < operator to a <=.
     """
     substr = line[line.find('[') + 1: line.find(']')]
     feature_str, border_str = substr.split('<')
     feature_ndx = int(feature_str[1:])
-    border = float(border_str) - tol
+    border = float(border_str)
     return feature_ndx, border
 
 

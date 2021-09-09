@@ -56,7 +56,7 @@ def parse_cb_ensemble(model):
 
 
 # private
-def _parse_cb_tree(tree_dict, n_class):
+def _parse_cb_tree(tree_dict, n_class, lt_op=0, is_float32=False):
     """
     Data has format:
     {
@@ -131,9 +131,11 @@ def _parse_cb_tree(tree_dict, n_class):
 
     # leaf_vals may be a list of lists, go through each one and make a tree for each one
     if n_class > 2:
-        result = [Tree(children_left, children_right, feature, threshold, leaf_vals[j]) for j in range(n_class)]
+        result = [Tree(children_left, children_right, feature, threshold,
+                       leaf_vals[j], lt_op, is_float32) for j in range(n_class)]
     else:
-        result = Tree(children_left, children_right, feature, threshold, leaf_vals)
+        result = Tree(children_left, children_right, feature, threshold,
+                      leaf_vals, lt_op, is_float32)
 
     return result
 

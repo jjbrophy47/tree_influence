@@ -73,7 +73,7 @@ def parse_lgb_ensemble(model, X, y):
 
 
 # private
-def _parse_lgb_tree(tree_dict, tree_index, n_class, initial_guess):
+def _parse_lgb_tree(tree_dict, tree_index, n_class, initial_guess, lt_op=0, is_float32=False):
     """
     Data has format:
     {
@@ -114,9 +114,6 @@ def _parse_lgb_tree(tree_dict, tree_index, n_class, initial_guess):
     leaf_vals = []
 
     node_dict = tree_dict['tree_structure']
-
-    # if tree_index == 21:
-    #     print(node_dict)
 
     # add root node
     if 'leaf_value' in node_dict:  # leaf
@@ -163,9 +160,6 @@ def _parse_lgb_tree(tree_dict, tree_index, n_class, initial_guess):
                 stack.append((node_dict['left_child'], 1))
                 stack.append((node_dict['right_child'], 0))
 
-                # if tree_index == 12 and node_dict['split_index'] == 9:
-                #     print('WEINER', len(threshold))
-
             else:  # leaf node
                 feature.append(-1)
                 threshold.append(-1)
@@ -175,12 +169,9 @@ def _parse_lgb_tree(tree_dict, tree_index, n_class, initial_guess):
                 stack.append((None, 1))
                 stack.append((None, 0))
 
-                # if node_dict['leaf_index'] in [11, 6, 0, 3, 12, 5, 13]:
-                #     print(tree_index, node_dict['leaf_index'], node_dict['leaf_value'])
-
             node_id += 1
 
-    result = Tree(children_left, children_right, feature, threshold, leaf_vals)
+    result = Tree(children_left, children_right, feature, threshold, leaf_vals, lt_op, is_float32)
 
     return result
 

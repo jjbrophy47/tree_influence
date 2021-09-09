@@ -5,6 +5,14 @@ from sklearn.preprocessing import OneHotEncoder
 dtype_t = np.float64
 
 
+def set_dtype_t(is_float32):
+    """
+    Globally set the data precision.
+    """
+    global dtype_t
+    dtype_t = np.float32 if is_float32 else np.float64
+
+
 def check_data(X, y=None, objective='regression'):
     """
     Make sure the data is valid.
@@ -68,7 +76,8 @@ def check_multiclass_targets(y):
 
 def check_regression_targets(y):
     """
-    Makes sure regression targets are of dtype_t type.
+    Makes sure regression targets are of the same
+        type as the features values.
     """
     assert y.ndim == 1
     if y.dtype != dtype_t:
@@ -94,8 +103,10 @@ def softmax(z):
     """
     if type(z) == list:
         z = np.array(z, dtype=dtype_t)
+
     if z.ndim == 1:
         z = z.reshape(1, -1)  # shape=(1, len(z))
+
     centered_exponent = np.exp(z - np.max(z, axis=1, keepdims=True))
     return centered_exponent / np.sum(centered_exponent, axis=1, keepdims=True)
 

@@ -1,7 +1,8 @@
 import numpy as np
 
 from . import util
-from ._tree import _Tree
+from ._tree32 import _Tree32
+from ._tree64 import _Tree64
 
 
 class Tree(object):
@@ -18,13 +19,40 @@ class Tree(object):
             15a949460dbf19e5e196b8ef48f9712b72a3b3c3/sklearn/tree/_tree.pyx
     """
 
-    def __init__(self, children_left, children_right, feature, threshold, leaf_vals):
+    def __init__(self, children_left, children_right, feature, threshold,
+                 leaf_vals, lt_op, is_float32):
+        """
+        Initialize internal tree optimized using Cython.
+
+        Input
+            children_left: 1d array of integers; value of i is the node ID of i's left child.
+            children_right: 1d array of integers; value of i is the node ID of i's right child.
+            feature: 1d array of floats; value of entry i is feature index of node i.
+            threshold: 1d array of floats; value of entry i is threshold value of node i.
+            leaf_vals: 1d array of floats; value of entry i is leaf value of node i.
+            lt_op: bool, 1 if tree uses the '<' operatior, 0 otherwise (assumes '<=').
+            if_float32: bool, 1 if tree uses 32-bit floats, 0 if 64-bit floats.
+        """
+        util.set_dtype_t(is_float32)
+
         children_left = np.array(children_left, dtype=np.intp)
         children_right = np.array(children_right, dtype=np.intp)
         feature = np.array(feature, dtype=np.intp)
         threshold = np.array(threshold, dtype=util.dtype_t)
         leaf_vals = np.array(leaf_vals, dtype=util.dtype_t)
-        self.tree_ = _Tree(children_left, children_right, feature, threshold, leaf_vals)
+
+        if is_float32:
+            self.tree_ = _Tree32(children_left, children_right, feature, threshold,
+                                 leaf_vals, lt_op)
+        else:
+            # print(children_left.dtype)
+            # print(children_right.dtype)
+            # print(feature.dtype)
+            # print(threshold.dtype)
+            # print(leaf_vals.dtype)
+            # exit(0)
+            self.tree_ = _Tree64(children_left, children_right, feature, threshold,
+                                 leaf_vals, lt_op)
 
     def __str__(self):
         return self.tree_.tree_str()
@@ -34,6 +62,8 @@ class Tree(object):
         Return 1d array of leaf values, shape=(X.shape[0],).
         """
         assert X.ndim == 2
+        print('predict')
+        print(self.tree_)
         return self.tree_.predict(X)
 
     def apply(self, X):
@@ -115,6 +145,8 @@ class TreeEnsemble(object):
         self.l2_leaf_reg = l2_leaf_reg
         self.factor = factor
 
+        print(self.trees.shape)
+
         # validate
         if self.objective in ['regression', 'binary']:
             assert self.trees.shape[1] == 1
@@ -155,6 +187,7 @@ class TreeEnsemble(object):
 
         for boost_idx in range(self.n_boost_):  # per boosting round
             for class_idx in range(self.n_class_):  # per class
+                print(boost_idx, class_idx)
                 pred[:, class_idx] += self.trees[boost_idx, class_idx].predict(X)
 
         # transform predictions based on the tree type and objective
@@ -176,6 +209,7 @@ class TreeEnsemble(object):
         Returns 3d array of leaf indices; shape=(X.shape[0], no. boost, no. class).
         """
         leaves = np.zeros((X.shape[0], self.n_boost_, self.n_class_), dtype=np.int32)
+
         for boost_idx in range(self.n_boost_):
             for class_idx in range(self.n_class_):
                 leaves[:, boost_idx, class_idx] = self.trees[boost_idx][class_idx].apply(X)

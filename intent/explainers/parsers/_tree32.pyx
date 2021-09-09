@@ -20,9 +20,9 @@ cimport numpy as np
 np.import_array()
 
 # constants
-cdef np_dtype_t = np.float64
+cdef np_dtype_t = np.float32
 
-cdef class _Tree:
+cdef class _Tree32:
 
     property node_count_:
         def __get__(self):
@@ -37,7 +37,8 @@ cdef class _Tree:
                   SIZE_t[:]  children_right,
                   SIZE_t[:]  feature,
                   DTYPE_t[:] threshold,
-                  DTYPE_t[:] leaf_vals):
+                  DTYPE_t[:] leaf_vals,
+                  bint       lt_op):
         """
         Constructor.
         """
@@ -46,6 +47,7 @@ cdef class _Tree:
         self.feature = feature
         self.threshold = threshold
         self.leaf_vals = leaf_vals
+        self.lt_op = lt_op
 
         self.node_count_ = 0
         self.leaf_count_ = 0
@@ -84,7 +86,7 @@ cdef class _Tree:
                     #     printf('X[9687, %ld]: %.32f, node.threshold: %.32f, node.depth: %ld\n',
                     #            node.feature, X[i, node.feature], node.threshold, node.depth)
 
-                    if X[i, node.feature] <= node.threshold:
+                    if self._test_threshold(X[i, node.feature], node.threshold):
                         node = node.left_child
                     else:
                         node = node.right_child
@@ -116,7 +118,7 @@ cdef class _Tree:
                 node = self.root_
 
                 while not node.is_leaf:
-                    if X[i, node.feature] <= node.threshold:
+                    if self._test_threshold(X[i, node.feature], node.threshold):
                         node = node.left_child
                     else:
                         node = node.right_child
@@ -191,7 +193,7 @@ cdef class _Tree:
                 while not node.is_leaf:
                     node.count += 1
 
-                    if X[i, node.feature] <= node.threshold:
+                    if self._test_threshold(X[i, node.feature], node.threshold):
                         node = node.left_child
                     else:
                         node = node.right_child
@@ -219,7 +221,7 @@ cdef class _Tree:
                 node = self.root_
 
                 while not node.is_leaf:
-                    if X[i, node.feature] <= node.threshold:
+                    if self._test_threshold(X[i, node.feature], node.threshold):
                         node = node.left_child
                     else:
                         node = node.right_child
@@ -265,7 +267,7 @@ cdef class _Tree:
                     out[i][node.node_id] = val
 
                     # traverse
-                    if X[i, node.feature] <= node.threshold:
+                    if self._test_threshold(X[i, node.feature], node.threshold):
                         node = node.left_child
                     else:
                         node = node.right_child
@@ -374,6 +376,20 @@ cdef class _Tree:
             self._get_leaf_weights(node.right_child, leaf_weights, leaf_scale)
 
         return
+
+    cdef bint _test_threshold(self, DTYPE_t fvalue, DTYPE_t threshold) nogil:
+        """
+        Test the feature value on the given threshold.
+        """
+        cdef bint result = 0
+
+        if self.lt_op:
+            result = 1 if fvalue < threshold else 0
+
+        else:
+            result = 1 if fvalue <= threshold else 0
+
+        return result
 
     cdef void _dealloc(self, Node *node) nogil:
         """

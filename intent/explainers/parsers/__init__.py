@@ -1,6 +1,6 @@
 """
-TODO: Add HistGradientBoostingClassifier.
 TODO: Add HistGradientBoostingRegressor.
+TODO: Add HistGradientBoostingClassifier.
 """
 import numpy as np
 
@@ -55,41 +55,24 @@ def parse_model(model, X, y):
 def _check_predictions(original_model, model, X, y):
     """
     Check to make sure both models produce the same predictions.
-
-    WARNING
-        - XGB: The representation given by `model.get_booster().get_dump()` is
-            sometimes slightly different than the actual internal `model`.
-            * This results in train examples sometimes going into DIFFERENT leaves
-                between the standardized and original model, resulting in slightly
-                different predictions for some examples.
     """
     if model.objective == 'regression':
         p1 = original_model.predict(X)
+        if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
+            X.flags.writeable = True
         p2 = model.predict(X)[:, 0]
 
     elif model.objective == 'binary':
         p1 = original_model.predict_proba(X)[:, 1]
+        if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
+            X.flags.writeable = True
         p2 = model.predict(X)[:, 0]
 
     else:
         assert model.objective == 'multiclass'
         p1 = original_model.predict_proba(X)
+        if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
+            X.flags.writeable = True
         p2 = model.predict(X)
-
-    # DEBUG
-    # import xgboost
-
-    # print(dir(original_model))
-    # leaves = original_model.get_booster().predict(xgboost.DMatrix(X), pred_leaf=True)
-    # print(leaves, leaves.shape)
-
-    # print(leaves[9687][15])
-
-    # i = np.where(~np.isclose(p1, p2, atol=1e-5))[0]
-    # print(i, i.shape)
-    # print(p1[i[:1]])
-    # print(p2[i[:1]])
-
-    # print(model.trees[2][0])
 
     assert np.allclose(p1, p2)

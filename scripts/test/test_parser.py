@@ -71,11 +71,17 @@ def test_cb_regressor(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_train = tree.predict(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_test = tree.predict(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_cb_binary_classifier(args):
@@ -88,11 +94,17 @@ def test_cb_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)[:, 1]
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test)[:, 1]
+    model_pred_test = model.predict(X_test)
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train)[:, 1]
+    model_pred_train = model.predict(X_train)
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_cb_multiclass_classifier(args):
@@ -105,11 +117,17 @@ def test_cb_multiclass_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 """
@@ -127,11 +145,17 @@ def test_lgb_regressor(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_train = tree.predict(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_test = tree.predict(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_lgb_binary_classifier(args):
@@ -144,11 +168,17 @@ def test_lgb_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)[:, 1]
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test)[:, 1]
+    model_pred_test = model.predict(X_test)
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train)[:, 1]
+    model_pred_train = model.predict(X_train)
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_lgb_multiclass_classifier(args):
@@ -161,11 +191,17 @@ def test_lgb_multiclass_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 """
@@ -183,11 +219,17 @@ def test_skgbm_regressor(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_train = tree.predict(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_test = tree.predict(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_skgbm_binary_classifier(args):
@@ -200,11 +242,17 @@ def test_skgbm_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)[:, 1]
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test)[:, 1]
+    model_pred_test = model.predict(X_test)
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train)[:, 1]
+    model_pred_train = model.predict(X_train)
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_skgbm_multiclass_classifier(args):
@@ -217,11 +265,17 @@ def test_skgbm_multiclass_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 """
@@ -239,11 +293,17 @@ def test_skrf_regressor(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_train = tree.predict(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_test = tree.predict(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_skrf_binary_classifier(args):
@@ -256,11 +316,17 @@ def test_skrf_binary_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)[:, 1]
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test)[:, 1]
+    model_pred_test = model.predict(X_test)
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train)[:, 1]
+    model_pred_train = model.predict(X_train)
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_skrf_multiclass_classifier(args):
@@ -273,11 +339,17 @@ def test_skrf_multiclass_classifier(args):
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 """
@@ -290,16 +362,29 @@ def test_xgb_regressor(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
 
     tree = XGBRegressor(n_estimators=args.n_tree, max_depth=args.max_depth,
-                        random_state=args.rs)
+                        tree_method='hist', random_state=args.rs)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_train = tree.predict(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_test = tree.predict(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    # idxs = np.where(~np.isclose(tree_pred_train, model_pred_train, atol=1e-1))[0]
+    # print(idxs, idxs.shape)
+    # print(tree_pred_train[idxs], model_pred_train[idxs])
+
+    # for x in X_train[6]:
+    #     print(f'{x:.32f}')
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_xgb_binary_classifier(args):
@@ -307,17 +392,23 @@ def test_xgb_binary_classifier(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
 
     tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                         random_state=args.rs, use_label_encoder=False,
-                         eval_metric='logloss')
+                         tree_method='hist', random_state=args.rs,
+                         use_label_encoder=False, eval_metric='logloss')
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)[:, 1]
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test)[:, 1]
+    model_pred_test = model.predict(X_test)
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train)[:, 1]
+    model_pred_train = model.predict(X_train)
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
 def test_xgb_multiclass_classifier(args):
@@ -325,20 +416,26 @@ def test_xgb_multiclass_classifier(args):
     X_train, X_test, y_train, y_test = get_test_data(args, n_class=args.n_class)
 
     tree = XGBClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
-                         random_state=args.rs, use_label_encoder=False,
-                         eval_metric='mlogloss')
+                         tree_method='hist', random_state=args.rs,
+                         use_label_encoder=False, eval_metric='mlogloss')
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)
 
-    tree_pred = tree.predict_proba(X_test)
-    model_pred = model.predict(X_test)
+    tree_pred_test = tree.predict_proba(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
 
-    status = compare_predictions(tree_pred, model_pred)
-    print(status)
+    tree_pred_train = tree.predict_proba(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_train', type=int, default=100)
     parser.add_argument('--n_test', type=int, default=100)

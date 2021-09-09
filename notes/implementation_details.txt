@@ -5,6 +5,8 @@ https://explained.ai/gradient-boosting/
 
 Catboost
 
+Internal precision: float64
+
 Default leaf_estimation_method: Newton
 Default leaf reg. (l2_leaf_reg): 3
 Default learning rate: 0.3
@@ -38,6 +40,8 @@ Regression
 
 XGBoost
 
+Internal precision: float32
+
 Leaf weight is the hessian sum.
 max_delta_step is a hard limit on the leaf update amount; learning rate still applies to this update amount.
 	Not usually needed unless classes are highly imbalanced.
@@ -70,6 +74,8 @@ Regression
 
 
 LightGBM
+
+Internal precision: float64
 
 Gradient computations are defined in these loss functions:
 https://github.com/microsoft/LightGBM/tree/master/src/objective
@@ -119,6 +125,8 @@ initial guess as the bias term in the unified representation across all implemen
 
 SKGBM
 
+Internal precision: float64
+
 Leaf values are updated using these loss classes:
 https://github.com/scikit-learn/scikit-learn/blob/2beed55847ee70d363bdbfe14ee4401438fba057/sklearn/ensemble/_gb_losses.py
 
@@ -158,6 +166,8 @@ NOTE:
 
 
 SKRF
+
+Internal precision: float64
 
 When boostrap=True, then it appears there is no way to tell which examples (and more importantly)
 	and how many of each example are used to estimate each leaf value.

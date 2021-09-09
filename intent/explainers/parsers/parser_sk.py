@@ -4,7 +4,7 @@ from . import util
 from .tree import Tree
 
 
-def parse_skgbm_ensemble(model):
+def parse_skgbm_ensemble(model, lt_op=0, is_float32=False):
     """
     Parse SKLearn GBM model using its underlying tree representations.
 
@@ -30,7 +30,8 @@ def parse_skgbm_ensemble(model):
             feature = list(t.feature)
             threshold = list(t.threshold)
             leaf_vals = list(t.value.flatten() * scale)
-            trees[i][j] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            trees[i][j] = Tree(children_left, children_right, feature, threshold,
+                               leaf_vals, lt_op, is_float32)
 
     # set bias
     bias = 0.0
@@ -72,7 +73,7 @@ def parse_skgbm_ensemble(model):
     return trees, params
 
 
-def parse_skrf_ensemble(model):
+def parse_skrf_ensemble(model, lt_op=0, is_float32=False):
     """
     Parse SKLearn RF model using its underlying tree representations.
 
@@ -101,7 +102,8 @@ def parse_skrf_ensemble(model):
         # regression
         if n_class == 0:
             leaf_vals = list(t.value.flatten())
-            trees[i][0] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            trees[i][0] = Tree(children_left, children_right, feature, threshold,
+                               leaf_vals, lt_op, is_float32)
             bias = 0.0
             objective = 'regression'
             factor = 0.0
@@ -110,7 +112,8 @@ def parse_skrf_ensemble(model):
         elif n_class == 2:
             value = t.value.squeeze()  # value.shape=(no. nodes, 2)
             leaf_vals = (value / value.sum(axis=1).reshape(-1, 1))[:, 1].tolist()
-            trees[i][0] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+            trees[i][0] = Tree(children_left, children_right, feature, threshold,
+                               leaf_vals, lt_op, is_float32)
             bias = 0.0
             objective = 'binary'
             factor = 0.0
@@ -122,7 +125,8 @@ def parse_skrf_ensemble(model):
             value /= value.sum(axis=1).reshape(-1, 1)  # normalize
             for j in range(value.shape[1]):  # per class
                 leaf_vals = list(value[:, j])
-                trees[i][j] = Tree(children_left, children_right, feature, threshold, leaf_vals)
+                trees[i][j] = Tree(children_left, children_right, feature, threshold,
+                                   leaf_vals, lt_op, is_float32)
             bias = [0.0] * n_class
             objective = 'multiclass'
             factor = (n_class) / (n_class - 1)
