@@ -61,7 +61,7 @@ cdef class _Tree64:
             self._dealloc(self.root_)
             free(self.root_)
 
-    cpdef np.ndarray predict(self, const DTYPE_t[:, :] X):
+    cpdef np.ndarray predict(self, DTYPE_t[:, :] X):
         """
         Predict leaf values for x in X.
         """

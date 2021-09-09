@@ -353,6 +353,7 @@ def explainer_params_to_dict(explainer, exp_params):
 
     elif explainer == 'leaf_inf':
         params['update_set'] = exp_params['leaf_inf_update_set']
+        params['atol'] = exp_params['leaf_inf_atol']
 
     elif explainer == 'leaf_infSP':
         pass
