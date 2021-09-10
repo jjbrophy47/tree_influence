@@ -1,5 +1,5 @@
 """
-Aggregate results and organize them into one dict.
+Plot results for a single dataset.
 """
 import os
 import sys
@@ -15,9 +15,10 @@ from tqdm import tqdm
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
-import util as pp_util
-from experiments import util
+import util
+from experiments import util as exp_util
 from leaf_analysis import filter_results
+from config import post_args
 
 
 def process(args, out_dir, logger):
@@ -28,9 +29,17 @@ def process(args, out_dir, logger):
     results = []
     reinf_list = []
 
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
+
     for in_dir in args.in_dir:
 
-        res = pp_util.get_results(args, in_dir, logger)
+        exp_dir = os.path.join(in_dir,
+                               args.dataset,
+                               args.tree_type,
+                               f'exp_{exp_hash}')
+
+        res = util.get_results(args, in_dir, exp_dir, logger)
         res = filter_results(res, args.skip)
         results += res
 
@@ -41,9 +50,9 @@ def process(args, out_dir, logger):
             reinf_exists = 1
 
     # get dataset
-    X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
+    X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, args.dataset)
 
-    color, line, label = pp_util.get_plot_dicts()
+    color, line, label = util.get_plot_dicts()
 
     fig, axs = plt.subplots(1, 2, figsize=(8, 4))
 
@@ -117,9 +126,8 @@ def process(args, out_dir, logger):
     if args.zoom <= 0.0 or args.zoom >= 1.0:
         fig.delaxes(axs[1])
 
-    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
-                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
-    exp_hash = util.dict_to_hash(exp_dict)
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
 
     custom_dir = 'reestimation' if reinf_exists else args.custom_dir
 
@@ -142,7 +150,7 @@ def main(args):
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
     logger.info(datetime.now())
 
@@ -150,57 +158,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, nargs='+', default=['temp_influence/', 'temp_reinfluence/'])
-    parser.add_argument('--out_dir', type=str, default='output/plot/roar/', help='output directory.')
-
-    # experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.05)
-    parser.add_argument('--n_ckpt', type=int, default=50)
-
-    # additional settings
-    parser.add_argument('--random_state', type=int, default=1)
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-
-    # method settings
-    parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'target', 'similarity', 'boostin2', 'boostin3', 'boostin4',
-                                 'trex', 'leaf_influence', 'leaf_influenceSP', 'loo',
-                                 'dshap', 'subsample'])  # no minority, loss
-    parser.add_argument('--skip', type=str, nargs='+',
-                        default=['minority', 'loss'])
-    parser.add_argument('--leaf_scale', type=int, nargs='+', default=[-1.0])  # BoostIn
-    parser.add_argument('--local_op', type=str, nargs='+', default=['normal'])  # BoostIn
-    parser.add_argument('--update_set', type=int, nargs='+', default=[-1])  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
-
-    parser.add_argument('--kernel', type=str, nargs='+', default=['lpw'])  # Trex & Similarity
-    parser.add_argument('--target', type=str, nargs='+', default=['actual'])  # Trex
-    parser.add_argument('--lmbd', type=float, nargs='+', default=[0.003])  # Trex
-    parser.add_argument('--n_epoch', type=str, nargs='+', default=[3000, 200])  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, nargs='+', default=[0.25])  # DShap
-    parser.add_argument('--check_every', type=int, nargs='+', default=[100])  # DShap
-
-    parser.add_argument('--sub_frac', type=float, nargs='+', default=[0.7])  # SubSample
-    parser.add_argument('--n_iter', type=int, nargs='+', default=[4000])  # SubSample
-
-    parser.add_argument('--global_op', type=str, nargs='+', default=['self', 'expected'])  # TREX, LOO, DShap
-
-    # result settings
-    parser.add_argument('--metric', type=str, nargs='+', default=['mse', 'loss', 'acc', 'auc'])
-    parser.add_argument('--std_err', type=int, default=0)
-    parser.add_argument('--custom_dir', type=str, default='')
-    parser.add_argument('--zoom', type=float, default=0.2)
-    parser.add_argument('--plt', type=str, default='no_fill')
-
-    args = parser.parse_args()
-    main(args)
+    main(post_args.get_roar_args().parse_args())

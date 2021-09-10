@@ -1,7 +1,7 @@
 
 run='jobs/poison/runner.sh'
 o='jobs/logs/poison/'
-t='lgb'
+t='xgb'
 
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'

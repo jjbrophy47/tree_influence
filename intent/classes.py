@@ -74,7 +74,7 @@ class TreeExplainer(object):
             self.explainer = LeafSim(**params, logger=logger)
 
         elif method == 'input_sim':
-            self.explainer = InputSimilarity(**params, logger=logger)
+            self.explainer = InputSim(**params, logger=logger)
 
         elif method == 'target':
             self.explainer = Target(**params, logger=logger)
@@ -97,18 +97,21 @@ class TreeExplainer(object):
         """
         return self.explainer.fit(model, X, y)
 
-    def get_global_influence(self):
+    def get_self_influence(self, X, y):
         """
         - Compute influence of each training instance on itself.
         - Provides a global perspective of which training intances
           are most important.
 
+        Input
+            - X: 2d array of train examples.
+            - y: 1d array of train targets
+
         Return
-            - Regression and binary: 1d array of shape=(no. train,).
-            - Multiclass: 2d array of shape=(no. train, no. classes).
-            - Arrays are returned in the same order as the traing data.
+            - 1d array of shape=(no. train,).
+                * Arrays are returned in the same order as the traing data.
         """
-        return self.explainer.get_global_influence()
+        return self.explainer.get_self_influence(X, y)
 
     def get_local_influence(self, X, y):
         """
@@ -121,8 +124,7 @@ class TreeExplainer(object):
                 * Could be the actual label or the predicted label depending on the explainer.
 
         Return
-            - Regression and binary: 2d array of shape=(no. train, X.shape[0]).
-            - Multiclass: 3d array of shape=(X.shape[0], no. train, no. class).
-            - Arrays are returned in the same order as the training data.
+            - 2d array of shape=(no. train, X.shape[0]).
+                * Arrays are returned in the same order as the training data.
         """
         return self.explainer.get_local_influence(X, y)
