@@ -464,15 +464,15 @@ def get_hyperparams(tree_type, dataset):
 
     xgb = {}
     xgb['adult'] = {'n_estimators': 200, 'max_depth': 3}
-    xgb['bank_marketing'] = {'n_estimators': 100, 'max_depth': 3}
+    xgb['bank_marketing'] = {'n_estimators': 100, 'max_depth': 4}
     xgb['bean'] = {'n_estimators': 25, 'max_depth': 5}
     xgb['compas'] = {'n_estimators': 50, 'max_depth': 3}
-    xgb['concrete'] = {'n_estimators': 200, 'max_depth': 3}
+    xgb['concrete'] = {'n_estimators': 200, 'max_depth': 4}
     xgb['credit_card'] = {'n_estimators': 10, 'max_depth': 3}
     xgb['diabetes'] = {'n_estimators': 200, 'max_depth': 3}
     xgb['energy'] = {'n_estimators': 200, 'max_depth': 5}
     xgb['flight_delays'] = {'n_estimators': 200, 'max_depth': 7}
-    xgb['german_credit'] = {'n_estimators': 10, 'max_depth': 3}
+    xgb['german_credit'] = {'n_estimators': 10, 'max_depth': 4}
     xgb['htru2'] = {'n_estimators': 100, 'max_depth': 2}
     xgb['life'] = {'n_estimators': 200, 'max_depth': 5}
     xgb['naval'] = {'n_estimators': 100, 'max_depth': 7}
@@ -480,7 +480,7 @@ def get_hyperparams(tree_type, dataset):
     xgb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['power'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['protein'] = {'n_estimators': 200, 'max_depth': 7}
-    xgb['spambase'] = {'n_estimators': 200, 'max_depth': 2}
+    xgb['spambase'] = {'n_estimators': 200, 'max_depth': 4}
     xgb['surgical'] = {'n_estimators': 50, 'max_depth': 5}
     xgb['twitter'] = {'n_estimators': 200, 'max_depth': 7}
     xgb['vaccine'] = {'n_estimators': 100, 'max_depth': 3}

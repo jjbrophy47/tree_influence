@@ -45,7 +45,7 @@ def get_model(args, objective):
                              n_tree=args.n_estimators,
                              max_depth=args.max_depth,
                              random_state=args.random_state)
-        params = {'n_estimators': [10, 25, 50, 100, 200], 'max_depth': [2, 3, 5, 7]}
+        params = {'n_estimators': [10, 25, 50, 100, 200], 'max_depth': [2, 3, 4, 5, 7]}
 
         if args.model == 'lgb':
             params['max_depth'] = [-1]
