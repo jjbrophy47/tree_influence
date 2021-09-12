@@ -3,6 +3,7 @@ Summarization commandline arguments.
 """
 import configargparse
 
+from . import exp_args
 from . import post_args
 
 
@@ -24,36 +25,6 @@ def get_general_args(cmd=None):
     return cmd
 
 
-# def get_explainer_args(cmd=None):
-#     """
-#     Add arguments used by the explainers.
-
-#     Input
-#         cmd: ArgParser, object to add commandline arguments to.
-
-#     Return ArgParser object.
-#     """
-#     if cmd is None:
-#         cmd = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
-#     cmd.add('--method', type=str, nargs='+', default=['random', 'target', 'input_sim', 'leaf_sim', 'boostin',
-#                                                       'trex', 'leaf_inf', 'leaf_infSP', 'loo', 'subsample'])
-#     cmd.add('--skip', type=str, nargs='+', default=[])
-#     cmd.add('--leaf_inf_update_set', type=int, default=[-1])  # LeafInfluence
-#     cmd.add('--input_sim_measure', type=str, default=['euclidean'])  # InputSim
-#     cmd.add('--tree_sim_measure', type=str, default=['dot_prod'])  # TreeSim
-#     cmd.add('--tree_kernel', type=str, default=['lpw'])  # Trex, TreeSim
-#     cmd.add('--trex_target', type=str, default=['actual'])  # Trex
-#     cmd.add('--trex_lmbd', type=float, default=[0.003])  # Trex
-#     cmd.add('--trex_n_epoch', type=str, default=[3000])  # Trex
-#     cmd.add('--dshap_trunc_frac', type=float, default=[0.25])  # DShap
-#     cmd.add('--dshap_check_every', type=int, default=[100])  # DShap
-#     cmd.add('--subsample_sub_frac', type=float, default=[0.7])  # SubSample
-#     cmd.add('--subsample_n_iter', type=int, default=[4000])  # SubSample
-#     cmd.add('--n_jobs', type=int, default=-1)  # SubSample
-#     cmd.add('--random_state', type=int, default=1)  # SubSample
-#     return cmd
-
-
 def get_roar_args():
     """
     Add arguments specific to "Roar" summarization.
@@ -73,7 +44,7 @@ def get_roar_args():
 
 # def get_counterfactual_args():
 #     """
-#     Add arguments specific to the "Counterfactual" experiment.
+#     Add arguments specific to the "Counterfactual" summarization.s
 
 #     Return ArgParser object.
 #     """
@@ -88,47 +59,68 @@ def get_roar_args():
 #     return cmd
 
 
-# def get_noise_args():
-#     """
-#     Add arguments specific to the "Noise" experiment.
+def get_correlation_args():
+    """
+    Add arguments specific to the "Correlation" summarization.
 
-#     Return ArgParser object.
-#     """
-#     cmd = get_general_args()
-#     cmd = get_explainer_args(cmd)
-#     cmd.add('--out_dir', type=str, default='output/noise/')
-#     cmd.add('--strategy', type=str, default='test_sum')
-#     cmd.add('--noise_frac', type=float, default=0.1)
-#     cmd.add('--val_frac', type=float, default=0.1)
-#     cmd.add('--check_frac', type=float, default=0.1)
-#     cmd.add('--n_repeat', type=int, default=5)
-#     cmd.add('--seed', type=int, default=-1)
-#     return cmd
-
-
-# def get_poison_args():
-#     """
-#     Add arguments specific to the "Poison" experiment.
-
-#     Return ArgParser object.
-#     """
-#     cmd = get_general_args()
-#     cmd = get_explainer_args(cmd)
-#     cmd.add('--out_dir', type=str, default='output/poison/')
-#     cmd.add('--poison_frac', type=float, nargs='+', default=[0.01, 0.05, 0.1, 0.2, 0.3])
-#     cmd.add('--val_frac', type=float, default=0.1)
-#     return cmd
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = exp_args.get_explainer_args(cmd)
+    cmd.add('--method_list', type=str, nargs='+',
+            default=['target', 'leaf_sim', 'boostin', 'trex', 'leaf_infSP', 'loo', 'subsample'])
+    cmd.add('--skip', type=str, nargs='+', default=[])
+    cmd.add('--in_dir', type=str, default='output/plot/correlation/')
+    cmd.add('--out_dir', type=str, default='output/plot/correlation/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, default=0.02)
+    cmd.add('--n_ckpt', type=int, default=20)
+    return cmd
 
 
-# def get_resources_args():
-#     """
-#     Add arguments specific to the "Resources" experiment.
+def get_noise_args():
+    """
+    Add arguments specific to the "Noise" summarization.
 
-#     Return ArgParser object.
-#     """
-#     cmd = get_general_args()
-#     cmd = get_explainer_args(cmd)
-#     cmd.add('--out_dir', type=str, default='output/resources/')
-#     cmd.add('--n_repeat', type=int, default=5)
-#     cmd.add('--seed', type=int, default=-1)
-#     return cmd
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_noise/')
+    cmd.add('--out_dir', type=str, default='output/plot/noise/')
+    cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
+    cmd.add('--noise_frac', type=float, default=0.1)
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--check_frac', type=float, default=0.1)
+    cmd.add('--n_repeat', type=int, default=5)
+    return cmd
+
+
+def get_poison_args():
+    """
+    Add arguments specific to the "Poison" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_poison')
+    cmd.add('--out_dir', type=str, default='output/plot/poison/')
+    cmd.add('--poison_frac', type=float, default=[0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--ckpt', type=int, default=3)
+    return cmd
+
+
+def get_resources_args():
+    """
+    Add arguments specific to the "Resources" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_resources/')
+    cmd.add('--out_dir', type=str, default='output/plot/resources/')
+    cmd.add('--n_repeat', type=int, default=5)
+    return cmd

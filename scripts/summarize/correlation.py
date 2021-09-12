@@ -1,5 +1,5 @@
 """
-Aggregate correlations.
+Summarize correlations.
 """
 import os
 import sys
@@ -23,18 +23,12 @@ from scipy.stats import sem
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
-from experiments import util
+from experiments import util as exp_util
+from config import summ_args
 
 
 def experiment(args, logger, in_dir, out_dir):
     begin = time.time()
-
-    idx_dict = {'trex': 0, 'similarity': 1, 'boostin2': 2, 'leaf_influenceSP': 3,
-                'subsample': 4, 'loo': 5, 'target': 6}
-
-    names = ['trex', ' similarity', 'boostin2', 'leaf_influenceSP', 'subsample', 'loo', 'target']
-
-    n_method = len(names)
 
     p_mean_list = []
     s_mean_list = []
@@ -43,6 +37,8 @@ def experiment(args, logger, in_dir, out_dir):
     p_std_list = []
     s_std_list = []
     j_std_list = []
+
+    idx_dict = None
 
     # get correlation results
     n_finish = 0
@@ -64,6 +60,17 @@ def experiment(args, logger, in_dir, out_dir):
         p_std_list.append(res['p_std_mat'])
         s_std_list.append(res['s_std_mat'])
         j_std_list.append(res['j_std_mat'])
+
+        # sanity check
+        if idx_dict is None:
+            idx_dict = res['idx_dict']
+
+        else:
+            assert idx_dict == res['idx_dict']
+
+    inv_idx_dict = {v: k for k, v in idx_dict.items()}
+    names = [inv_idx_dict[i] for i in range(len(inv_idx_dict))]
+    n_method = len(names)
 
     p_mean = np.dstack(p_mean_list).mean(axis=2)
     s_mean = np.dstack(s_mean_list).mean(axis=2)
@@ -128,65 +135,12 @@ def main(args):
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
-    logger.info(datetime.now())
+    logger.info(f'\ntimestamp: {datetime.now()}')
 
     experiment(args, logger, in_dir, out_dir)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='output/plot/correlation/')
-    parser.add_argument('--out_dir', type=str, default='output/plot/correlation/')
-
-    # Data settings
-    parser.add_argument('--dataset_list', type=str, nargs='+',
-                        default=['adult', 'bank_marketing', 'bean', 'compas',
-                                 'concrete', 'credit_card', 'diabetes', 'energy',
-                                 'flight_delays', 'german_credit', 'htru2', 'life',
-                                 'msd', 'naval', 'no_show', 'obesity', 'power', 'protein',
-                                 'spambase', 'surgical', 'twitter', 'vaccine', 'wine'])
-
-    # Tree-ensemble settings
-    parser.add_argument('--tree_type', type=str, default='lgb')
-
-    # Explainer settings
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, nargs='+', default='dot_prod')  # Similarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & Similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--global_op', type=str, default='self')  # TREX, LOO, and DShap
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-
-    # Experiment settings
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.05)
-    parser.add_argument('--n_ckpt', type=int, default=50)
-    parser.add_argument('--method', type=str, nargs='+',
-                        default=['target', 'similarity', 'boostin2',
-                                 'trex', 'leaf_influenceSP', 'loo', 'subsample'])  # no minority, loss
-    parser.add_argument('--zoom', type=float, nargs='+', default=[1.0])
-
-    args = parser.parse_args()
-    main(args)
+    main(summ_args.get_correlation_args().parse_args())

@@ -3,6 +3,8 @@ Postprocessing commandline arguments.
 """
 import configargparse
 
+from . import exp_args
+
 
 def get_general_args(cmd=None):
     """
@@ -76,8 +78,8 @@ def get_counterfactual_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_influence/')
-    cmd.add('--out_dir', type=str, default='output/counterfactual/')
+    cmd.add('--in_dir', type=str, default='temp_counterfactual/')
+    cmd.add('--out_dir', type=str, default='output/plot/counterfactual/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, default=0.02)
     cmd.add('--n_ckpt', type=int, default=20)
@@ -85,33 +87,53 @@ def get_counterfactual_args():
     return cmd
 
 
+def get_correlation_args():
+    """
+    Add arguments specific to the "Correlation" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = exp_args.get_explainer_args(cmd)
+    cmd.add('--method_list', type=str, nargs='+',
+            default=['target', 'leaf_sim', 'boostin', 'trex', 'leaf_infSP', 'loo', 'subsample'])
+    cmd.add('--skip', type=str, nargs='+', default=[])
+    cmd.add('--in_dir', type=str, default='temp_influence/')
+    cmd.add('--out_dir', type=str, default='output/plot/correlation/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, default=0.02)
+    cmd.add('--n_ckpt', type=int, default=20)
+    return cmd
+
+
 def get_noise_args():
     """
-    Add arguments specific to the "Noise" experiment.
+    Add arguments specific to the "Noise" postprocessing.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/noise/')
-    cmd.add('--strategy', type=str, default='test_sum')
+    cmd.add('--in_dir', type=str, default='temp_noise/')
+    cmd.add('--out_dir', type=str, default='output/plot/noise/')
+    cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
     cmd.add('--noise_frac', type=float, default=0.1)
     cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--check_frac', type=float, default=0.1)
     cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--seed', type=int, default=-1)
     return cmd
 
 
 def get_poison_args():
     """
-    Add arguments specific to the "Poison" experiment.
+    Add arguments specific to the "Poison" postprocessing.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/poison/')
+    cmd.add('--in_dir', type=str, default='temp_poison/')
+    cmd.add('--out_dir', type=str, default='output/plot/poison/')
     cmd.add('--poison_frac', type=float, nargs='+', default=[0.01, 0.05, 0.1, 0.2, 0.3])
     cmd.add('--val_frac', type=float, default=0.1)
     return cmd
@@ -119,13 +141,13 @@ def get_poison_args():
 
 def get_resources_args():
     """
-    Add arguments specific to the "Resources" experiment.
+    Add arguments specific to the "Resources" postprocessing.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/resources/')
+    cmd.add('--in_dir', type=str, default='temp_resources/')
+    cmd.add('--out_dir', type=str, default='output/plot/resources/')
     cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--seed', type=int, default=-1)
     return cmd

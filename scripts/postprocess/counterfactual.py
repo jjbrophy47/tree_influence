@@ -1,5 +1,5 @@
 """
-Characterize the examples being deleted.
+Evaluate min. no. train examples to edit to flip test prediction.
 """
 import os
 import sys
@@ -17,30 +17,25 @@ from sklearn.metrics import log_loss
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
-import util as pp_util
-from experiments import util
+import util
+from experiments import util as exp_util
 from leaf_analysis import filter_results
+from config import post_args
 
 
-def experiment(args, logger, out_dir):
-
-    # initialize experiment
+def experiment(args, logger, exp_dir, out_dir):
     begin = time.time()
 
-    # get dataset
-    X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
-
     # get results
-    results = pp_util.get_results(args, in_dir=args.in_dir, logger=logger)
-    results = filter_results(results, args.skip)
+    res_list = util.get_results(args, args.in_dir, exp_dir, logger=logger)
+    res_list = filter_results(res_list, args.skip)
 
-    color, line, label = pp_util.get_plot_dicts()
+    color, line, label = util.get_plot_dicts()
 
     fig, ax = plt.subplots()
     ax2 = ax.twiny()
     
-    for i in range(len(results)):
-        method, res = results[i]
+    for method, res in res_list:
 
         df = res['df']
         n_correct = len(df[df['status'] == 'success']) + len(df[df['status'] == 'fail'])
@@ -64,79 +59,39 @@ def experiment(args, logger, out_dir):
     ax.axhline(n_correct, label='No. correct test preds.', color='k', linestyle='--', linewidth=1)
     ax.legend(fontsize=6)
 
-    plt_dir = os.path.join(args.out_dir, args.tree_type)
-    suffix = ''
-
-    os.makedirs(plt_dir, exist_ok=True)
-    fp = os.path.join(plt_dir, f'{args.dataset}')
+    logger.info(f'\nsaving results to {out_dir}/...')
 
     plt.tight_layout()
-    plt.savefig(fp + suffix + '.png', bbox_inches='tight')
-    # plt.show()
+    plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
+
+    logger.info(f'\ntotal time: {time.time() - begin:.3f}s')
 
 
 def main(args):
 
-    # get method params and unique settings hash
-    _, hash_str = util.explainer_params_to_dict(args.method, vars(args))
+    # get experiment directory
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
+
+    exp_dir = os.path.join(args.in_dir,
+                           args.dataset,
+                           args.tree_type,
+                           f'exp_{exp_hash}')
 
     # create output dir
-    out_dir = os.path.join(args.out_dir)
+    out_dir = os.path.join(args.out_dir, args.tree_type)
+    log_dir = os.path.join(args.out_dir, args.tree_type, 'logs')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(log_dir, f'{args.dataset}.txt'))
     logger.info(args)
-    logger.info(datetime.now())
+    logger.info(f'\ntimestamp: {datetime.now()}')
 
-    experiment(args, logger, out_dir)
+    experiment(args, logger, exp_dir, out_dir)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='temp_counterfactual/')
-    parser.add_argument('--out_dir', type=str, default='output/plot/counterfactual/')
-
-    # experiment settings
-    parser.add_argument('--dataset', type=str, default='surgical')
-    parser.add_argument('--tree_type', type=str, default='lgb')
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.05)
-    parser.add_argument('--n_ckpt', type=int, default=50)
-
-    # Method settings
-    parser.add_argument('--method', type=str, nargs='+',
-                        default=['random', 'target', 'boostin2', 'boostin4', 'trex', 'similarity',
-                                 'leaf_influenceSP', 'loo', 'subsample'])
-    parser.add_argument('--skip', type=str, nargs='+',
-                        default=['minority', 'loss'])
-
-    parser.add_argument('--leaf_scale', type=int, nargs='+', default=[-1.0])  # BoostIn
-    parser.add_argument('--local_op', type=str, nargs='+', default=['normal', 'sign', 'sim'])  # BoostIn
-    parser.add_argument('--update_set', type=int, nargs='+', default=[-1, 0])  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, nargs='+', default=['dot_prod'])  # Similarity
-
-    parser.add_argument('--kernel', type=str, nargs='+', default=['lpw'])  # Trex & Similarity
-    parser.add_argument('--target', type=str, nargs='+', default=['actual'])  # Trex
-    parser.add_argument('--lmbd', type=float, nargs='+', default=[0.003])  # Trex
-    parser.add_argument('--n_epoch', type=str, nargs='+', default=[3000])  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, nargs='+', default=[0.25])  # DShap
-    parser.add_argument('--check_every', type=int, nargs='+', default=[100])  # DShap
-
-    parser.add_argument('--sub_frac', type=float, nargs='+', default=[0.7])  # SubSample
-    parser.add_argument('--n_iter', type=int, nargs='+', default=[4000])  # SubSample
-
-    parser.add_argument('--global_op', type=str, nargs='+', default=['self', 'expected'])  # TREX, LOO, DShap
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-
-    args = parser.parse_args()
-    main(args)
+    main(post_args.get_counterfactual_args().parse_args())

@@ -1,5 +1,5 @@
 """
-Measure correlation between two influence methods.
+Measure correlation between influence methods.
 """
 import os
 import sys
@@ -22,7 +22,8 @@ from scipy.stats import sem
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
-from experiments import util
+from experiments import util as exp_util
+from config import post_args
 
 
 def jaccard_similarity(inf1, inf2):
@@ -77,10 +78,8 @@ def get_correlation(inf1, inf2, jaccard_frac=0.1):
 def experiment(args, logger, in_dir_list, out_dir):
     begin = time.time()
 
-    idx_dict = {'trex': 0, 'similarity': 1, 'boostin2': 2, 'leaf_influenceSP': 3,
-                'subsample': 4, 'loo': 5, 'target': 6}
-
-    names = ['trex', ' similarity', 'boostin2', 'leaf_influenceSP', 'subsample', 'loo', 'target']
+    idx_dict = {method: i for i, method in enumerate(args.method_list)}
+    names = args.method_list
 
     n_method = len(idx_dict)
 
@@ -173,14 +172,17 @@ def experiment(args, logger, in_dir_list, out_dir):
 
 def main(args):
 
-    # experiment hash_str
-    exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
-                'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
-    exp_hash = util.dict_to_hash(exp_dict)
+    # experiment hash string
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
 
     in_dir_list = []
-    for method in args.method:
-        _, method_hash = util.explainer_params_to_dict(method, vars(args))
+    for method in args.method_list:
+
+        if method in args.skip:
+            continue
+
+        _, method_hash = exp_util.explainer_params_to_dict(method, vars(args))
         in_dir = os.path.join(args.in_dir,
                               args.dataset,
                               args.tree_type,
@@ -194,60 +196,12 @@ def main(args):
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
-    logger.info(datetime.now())
+    logger.info(f'\ntimestamp: {datetime.now()}')
 
     experiment(args, logger, in_dir_list, out_dir)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
-    # I/O settings
-    parser.add_argument('--data_dir', type=str, default='data/')
-    parser.add_argument('--in_dir', type=str, default='temp_influence')
-    parser.add_argument('--out_dir', type=str, default='output/plot/correlation/')
-
-    # Data settings
-    parser.add_argument('--dataset', type=str, default='synthetic_regression')
-
-    # Tree-ensemble settings
-    parser.add_argument('--tree_type', type=str, default='lgb')
-
-    # Explainer settings
-    parser.add_argument('--leaf_scale', type=float, default=-1.0)  # BoostIn
-    parser.add_argument('--local_op', type=str, default='normal')  # BoostIn
-
-    parser.add_argument('--update_set', type=int, default=0)  # LeafInfluence
-
-    parser.add_argument('--similarity', type=str, nargs='+', default='dot_prod')  # Similarity
-
-    parser.add_argument('--kernel', type=str, default='lpw')  # Trex & Similarity
-    parser.add_argument('--target', type=str, default='actual')  # Trex
-    parser.add_argument('--lmbd', type=float, default=0.003)  # Trex
-    parser.add_argument('--n_epoch', type=str, default=3000)  # Trex
-
-    parser.add_argument('--trunc_frac', type=float, default=0.25)  # DShap
-    parser.add_argument('--check_every', type=int, default=100)  # DShap
-
-    parser.add_argument('--sub_frac', type=float, default=0.7)  # SubSample
-    parser.add_argument('--n_iter', type=int, default=4000)  # SubSample
-
-    parser.add_argument('--global_op', type=str, default='self')  # TREX, LOO, and DShap
-
-    parser.add_argument('--n_jobs', type=int, default=-1)  # LOO and DShap
-    parser.add_argument('--random_state', type=int, default=1)  # Trex, DShap, random
-
-    # Experiment settings
-    parser.add_argument('--inf_obj', type=str, default='local')
-    parser.add_argument('--n_test', type=int, default=100)  # local
-    parser.add_argument('--remove_frac', type=float, default=0.05)
-    parser.add_argument('--n_ckpt', type=int, default=50)
-    parser.add_argument('--method', type=str, nargs='+',
-                        default=['target', 'similarity', 'boostin2',
-                                 'trex', 'leaf_influenceSP', 'loo', 'subsample'])  # no minority, loss
-    parser.add_argument('--zoom', type=float, nargs='+', default=[1.0])
-
-    args = parser.parse_args()
-    main(args)
+    main(post_args.get_correlation_args().parse_args())
