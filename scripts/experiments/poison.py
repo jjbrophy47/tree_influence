@@ -29,7 +29,6 @@ def poison(X, y, objective, rng, target_idxs):
     new_y = y.copy()
 
     # replace feature values with mean values
-    means = np.mean(X, axis=0)
     new_X[target_idxs] = np.mean(X, axis=0)
 
     # replace labels with random labels

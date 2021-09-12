@@ -96,7 +96,8 @@ def get_correlation_args():
     cmd = get_general_args()
     cmd = exp_args.get_explainer_args(cmd)
     cmd.add('--method_list', type=str, nargs='+',
-            default=['target', 'leaf_sim', 'boostin', 'trex', 'leaf_infSP', 'loo', 'subsample'])
+            default=['random', 'target', 'input_sim', 'leaf_sim', 'boostin',
+                     'trex', 'leaf_infSP', 'loo', 'subsample'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--in_dir', type=str, default='temp_influence/')
     cmd.add('--out_dir', type=str, default='output/plot/correlation/')

@@ -45,6 +45,8 @@ def experiment(args, logger, in_dir, out_dir):
 
     logger.info('')
     for dataset in args.dataset_list:
+        logger.info(f'{dataset}')
+
         fp = os.path.join(in_dir, dataset, 'results.npy')
 
         if not os.path.exists(fp):
