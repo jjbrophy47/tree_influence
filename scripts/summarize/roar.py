@@ -56,7 +56,8 @@ def get_rank_df(df, skip_cols=[], remove_cols=[], ascending=False):
     for i, col in enumerate(cols):
         result_df[col] = ranks[:, i]
 
-    result_df = result_df.drop(columns=remove_cols)
+    drop_cols = [c for c in result_df.columns if c in remove_cols]
+    result_df = result_df.drop(columns=drop_cols)
 
     return result_df
 

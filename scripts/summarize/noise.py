@@ -1,5 +1,4 @@
 """
-TODO: update based on new results dict.
 Aggregate results.
 """
 import os
@@ -20,38 +19,22 @@ sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
 from config import summ_args
+from summarize.roar import get_rank_df
 
 
-def process(args, out_dir, logger):
-
-    # get dataset
+def process(args, exp_hash, out_dir, logger):
     color, line, label = pp_util.get_plot_dicts()
 
-    nd_list = []
-    fd_list, fd2_list = [], []
-
-    cl_list, cl2_list = [], []
-    nl_list, nl2_list = [], []
-    fl_list, fl2_list = [], []
-
-    cac_list, cac2_list = [], []
-    nac_list, nac2_list = [], []
-    fac_list, fac2_list = [], []
-
-    cau_list, cau2_list = [], []
-    nau_list, nau2_list = [], []
-    fau_list, fau2_list = [], []
+    fd_d_list = []
+    loss_d_list = []
+    acc_d_list = []
+    auc_d_list = []
 
     logger.info('')
     for dataset in args.dataset_list:
         logger.info(f'{dataset}')
 
-        args.dataset = dataset
-
         r1 = {}
-
-        exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac, 'check_frac': args.check_frac}
-        exp_hash = exp_util.dict_to_hash(exp_dict)
 
         for random_state in range(1, args.n_repeat + 1):
             r1[random_state] = {}
@@ -59,7 +42,7 @@ def process(args, out_dir, logger):
             for strategy in args.strategy:
 
                 exp_dir = os.path.join(args.in_dir,
-                                       args.dataset,
+                                       dataset,
                                        args.tree_type,
                                        f'exp_{exp_hash}',
                                        strategy,
@@ -68,176 +51,103 @@ def process(args, out_dir, logger):
                 res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
                 res_list = pp_util.filter_results(res_list, args.skip)
 
-                for method, d in res_list:
-                    noise_idxs = d['noise_idxs']
-                    check_idxs = d['check_idxs']
+                for method, res in res_list:
 
-                    n_detected = len(set(noise_idxs).intersection(set(check_idxs)))
-                    frac_detected = n_detected / len(check_idxs)
-                    overall_frac_detected = n_detected / len(noise_idxs)
-
-                    res_simple = {'n_detected': n_detected, 'frac_detected': frac_detected}
-                    res_simple['clean_loss'] = d['res_clean']['loss']
-                    res_simple['clean_acc'] = d['res_clean']['acc']
-                    res_simple['clean_auc'] = d['res_clean']['auc']
-                    res_simple['noise_loss'] = d['res_noise']['loss']
-                    res_simple['noise_acc'] = d['res_noise']['acc']
-                    res_simple['noise_auc'] = d['res_noise']['auc']
-                    res_simple['fixed_loss'] = d['res_fixed']['loss']
-                    res_simple['fixed_acc'] = d['res_fixed']['acc']
-                    res_simple['fixed_auc'] = d['res_fixed']['auc']
+                    res_simple = {}
+                    res_simple['frac_detected'] = res['frac_detected'][args.ckpt]
+                    res_simple['loss'] = res['loss'][args.ckpt]
+                    res_simple['acc'] = res['acc'][args.ckpt]
+                    res_simple['auc'] = res['auc'][args.ckpt]
 
                     name = f'{label[method]}_{strategy}'
 
                     r1[random_state][name] = res_simple
 
         # average over random states
-        temp_dict = {'dataset': dataset, 'noise_frac': args.noise_frac}
-
-        nd = temp_dict.copy()  # no. runs
-        fd, fd2 = temp_dict.copy(), temp_dict.copy()  # frac_detected
-        cl, cl2 = temp_dict.copy(), temp_dict.copy()  # clean_loss
-        nl, nl2 = temp_dict.copy(), temp_dict.copy()  # noise_loss
-        fl, fl2 = temp_dict.copy(), temp_dict.copy()  # fixed_loss
-        cac, cac2 = temp_dict.copy(), temp_dict.copy()  # clean_acc
-        nac, nac2 = temp_dict.copy(), temp_dict.copy()  # noise_acc
-        fac, fac2 = temp_dict.copy(), temp_dict.copy()  # fixed_acc
-        cau, cau2 = temp_dict.copy(), temp_dict.copy()  # clean_auc
-        nau, nau2 = temp_dict.copy(), temp_dict.copy()  # noise_auc
-        fau, fau2 = temp_dict.copy(), temp_dict.copy()  # fixed_auc
+        temp_dict = {'dataset': dataset, 'noise_frac': args.noise_frac,
+                     'check_frac': args.check_frac[args.ckpt]}
+        fd_d = temp_dict.copy()
+        loss_d = temp_dict.copy()
+        acc_d = temp_dict.copy()
+        auc_d = temp_dict.copy()
 
         for name in r1[random_state].keys():
+            fd_d[name] = np.mean([r1[rs][name]['frac_detected'] for rs in r1.keys()])
+            loss_d[name] = np.mean([r1[rs][name]['loss'] for rs in r1.keys()])
+            acc_d[name] = np.mean([r1[rs][name]['acc'] for rs in r1.keys()])
+            auc_d[name] = np.mean([r1[rs][name]['auc'] for rs in r1.keys()])
 
-            frac_detected_vals = [r1[rs][name]['frac_detected'] for rs in r1.keys()]
-            fd[name] = np.mean(frac_detected_vals)
-            fd2[name] = sem(frac_detected_vals)
-
-            nd[name] = len(frac_detected_vals)
-
-            # loss
-            clean_loss_vals = [r1[rs][name]['clean_loss'] for rs in r1.keys()]
-            cl[name] = np.mean(clean_loss_vals)
-            cl2[name] = sem(clean_loss_vals)
-
-            noise_loss_vals = [r1[rs][name]['noise_loss'] for rs in r1.keys()]
-            nl[name] = np.mean(noise_loss_vals)
-            nl2[name] = sem(noise_loss_vals)
-
-            fixed_loss_vals = [r1[rs][name]['fixed_loss'] for rs in r1.keys()]
-            fl[name] = np.mean(fixed_loss_vals)
-            fl2[name] = sem(fixed_loss_vals)
-
-            # acc.
-            clean_acc_vals = [r1[rs][name]['clean_acc'] for rs in r1.keys()]
-            cac[name] = np.mean(clean_acc_vals)
-            cac2[name] = sem(clean_acc_vals)
-
-            noise_acc_vals = [r1[rs][name]['noise_acc'] for rs in r1.keys()]
-            nac[name] = np.mean(noise_acc_vals)
-            nac2[name] = sem(noise_acc_vals)
-
-            fixed_acc_vals = [r1[rs][name]['fixed_acc'] for rs in r1.keys()]
-            fac[name] = np.mean(fixed_acc_vals)
-            fac2[name] = sem(fixed_acc_vals)
-
-            # AUC
-            clean_auc_vals = [r1[rs][name]['clean_auc'] for rs in r1.keys()]
-            cau[name] = np.mean(clean_auc_vals)
-            cau2[name] = sem(clean_auc_vals)
-
-            noise_auc_vals = [r1[rs][name]['noise_auc'] for rs in r1.keys()]
-            nau[name] = np.mean(noise_auc_vals)
-            nau2[name] = sem(noise_auc_vals)
-
-            fixed_auc_vals = [r1[rs][name]['fixed_auc'] for rs in r1.keys()]
-            fau[name] = np.mean(fixed_auc_vals)
-            fau2[name] = sem(fixed_auc_vals)
-
-        # compile results
-        nd_list.append(nd)
-
-        fd_list.append(fd)
-        fd2_list.append(fd2)
-
-        cl_list.append(cl)
-        cl2_list.append(cl2)
-
-        nl_list.append(nl)
-        nl2_list.append(nl2)
-
-        fl_list.append(fl)
-        fl2_list.append(fl2)
-
-        cac_list.append(cac)
-        cac2_list.append(cac2)
-
-        nac_list.append(nac)
-        nac2_list.append(nac2)
-
-        fac_list.append(fac)
-        fac2_list.append(fac2)
-
-        cau_list.append(cau)
-        cau2_list.append(cau2)
-
-        nau_list.append(nau)
-        nau2_list.append(nau2)
-
-        fau_list.append(fau)
-        fau2_list.append(fau2)
+        fd_d_list.append(fd_d)
+        loss_d_list.append(loss_d)
+        acc_d_list.append(acc_d)
+        auc_d_list.append(loss_d)
 
     # organize results
-    nd_df = pd.DataFrame(nd_list)
-    fd_df, fd2_df = pd.DataFrame(fd_list), pd.DataFrame(fd2_list)
-    cl_df, cl2_df = pd.DataFrame(cl_list), pd.DataFrame(cl2_list)
-    nl_df, nl2_df = pd.DataFrame(nl_list), pd.DataFrame(nl2_list)
-    fl_df, fl2_df = pd.DataFrame(fl_list), pd.DataFrame(fl2_list)
-    cac_df, cac2_df = pd.DataFrame(cac_list), pd.DataFrame(cac2_list)
-    nac_df, nac2_df = pd.DataFrame(nac_list), pd.DataFrame(nac2_list)
-    fac_df, fac2_df = pd.DataFrame(fac_list), pd.DataFrame(fac2_list)
-    cau_df, cau2_df = pd.DataFrame(cau_list), pd.DataFrame(cau2_list)
-    nau_df, nau2_df = pd.DataFrame(nau_list), pd.DataFrame(nau2_list)
-    fau_df, fau2_df = pd.DataFrame(fau_list), pd.DataFrame(fau2_list)
+    fd_df = pd.DataFrame(fd_d_list)
+    loss_df = pd.DataFrame(loss_d_list)
+    acc_df = pd.DataFrame(acc_d_list)
+    auc_df = pd.DataFrame(auc_d_list)
 
-    logger.info(f'\nNo. runs:\n{nd_df}')
+    logger.info(f'\n\nFrac. detected:\n{fd_df}')
+    logger.info(f'\n\nLoss:\n{loss_df}')
+    logger.info(f'\n\nAcc.:\n{acc_df}')
+    logger.info(f'\n\nAUC:\n{auc_df}')
 
-    logger.info(f'\n\nFrac. detected:\n{fd_df}\nFrac. detected (std. error):\n{fd2_df}')
+    # compute ranks
+    skip_cols = ['dataset', 'noise_frac', 'check_frac']
+    remove_cols = ['Leaf Inf.']
 
-    logger.info(f'\n\nClean loss:\n{cl_df}')
-    logger.info(f'\nNoise loss:\n{nl_df}')
-    logger.info(f'\nFixed loss:\n{fl_df}')
+    rank_df_fd = get_rank_df(fd_df, skip_cols=skip_cols, remove_cols=remove_cols)
+    # rank_li_df_fd = get_rank_df(loss_df[~pd.isna(fd_df['Leaf Inf.'])], skip_cols=skip_cols)
+    logger.info(f'\nFrac. detected ranking:\n{rank_df_fd}')
+    # logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
 
-    logger.info(f'\n\nClean acc.:\n{cac_df}')
-    logger.info(f'\nNoise acc.:\n{nac_df}')
-    logger.info(f'\nFixed acc.:\n{fac_df}')
+    rank_df_loss = get_rank_df(loss_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
+    # rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['Leaf Inf.'])], skip_cols=skip_cols, ascending=True)
+    logger.info(f'\nLoss ranking:\n{rank_df_loss}')
+    # logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')
 
-    logger.info(f'\n\nClean AUC:\n{cau_df}')
-    logger.info(f'\nNoise AUC:\n{nau_df}')
-    logger.info(f'\nFixed AUC:\n{fau_df}')
+    rank_df_acc = get_rank_df(acc_df, skip_cols=skip_cols, remove_cols=remove_cols)
+    # rank_li_df_acc = get_rank_df(loss_df[~pd.isna(acc_df['Leaf Inf.'])], skip_cols=skip_cols)
+    logger.info(f'\nAcc. ranking:\n{rank_df_acc}')
+    # logger.info(f'\nAcc. ranking (w/ leafinf):\n{rank_li_df_acc}')
 
+    rank_df_auc = get_rank_df(auc_df, skip_cols=skip_cols, remove_cols=remove_cols)
+    # rank_li_df_auc = get_rank_df(loss_df[~pd.isna(auc_df['Leaf Inf.'])], skip_cols=skip_cols)
+    logger.info(f'\nAUC ranking:\n{rank_df_auc}')
+    # logger.info(f'\nAUC ranking (w/ leafinf):\n{rank_li_df_auc}')
+
+    # save results
     logger.info(f'\nSaving results to {out_dir}...')
 
     fd_df.to_csv(os.path.join(out_dir, 'frac_detected.csv'), index=None)
-    fd2_df.to_csv(os.path.join(out_dir, 'frac_detected_sem.csv'), index=None)
+    loss_df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
+    acc_df.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
+    auc_df.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
 
-    fl_df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
-    fl2_df.to_csv(os.path.join(out_dir, 'loss_sem.csv'), index=None)
+    rank_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank.csv'))
+    rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
+    rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'))
+    rank_df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'))
 
-    fac_df.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
-    fac2_df.to_csv(os.path.join(out_dir, 'acc_sem.csv'), index=None)
-
-    fau_df.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
-    fau_df.to_csv(os.path.join(out_dir, 'auc_sem.csv'), index=None)
+    # rank_li_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank_li.csv'))
+    # rank_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
+    # rank_li_acc_df.to_csv(os.path.join(out_dir, 'acc_rank_li.csv'))
+    # rank_li_auc_df.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'))
 
 
 def main(args):
 
     args.method += ['loss']
 
+    exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac, 'check_frac': args.check_frac}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
+
     out_dir = os.path.join(args.out_dir,
                            args.tree_type,
-                           f'noise{args.noise_frac}_check{args.check_frac}',
-                           'summary')
+                           f'exp_{exp_hash}',
+                           'summary',
+                           f'ckpt_{args.ckpt}')
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)
@@ -245,7 +155,7 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    process(args, out_dir, logger)
+    process(args, exp_hash, out_dir, logger)
 
 
 if __name__ == '__main__':

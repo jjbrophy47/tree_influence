@@ -23,7 +23,7 @@ from config import summ_args
 from summarize.roar import get_rank_df
 
 
-def process(args, out_dir, exp_hash, logger):
+def process(args, exp_hash, out_dir, logger):
     begin = time.time()
     color, line, label = pp_util.get_plot_dicts()
 
@@ -119,7 +119,7 @@ def main(args):
     logger.info(args)
     logger.info(f'timestamp: {datetime.now()}')
 
-    process(args, out_dir, exp_hash, logger)
+    process(args, exp_hash, out_dir, logger)
 
 
 if __name__ == '__main__':
