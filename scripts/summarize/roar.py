@@ -23,6 +23,40 @@ from postprocess.leaf_analysis import filter_results
 from config import summ_args
 
 
+def get_rank_df(df, skip_cols=[], remove_cols=[], ascending=False):
+    """
+    Rank values in dataframe.
+
+    Input
+        df: pd.DataFrame, input dataframe values.
+        skip_cols: list, columns to skip.
+        remove_cols: list, columns to remove from return dataframe (skipped too).
+        ascending: bool, if True, rank 1 has lowest value.
+
+    Return df with values replaced by rankings.
+    """
+    result_df = df.copy()
+
+    cols = [c for c in df.columns if c not in skip_cols + remove_cols]
+
+    if ascending:
+        df = df.fillna(1e300)
+        vals = df[cols].values
+        ranks = vals.argsort(axis=1).argsort(axis=1) + 1
+
+    else:
+        df = df.fillna(-1e300)
+        vals = df[cols].values
+        ranks = np.flip(vals.argsort(axis=1), axis=1).argsort(axis=1) + 1
+
+    for i, col in enumerate(cols):
+        result_df[col] = ranks[:, i]
+
+    result_df = result_df.drop(columns=remove_cols)
+
+    return result_df
+
+
 def process(args, out_dir, exp_hash, logger):
     begin = time.time()
 
@@ -74,10 +108,18 @@ def process(args, out_dir, exp_hash, logger):
     df2 = pd.DataFrame(rows2)
     logger.info(f'\nLoss:\n{df}')
 
+    rank_df = get_rank_df(df, skip_cols=['dataset', 'remove_frac'], remove_cols=['Leaf Inf.'])
+    rank_li_df = get_rank_df(df[~pd.isna(df['Leaf Inf.'])], skip_cols=['dataset', 'remove_frac'])
+    logger.info(f'\nLoss ranking:\n{rank_df}')
+    logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df}')
+
     logger.info(f'\nSaving results to {out_dir}...')
 
     df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
     df2.to_csv(os.path.join(out_dir, 'loss_sem.csv'), index=None)
+
+    rank_df.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
+    rank_li_df.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'), index=None)
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
