@@ -24,7 +24,7 @@ from config import summ_args
 from summarize.roar import get_rank_df
 
 
-def process(args, out_dir, logger):
+def process(args, exp_hash, out_dir, logger):
     begin = time.time()
 
     color, line, label = pp_util.get_plot_dicts()
@@ -37,11 +37,6 @@ def process(args, out_dir, logger):
         logger.info(f'{dataset}')
 
         X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, dataset)
-
-        # get experiment directory
-        exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
-                    'n_ckpt': args.n_ckpt, 'step_size': args.step_size}
-        exp_hash = exp_util.dict_to_hash(exp_dict)
 
         exp_dir = os.path.join(args.in_dir,
                                dataset,
@@ -97,9 +92,14 @@ def process(args, out_dir, logger):
 
 def main(args):
 
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
+                'n_ckpt': args.n_ckpt, 'step_size': args.step_size}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
+
     # create output dir
     out_dir = os.path.join(args.out_dir,
                            args.tree_type,
+                           f'exp_{exp_hash}',
                            'summary')
 
     # create output directory and clear previous contents
@@ -109,7 +109,7 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    process(args, out_dir, logger)
+    process(args, exp_hash, out_dir, logger)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ from experiments import util as exp_util
 from config import rank_args
 
 
-def get_mean_rank(in_df, skip_cols=[], sort=None):
+def get_mean_rank_df(in_df, skip_cols=[], sort=None):
     """
     Compute mean rank (with sem) for each method.
 
@@ -82,8 +82,8 @@ def process(args, exp_hash, out_dir, logger):
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())
 
-    df = get_mean_rank(df_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
-    df_li = get_mean_rank(df_li_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
+    df = get_mean_rank_df(df_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
+    df_li = get_mean_rank_df(df_li_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
 
     # plot
     fig, axs = plt.subplots(1, 2, figsize=(9, 4))

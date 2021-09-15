@@ -22,7 +22,7 @@ from experiments import util as exp_util
 from config import post_args
 
 
-def experiment(args, logger, exp_dir, out_dir):
+def experiment(args, exp_dir, out_dir, logger):
     begin = time.time()
 
     # get results
@@ -79,8 +79,10 @@ def main(args):
                            f'exp_{exp_hash}')
 
     # create output dir
-    out_dir = os.path.join(args.out_dir, args.tree_type)
-    log_dir = os.path.join(args.out_dir, args.tree_type, 'logs')
+    out_dir = os.path.join(args.out_dir,
+                           args.tree_type,
+                           f'exp_{exp_hash}')
+    log_dir = os.path.join(out_dir, 'logs')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
@@ -90,7 +92,7 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    experiment(args, logger, exp_dir, out_dir)
+    experiment(args, exp_dir, out_dir, logger)
 
 
 if __name__ == '__main__':

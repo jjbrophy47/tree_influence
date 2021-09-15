@@ -1,5 +1,5 @@
 """
-Summarize counerfactual results.
+Rank summarization results.
 """
 import os
 import sys
@@ -20,79 +20,87 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
-from config import summ_args
+from config import rank_args
+from rank.roar import get_mean_rank_df
 
 
-def process(args, out_dir, logger):
+def process(args, exp_hash, out_dir, logger):
     begin = time.time()
 
     color, line, label = pp_util.get_plot_dicts()
 
-    rows = []
-    rows2 = []
+    df_list = []
+    df_li_list = []
 
-    logger.info('')
-    for dataset in args.dataset_list:
-        logger.info(f'{dataset}')
+    for tree_type in args.tree_type:
 
-        X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, dataset)
+            in_dir = os.path.join(args.in_dir,
+                                  tree_type,
+                                  f'exp_{exp_hash}',
+                                  'summary')
 
-        # get experiment directory
-        exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
-                    'n_ckpt': args.n_ckpt, 'step_size': args.step_size}
-        exp_hash = exp_util.dict_to_hash(exp_dict)
+            fp = os.path.join(in_dir, 'frac_edits_rank.csv')
+            fp_li = os.path.join(in_dir, 'frac_edits_rank_li.csv')
+            assert os.path.exists(fp), f'{fp} does not exist!'
+            assert os.path.exists(fp_li), f'{fp_li} does not exist!'
 
-        exp_dir = os.path.join(args.in_dir,
-                               dataset,
-                               args.tree_type,
-                               f'exp_{exp_hash}')
+            df_list.append(pd.read_csv(fp))
+            df_li_list.append(pd.read_csv(fp_li))
 
-        res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-        res_list = pp_util.filter_results(res_list, args.skip)
+    df_all = pd.concat(df_list)
+    df_li_all = pd.concat(df_li_list)
 
-        row = {'dataset': dataset}
-        row2 = {'dataset': dataset}
-        
-        for method, res in res_list:
+    df = get_mean_rank_df(df_all, skip_cols=['dataset'], sort='ascending')
+    df_li = get_mean_rank_df(df_li_all, skip_cols=['dataset'], sort='ascending')
 
-            df = res['df']
-            n_correct = len(df[df['status'] == 'success']) + len(df[df['status'] == 'fail'])
+    # plot
+    n_datasets = len(df_all['dataset'].unique())
+    n_li_datasets = len(df_li_all['dataset'].unique())
 
-            # result containers
-            frac_edits = np.full(n_correct, 0.1, dtype=np.float32)
-            n_edits = np.full(n_correct, int(X_train.shape[0] * 0.1), dtype=np.float32)
+    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
 
-            temp_df = df[df['status'] == 'success']
+    ax = axs[0]
+    df.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
+            title=f'{n_datasets} datasets',
+            ylabel='Avg. rank', xlabel='Method', legend=None)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
-            if len(temp_df) > 0:
-                frac_edits[:len(temp_df)] = temp_df['frac_edits'].values
-                n_edits[:len(temp_df)] = temp_df['n_edits'].values
+    ax = axs[1]
+    df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
+               title=f'{n_li_datasets} datasets',
+               ylabel='Avg. rank', xlabel='Method', legend=None)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
-            row[label[method]] = np.mean(frac_edits)
-            row2[label[method]] = sem(frac_edits)
+    logger.info(f'\nSaving results to {out_dir}/...')
 
-        rows.append(row)
-        rows2.append(row2)
+    plt.savefig(os.path.join(out_dir, 'loss_rank.png'), bbox_inches='tight')
+    plt.tight_layout()
+    plt.show()
 
-    df = pd.DataFrame(rows)
-    df2 = pd.DataFrame(rows2)
-
-    logger.info(f'\nFrac. edit results:\n{df}')
-
-    logger.info(f'\nSaving results to {out_dir}...')
-
-    df.to_csv(os.path.join(out_dir, 'frac_edits.csv'), index=None)
-    df2.to_csv(os.path.join(out_dir, 'frac_edits_sem.csv'), index=None)
+    df.to_csv(os.path.join(out_dir, 'frac_edits_rank.csv'))
+    df_li.to_csv(os.path.join(out_dir, 'frac_edits_rank_li.csv'))
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
 
 def main(args):
 
-    # create output dir
-    out_dir = os.path.join(args.out_dir,
-                           args.tree_type,
-                           'summary')
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
+                'n_ckpt': args.n_ckpt, 'step_size': args.step_size}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
+
+    if len(args.tree_type) == 1:
+        out_dir = os.path.join(args.in_dir,
+                               args.tree_type[0],
+                               f'exp_{exp_hash}',
+                               'summary',
+                               'rank')
+
+    else:
+        assert len(args.tree_type) > 1
+        out_dir = os.path.join(args.in_dir,
+                               'rank',
+                               f'exp_{exp_hash}')
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
@@ -101,8 +109,8 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    process(args, out_dir, logger)
+    process(args, exp_hash, out_dir, logger)
 
 
 if __name__ == '__main__':
-    main(summ_args.get_counterfactual_args().parse_args())
+    main(rank_args.get_counterfactual_args().parse_args())
