@@ -19,7 +19,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
-from postprocess.leaf_analysis import filter_results
 from config import summ_args
 
 
@@ -39,7 +38,7 @@ def process(args, out_dir, exp_hash, logger):
                                f'exp_{exp_hash}')
 
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-        res_list = filter_results(res_list, args.skip)
+        res_list = pp_util.filter_results(res_list, args.skip)
 
         row_loss = {'dataset': dataset}
         row_acc = row_loss.copy()

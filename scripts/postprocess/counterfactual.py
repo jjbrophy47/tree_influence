@@ -19,7 +19,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 import util
 from experiments import util as exp_util
-from leaf_analysis import filter_results
 from config import post_args
 
 
@@ -28,7 +27,7 @@ def experiment(args, logger, exp_dir, out_dir):
 
     # get results
     res_list = util.get_results(args, args.in_dir, exp_dir, logger=logger)
-    res_list = filter_results(res_list, args.skip)
+    res_list = util.filter_results(res_list, args.skip)
 
     color, line, label = util.get_plot_dicts()
 

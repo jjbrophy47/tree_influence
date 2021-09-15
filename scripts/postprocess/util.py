@@ -68,6 +68,28 @@ def get_results(args, in_dir, exp_dir, logger=None, progress_bar=True):
     return results
 
 
+def filter_results(results, skip_list):
+    """
+    Remove results for methods on the skip list.
+    """
+
+    result = []
+
+    for method, res in results:
+
+        include = True
+        for skip in skip_list:
+
+            if skip in method:
+                include = False
+                break
+
+        if include:
+            result.append((method, res))
+
+    return result
+
+
 def get_plot_dicts():
     """
     Return dict for color, line, and labels for each method.

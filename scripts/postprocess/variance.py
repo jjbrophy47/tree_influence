@@ -24,7 +24,7 @@ from scipy.stats import normaltest
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
-from experiments import util
+from experiments import exp_util
 
 
 def experiment(args, logger, in_dir, out_dir):
@@ -33,7 +33,7 @@ def experiment(args, logger, in_dir, out_dir):
     begin = time.time()
 
     # get dataset
-    X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
+    X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, args.dataset)
 
     # get influence results
     inf_res = np.load(os.path.join(in_dir, 'results.npy'), allow_pickle=True)[()]
@@ -195,7 +195,7 @@ def experiment(args, logger, in_dir, out_dir):
 
         # get unique hash for this experiment setting
         exp_dict = {'n_test': args.n_test}
-        exp_hash = util.dict_to_hash(exp_dict)
+        exp_hash = exp_util.dict_to_hash(exp_dict)
 
         # method1 dir
         in_dir2 = os.path.join(args.in_dir2,
@@ -353,12 +353,12 @@ def experiment(args, logger, in_dir, out_dir):
 def main(args):
 
     # get method params and unique settings hash
-    _, hash_str = util.explainer_params_to_dict(args.method, vars(args))
+    _, hash_str = exp_util.explainer_params_to_dict(args.method, vars(args))
 
     # experiment hash_str
     exp_dict = {'inf_obj': args.inf_obj, 'n_test': args.n_test,
                 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
-    exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = exp_util.dict_to_hash(exp_dict)
 
     # method1 dir
     in_dir = os.path.join(args.in_dir,
@@ -375,9 +375,9 @@ def main(args):
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
-    logger.info(datetime.now())
+    logger.info(f'\ntimestamp: {datetime.now()}')
 
     experiment(args, logger, in_dir, out_dir)
 

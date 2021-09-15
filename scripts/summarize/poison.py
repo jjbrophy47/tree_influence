@@ -19,8 +19,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
-from postprocess.leaf_analysis import filter_results
 from config import summ_args
+from summarize.roar import get_rank_df
 
 
 def process(args, out_dir, exp_hash, logger):
@@ -39,7 +39,7 @@ def process(args, out_dir, exp_hash, logger):
                                f'exp_{exp_hash}')
 
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-        res_list = filter_results(res_list, args.skip)
+        res_list = pp_util.filter_results(res_list, args.skip)
 
         row_loss = {'dataset': dataset}
         row_acc = row_loss.copy()
@@ -68,11 +68,36 @@ def process(args, out_dir, exp_hash, logger):
     logger.info(f'\nAccuracy:\n{df_acc}')
     logger.info(f'\nAUC:\n{df_auc}')
 
+    rank_df_loss = get_rank_df(df_loss, skip_cols=['dataset', 'poison_frac'], remove_cols=['Leaf Inf.'])
+    rank_df_acc = get_rank_df(df_acc, skip_cols=['dataset', 'poison_frac'], remove_cols=['Leaf Inf.'], ascending=True)
+    rank_df_auc = get_rank_df(df_auc, skip_cols=['dataset', 'poison_frac'], remove_cols=['Leaf Inf.'], ascending=True)
+
+    rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['Leaf Inf.'])], ['dataset', 'poison_frac'])
+    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['Leaf Inf.'])], ['dataset', 'poison_frac'], ascending=True)
+    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['Leaf Inf.'])], ['dataset', 'poison_frac'], ascending=True)
+
+    logger.info(f'\nLoss ranking:\n{rank_df_loss}')
+    logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')
+
+    logger.info(f'\nAcc. ranking:\n{rank_df_acc}')
+    logger.info(f'\nAcc. ranking (w/ leafinf):\n{rank_li_df_acc}')
+
+    logger.info(f'\nAUC ranking:\n{rank_df_auc}')
+    logger.info(f'\nAUC ranking (w/ leafinf):\n{rank_li_df_auc}')
+
     logger.info(f'\nSaving results to {out_dir}/...')
 
     df_loss.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
     df_acc.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
     df_auc.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
+
+    rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
+    rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'), index=None)
+    rank_df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'), index=None)
+
+    rank_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'), index=None)
+    rank_li_df_acc.to_csv(os.path.join(out_dir, 'acc_rank_li.csv'), index=None)
+    rank_li_df_auc.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'), index=None)
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

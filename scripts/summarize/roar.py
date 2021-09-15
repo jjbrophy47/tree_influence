@@ -19,7 +19,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
-from postprocess.leaf_analysis import filter_results
 from config import summ_args
 
 
@@ -38,15 +37,20 @@ def get_rank_df(df, skip_cols=[], remove_cols=[], ascending=False):
     result_df = df.copy()
 
     cols = [c for c in df.columns if c not in skip_cols + remove_cols]
+    df = df[cols]
+
+    # drop rows in which all values are nan
+    df = df.dropna(axis=0, how='all')
+    result_df = result_df.dropna(axis=0, how='all', subset=cols)
 
     if ascending:
-        df = df.fillna(1e300)
-        vals = df[cols].values
+        df = df.fillna(1e300)  # missing values get last place ranking
+        vals = df.values
         ranks = vals.argsort(axis=1).argsort(axis=1) + 1
 
     else:
         df = df.fillna(-1e300)
-        vals = df[cols].values
+        vals = df.values
         ranks = np.flip(vals.argsort(axis=1), axis=1).argsort(axis=1) + 1
 
     for i, col in enumerate(cols):
@@ -77,7 +81,7 @@ def process(args, out_dir, exp_hash, logger):
                                f'exp_{exp_hash}')
 
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-        res_list = filter_results(res_list, args.skip)
+        res_list = pp_util.filter_results(res_list, args.skip)
 
         row = {'dataset': dataset}
         row2 = {'dataset': dataset}

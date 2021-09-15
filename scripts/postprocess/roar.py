@@ -17,7 +17,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 import util
 from experiments import util as exp_util
-from leaf_analysis import filter_results
 from config import post_args
 
 
@@ -40,7 +39,7 @@ def process(args, out_dir, logger):
                                f'exp_{exp_hash}')
 
         res = util.get_results(args, in_dir, exp_dir, logger)
-        res = filter_results(res, args.skip)
+        res = util.filter_results(res, args.skip)
         results += res
 
         is_reinf = 1 if 'reinfluence' in in_dir else 0

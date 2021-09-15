@@ -19,7 +19,6 @@ from sklearn.metrics import log_loss
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
-from postprocess.leaf_analysis import filter_results
 from experiments import util as exp_util
 from config import summ_args
 
@@ -49,7 +48,7 @@ def process(args, out_dir, logger):
                                f'exp_{exp_hash}')
 
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-        res_list = filter_results(res_list, args.skip)
+        res_list = pp_util.filter_results(res_list, args.skip)
 
         row = {'dataset': dataset}
         row2 = {'dataset': dataset}

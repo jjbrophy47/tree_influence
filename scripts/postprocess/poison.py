@@ -18,7 +18,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 import util
 from experiments import util as exp_util
-from leaf_analysis import filter_results
 from config import post_args
 
 
@@ -28,7 +27,7 @@ def process(args, exp_dir, out_dir, logger):
     color, line, label = util.get_plot_dicts()
 
     res_list = util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-    res_list = filter_results(res_list, args.skip)
+    res_list = util.filter_results(res_list, args.skip)
 
     fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 

@@ -18,7 +18,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 import util
 from experiments import util as exp_util
-from leaf_analysis import filter_results
 from config import post_args
 
 
@@ -39,7 +38,7 @@ def process(args, out_dir, logger):
                                args.tree_type,
                                f'random_state_{random_state}')
         res_list = util.get_results(args, args.in_dir, exp_dir, logger)
-        res_list = filter_results(res_list, args.skip)
+        res_list = util.filter_results(res_list, args.skip)
 
         for method, d in res_list:
             r = {}

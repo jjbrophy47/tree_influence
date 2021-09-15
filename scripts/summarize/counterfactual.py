@@ -19,9 +19,9 @@ from sklearn.metrics import log_loss
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
-from postprocess.leaf_analysis import filter_results
 from experiments import util as exp_util
 from config import summ_args
+from summarize.roar import get_rank_df
 
 
 def process(args, out_dir, logger):
@@ -49,7 +49,7 @@ def process(args, out_dir, logger):
                                f'exp_{exp_hash}')
 
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-        res_list = filter_results(res_list, args.skip)
+        res_list = pp_util.filter_results(res_list, args.skip)
 
         row = {'dataset': dataset}
         row2 = {'dataset': dataset}
@@ -77,13 +77,20 @@ def process(args, out_dir, logger):
 
     df = pd.DataFrame(rows)
     df2 = pd.DataFrame(rows2)
-
     logger.info(f'\nFrac. edit results:\n{df}')
+
+    rank_df = get_rank_df(df, skip_cols=['dataset'], remove_cols=['Leaf Inf.'], ascending=True)
+    rank_li_df = get_rank_df(df[~pd.isna(df['Leaf Inf.'])], skip_cols=['dataset'], ascending=True)
+    logger.info(f'\nFrac. edit ranking:\n{rank_df}')
+    logger.info(f'\nFrac. edit ranking (w/ leafinf):\n{rank_li_df}')
 
     logger.info(f'\nSaving results to {out_dir}...')
 
     df.to_csv(os.path.join(out_dir, 'frac_edits.csv'), index=None)
     df2.to_csv(os.path.join(out_dir, 'frac_edits_sem.csv'), index=None)
+
+    rank_df.to_csv(os.path.join(out_dir, 'frac_edits_rank.csv'), index=None)
+    rank_li_df.to_csv(os.path.join(out_dir, 'frac_edits_rank_li.csv'), index=None)
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

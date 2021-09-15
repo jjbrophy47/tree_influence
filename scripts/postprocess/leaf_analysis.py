@@ -21,31 +21,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 sys.path.insert(0, here + '/../../')
 import intent
-import util as pp_util
-from experiments import util
-
-
-
-def filter_results(results, skip_list):
-    """
-    Remove results for methods on the skip list.
-    """
-
-    result = []
-
-    for method, res in results:
-
-        include = True
-        for skip in skip_list:
-
-            if skip in method:
-                include = False
-                break
-
-        if include:
-            result.append((method, res))
-
-    return result
+import util
+from experiments import util as exp_util
 
 
 def experiment(args, logger, out_dir):
@@ -55,12 +32,12 @@ def experiment(args, logger, out_dir):
     begin = time.time()
 
     # get dataset
-    X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
+    X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, args.dataset)
 
     # get results
-    inf_results = pp_util.get_results(args, args.in_dir, logger)
-    inf_results = filter_results(inf_results, args.skip)
-    color, line, label = pp_util.get_plot_dicts()
+    inf_results = util.get_results(args, args.in_dir, logger)
+    inf_results = util.filter_results(inf_results, args.skip)
+    color, line, label = util.get_plot_dicts()
 
     assert objective == 'binary'
 
@@ -97,8 +74,8 @@ def experiment(args, logger, out_dir):
 
     # plot arrived at leaf weights for 1+ test examples
     logger.info('\nLeaf Analysis')
-    hp = util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
-    tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
+    hp = exp_util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
+    tree = exp_util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
     tree.set_params(**hp)
     tree = tree.fit(X_train, y_train)
 
@@ -143,7 +120,7 @@ def experiment(args, logger, out_dir):
 def main(args):
 
     # get method params and unique settings hash
-    _, hash_str = util.explainer_params_to_dict(args.method, vars(args))
+    _, hash_str = exp_util.explainer_params_to_dict(args.method, vars(args))
 
     # create output dir
     out_dir = os.path.join(args.out_dir)
@@ -151,7 +128,7 @@ def main(args):
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
 
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
     logger.info(datetime.now())
 

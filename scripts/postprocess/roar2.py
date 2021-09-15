@@ -15,9 +15,8 @@ from tqdm import tqdm
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
-import util as pp_util
-from experiments import util
-from leaf_analysis import filter_results
+import util
+from experiments import exp_util
 
 
 def process(args, out_dir, logger):
@@ -27,17 +26,17 @@ def process(args, out_dir, logger):
     for strategy in args.strategy:
         exp_dict = {'inf_obj': args.inf_obj, 'strategy': strategy,
                     'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
-        exp_hash = util.dict_to_hash(exp_dict)
+        exp_hash = exp_util.dict_to_hash(exp_dict)
 
-        res = pp_util.get_results(args, args.in_dir, logger, exp_hash=exp_hash)
-        res = filter_results(res, args.skip)
+        res = util.get_results(args, args.in_dir, logger, exp_hash=exp_hash)
+        res = util.filter_results(res, args.skip)
 
         results += [tup + (strategy,) for tup in res]
 
     # get dataset
-    X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
+    X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, args.dataset)
 
-    color, line, label = pp_util.get_plot_dicts()
+    color, line, label = util.get_plot_dicts()
 
     n_row = 2 if args.zoom > 0.0 and args.zoom < 1.0 else 1
     height = 8 if args.zoom > 0.0 and args.zoom < 1.0 else 4
@@ -110,9 +109,9 @@ def main(args):
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)
-    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
     logger.info(args)
-    logger.info(datetime.now())
+    logger.info(f'\ntimestamp: {datetime.now()}')
 
     process(args, out_dir, logger)
 
