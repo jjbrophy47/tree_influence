@@ -74,17 +74,16 @@ def get_counterfactual_args():
 #     return cmd
 
 
-# def get_poison_args():
-#     """
-#     Add arguments specific to the "Poison" summarization.
+def get_poison_args():
+    """
+    Add arguments specific to the "Poison" summarization.
 
-#     Return ArgParser object.
-#     """
-#     cmd = get_general_args()
-#     cmd = post_args.get_explainer_args(cmd)
-#     cmd.add('--in_dir', type=str, default='temp_poison')
-#     cmd.add('--out_dir', type=str, default='output/plot/poison/')
-#     cmd.add('--poison_frac', type=float, default=[0.01, 0.05, 0.1, 0.2, 0.3])
-#     cmd.add('--val_frac', type=float, default=0.1)
-#     cmd.add('--ckpt', type=int, default=3)
-#     return cmd
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/plot/poison/')
+    cmd.add('--poison_frac', type=float, default=[0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--ckpt', type=int, nargs='+', default=[2, 3])
+    return cmd

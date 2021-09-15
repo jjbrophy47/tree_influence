@@ -73,7 +73,7 @@ def process(args, exp_hash, out_dir, logger):
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    plt.savefig(os.path.join(out_dir, 'loss_rank.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
     plt.tight_layout()
     plt.show()
 

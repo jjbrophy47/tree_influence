@@ -79,13 +79,13 @@ def process(args, exp_hash, out_dir, logger):
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
 
-    n_datasets = len(df_all['dataset'].unique())
-    n_li_datasets = len(df_li_all['dataset'].unique())
-
     df = get_mean_rank_df(df_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
     df_li = get_mean_rank_df(df_li_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
 
     # plot
+    n_datasets = len(df_all['dataset'].unique())
+    n_li_datasets = len(df_li_all['dataset'].unique())
+
     fig, axs = plt.subplots(1, 2, figsize=(9, 4))
 
     ax = axs[0]
