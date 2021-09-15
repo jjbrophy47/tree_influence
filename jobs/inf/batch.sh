@@ -28,3 +28,15 @@ sbatch -a 22-22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t
 sbatch -a 7,14 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 sbatch -a 9    -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 sbatch -a 22   -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+
+# TEMP - updated hyperparams (xgb)
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_input_sim-%a.out'  $run $t 'input_sim'
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_leaf_sim-%a.out'   $run $t 'leaf_sim'
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostin-%a.out'    $run $t 'boostin'
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t 'leaf_infSP'
+sbatch -a 2,5,10,18  -c 9  -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'
+sbatch -a 2,5,10,18  -c 5  -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
+sbatch -a 2,5,10,18  -c 5  -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'

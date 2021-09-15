@@ -26,8 +26,29 @@ def add_noise(X, y, objective, rng, frac=0.1):
     """
     Add noise to a random subset of examples.
     """
+    new_X = X
+    new_y = y.copy()
+
+    # select examples to add noise to
     target_idxs = rng.choice(np.arange(len(y)), size=int(len(y) * frac))
-    new_X, new_y = poison(X, y, objective, rng, target_idxs)
+
+    # add gaussian noise to selected targets
+    if objective == 'regression':
+        new_y[target_idxs] = -y[target_idxs]
+
+    # flip selected targets
+    elif objective == 'binary':
+        new_y[target_idxs] = np.where(y[target_idxs] == 0, 1, 0)
+
+    # change selected targets to a different random label
+    else:
+        assert objective == 'multiclass'
+        labels = np.unique(y)
+
+        for target_idx in target_idxs:
+            remain_labels = np.setdiff1d(labels, y[target_idx])
+            new_y[target_idx] = rng.choice(remain_labels, size=1)
+
     return new_X, new_y, target_idxs
 
 
@@ -36,7 +57,6 @@ def experiment(args, logger, params, random_state, out_dir):
     # initialize experiment
     begin = time.time()
     rng = np.random.default_rng(random_state)
-    result = {}
 
     # data
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
@@ -86,31 +106,46 @@ def experiment(args, logger, params, random_state, out_dir):
         influence = explainer.get_self_influence(X_train_noise, y_train_noise)
         ranking = np.argsort(influence)[::-1]
 
-    n_check = int(len(X_train_noise) * args.check_frac)
-    check_idxs = ranking[:n_check]
-
     inf_time = time.time() - start2
     logger.info(f'\n[INFO] inf. time: {inf_time:.3f}s')
 
-    # check and fix identified noisy examples
-    new_X_train = X_train_noise.copy()
-    new_X_train[check_idxs] = X_train[check_idxs]
+    # result containers
+    result = {}
+    result['check_frac'] = args.check_frac
+    result['frac_detected'] = np.full(len(args.check_frac), np.nan, dtype=np.float32)
+    result['loss'] = np.full(len(args.check_frac), np.nan, dtype=np.float32)
+    result['acc'] = np.full(len(args.check_frac), np.nan, dtype=np.float32)
+    result['auc'] = np.full(len(args.check_frac), np.nan, dtype=np.float32)
 
-    new_y_train = y_train_noise.copy()
-    new_y_train[check_idxs] = y_train[check_idxs]
+    for i, check_frac in enumerate(args.check_frac):
 
-    logger.info(f'\n[INFO] checking {len(check_idxs):,} examples...')
+        # check and fix identified noisy examples
+        n_check = int(len(X_train_noise) * check_frac)
+        check_idxs = ranking[:n_check]
 
-    n_detected = len(set(noise_idxs).intersection(set(check_idxs)))
-    frac_detected = n_detected / len(check_idxs)
-    overall_frac_detected = n_detected / len(noise_idxs)
-    logger.info(f'[INFO] no. noisy examples detected: '
-                f'{n_detected:,}/{len(check_idxs):,} ({frac_detected * 100:.1f}%), '
-                f'overall: {n_detected:,}/{len(noise_idxs):,} ({overall_frac_detected * 100:.1f}%)')
+        new_X_train = X_train_noise.copy()
+        new_X_train[check_idxs] = X_train[check_idxs]
 
-    # retrain and re-evaluate model on fixed train data
-    new_tree = clone(tree).fit(new_X_train, new_y_train)
-    res_fixed = util.eval_pred(objective, new_tree, X_test, y_test, logger, prefix='Test (fixed)')
+        new_y_train = y_train_noise.copy()
+        new_y_train[check_idxs] = y_train[check_idxs]
+
+        logger.info(f'\n[INFO] checking {len(check_idxs):,} examples...')
+
+        n_detected = len(set(noise_idxs).intersection(set(check_idxs)))
+        frac_detected = n_detected / len(noise_idxs)
+        logger.info(f'[INFO] no. noisy examples detected: '
+                    f'{n_detected:,}/{len(noise_idxs):,} ({frac_detected * 100:.1f}%)')
+
+        # retrain and re-evaluate model on fixed train data
+        new_tree = clone(tree).fit(new_X_train, new_y_train)
+        res_fixed = util.eval_pred(objective, new_tree, X_test, y_test, logger,
+                                   prefix=f'Test (check/fixed {check_frac * 100:.1f}%)')
+
+        # append results
+        result['frac_detected'][i] = frac_detected
+        result['loss'][i] = res_fixed['loss']
+        result['acc'][i] = res_fixed['acc']
+        result['auc'][i] = res_fixed['auc']
 
     cum_time = time.time() - begin
     logger.info(f'\n[INFO] total time: {cum_time:.3f}s')
@@ -118,10 +153,8 @@ def experiment(args, logger, params, random_state, out_dir):
     # save results
     result['influence'] = influence
     result['noise_idxs'] = noise_idxs
-    result['check_idxs'] = check_idxs
+    result['ranking'] = ranking
     result['res_clean'] = res_clean
-    result['res_noise'] = res_noise
-    result['res_fixed'] = res_fixed
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['fit_time'] = fit_time
     result['inf_time'] = inf_time

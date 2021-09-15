@@ -35,12 +35,18 @@ def jaccard_similarity(inf1, inf2):
     return len(s1.intersection(s2)) / len(s1.union(s2))
 
 
-def get_correlation(inf1, inf2, jaccard_frac=0.1):
+def get_correlation(inf1, inf2, jaccard_frac=0.1, logger=None):
     """
     Compute avg. correlation between the given influences.
     """
     inf1 = np.where(inf1 == np.inf, 1000, inf1)  # replace inf with a large constant
     inf2 = np.where(inf2 == np.inf, 1000, inf2)
+
+    inf1 = np.where(inf1 > 1e300, 1000, inf1)  # replace very large numbers with a large constant
+    inf2 = np.where(inf2 > 1e300, 1000, inf2)
+
+    inf1 = np.where(inf1 < -1e300, -1000, inf1)  # replace very small numbers with a large constants
+    inf2 = np.where(inf2 < -1e300, -1000, inf2)
 
     inf1 = np.nan_to_num(inf1)  # replace nan with a small number
     inf2 = np.nan_to_num(inf2)
@@ -55,7 +61,8 @@ def get_correlation(inf1, inf2, jaccard_frac=0.1):
 
         # check if either array is constant
         if np.all(inf1i == inf1i[0]) or np.all(inf2i == inf2i[0]):
-            print('Constant detected!')
+            if logger:
+                logger.info(f'Constant detected! Test no. {i}')
             continue
 
         pearson[i] = pearsonr(inf1i, inf2i)[0]
@@ -107,7 +114,8 @@ def experiment(args, logger, in_dir_list, out_dir):
                 continue
 
             inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
-            mean_p, std_p, mean_s, std_s, mean_j, std_j = get_correlation(inf_res1['influence'], inf_res2['influence'])
+            mean_p, std_p, mean_s, std_s, mean_j, std_j = get_correlation(inf_res1['influence'],
+                                                                          inf_res2['influence'], logger=logger)
 
             idx1 = idx_dict[method1]
             idx2 = idx_dict[method2]

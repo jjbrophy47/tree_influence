@@ -120,7 +120,7 @@ def get_noise_args():
     cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
     cmd.add('--noise_frac', type=float, default=0.1)
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, default=0.1)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
     cmd.add('--n_repeat', type=int, default=5)
     return cmd
 

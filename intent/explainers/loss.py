@@ -55,6 +55,21 @@ class Loss(Explainer):
         return self._get_loss(self.loss_fn_, self.original_model_, self.objective_,
                               self.X_train_, self.y_train_)
 
+    def get_local_influence(self, X, y):
+        """
+        - Compute influence of each training instance on the test loss.
+
+        Input
+            X: 2d array of test examples.
+            y: 1d array of test targets.
+                * Could be the actual label or the predicted label depending on the explainer.
+
+        Return
+            - 2d array of shape=(no. train, X.shape[0]).
+                * Arrays are returned in the same order as the training data.
+        """
+        raise ValueError('get_local_influence not implemented for Loss explainer.')
+
     # private
     def _get_loss(self, loss_fn, model, objective, X, y, batch=False):
         """

@@ -72,6 +72,7 @@ def get_correlation_args():
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--in_dir', type=str, default='output/plot/correlation/')
     cmd.add('--out_dir', type=str, default='output/plot/correlation/')
+    cmd.add('--sub_dir', type=str, default=None)
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, default=0.02)
     cmd.add('--n_ckpt', type=int, default=20)
@@ -91,7 +92,7 @@ def get_noise_args():
     cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
     cmd.add('--noise_frac', type=float, default=0.1)
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, default=0.1)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
     cmd.add('--n_repeat', type=int, default=5)
     return cmd
 

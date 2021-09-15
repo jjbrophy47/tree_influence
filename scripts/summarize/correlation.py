@@ -134,6 +134,9 @@ def main(args):
                            args.tree_type,
                            'summary')
 
+    if args.sub_dir is not None:
+        out_dir = os.path.join(out_dir, args.sub_dir)
+
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
 
