@@ -38,7 +38,8 @@ def get_mean_rank_df(in_df, skip_cols=[], sort=None):
 
     in_df = in_df[cols]
 
-    df = pd.DataFrame(np.vstack([in_df.mean(axis=0), in_df.sem(axis=0)]).T,
+    # 95% CI
+    df = pd.DataFrame(np.vstack([in_df.mean(axis=0), 1.96 * in_df.sem(axis=0)]).T,
                       index=cols, columns=['mean', 'sem'])
 
     if sort == 'ascending':
@@ -79,6 +80,9 @@ def process(args, exp_hash, out_dir, logger):
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
 
+    df_all = df_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    df_li_all = df_li_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+
     df = get_mean_rank_df(df_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
     df_li = get_mean_rank_df(df_li_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
 
@@ -90,19 +94,19 @@ def process(args, exp_hash, out_dir, logger):
 
     ax = axs[0]
     df.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
-            title=f'{n_datasets} datasets',
+            title=f'Loss ({n_datasets} datasets)', capsize=3,
             ylabel='Avg. rank', xlabel='Method', legend=None)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[1]
     df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
-               title=f'{n_li_datasets} datasets',
+               title=f'w/ LeafInf ({n_li_datasets} datasets)', capsize=3,
                ylabel='Avg. rank', xlabel='Method', legend=None)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    plt.savefig(os.path.join(out_dir, 'loss_rank.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
     plt.tight_layout()
     plt.show()
 

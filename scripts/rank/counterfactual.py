@@ -61,13 +61,13 @@ def process(args, exp_hash, out_dir, logger):
 
     ax = axs[0]
     df.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
-            title=f'{n_datasets} datasets',
+            title=f'Frac. edits ({n_datasets} datasets)', capsize=3,
             ylabel='Avg. rank', xlabel='Method', legend=None)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[1]
     df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
-               title=f'{n_li_datasets} datasets',
+               title=f'w/ LeafInf ({n_li_datasets} datasets)', capsize=3,
                ylabel='Avg. rank', xlabel='Method', legend=None)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 

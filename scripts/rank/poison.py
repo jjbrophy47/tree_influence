@@ -78,6 +78,14 @@ def process(args, exp_hash, out_dir, logger):
     df_auc_all = pd.concat(df_auc_list)
     df_li_auc_all = pd.concat(df_li_auc_list)
 
+    # average ranks among different checkpoints
+    df_loss_all = df_loss_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    df_li_loss_all = df_li_loss_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    df_acc_all = df_acc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    df_li_acc_all = df_li_acc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    df_auc_all = df_auc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    df_li_auc_all = df_li_auc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+
     # compute average ranks
     skip_cols = ['dataset', 'poison_frac']
 
@@ -89,39 +97,43 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc = get_mean_rank_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
 
     # plot
-    n_datasets = len(df_loss_all['dataset'].unique())
-    n_li_datasets = len(df_li_loss_all['dataset'].unique())
+    n_loss_datasets = len(df_loss_all['dataset'].unique())
+    n_li_loss_datasets = len(df_li_loss_all['dataset'].unique())
+    n_acc_datasets = len(df_acc_all['dataset'].unique())
+    n_li_acc_datasets = len(df_li_acc_all['dataset'].unique())
+    n_auc_datasets = len(df_auc_all['dataset'].unique())
+    n_li_auc_datasets = len(df_li_auc_all['dataset'].unique())
 
     fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 
     ax = axs[0][0]
-    df_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None,
-                 title=f'Loss ({n_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
+    df_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
+                 title=f'Loss ({n_loss_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[1][0]
-    df_li_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None,
-                    title=f'{n_li_datasets} datasets', ylabel='Avg. rank', xlabel='Method')
+    df_li_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
+                    title=f'w/ LeafInf ({n_li_loss_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[0][1]
-    df_acc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None,
-                title=f'Accuracy', ylabel='Avg. rank', xlabel='Method')
+    df_acc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
+                title=f'Accuracy ({n_acc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[1][1]
-    df_li_acc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None,
-                   title=f'{n_li_datasets} datasets', ylabel='Avg. rank', xlabel='Method')
+    df_li_acc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
+                   title=f'w/ LeafInf ({n_li_acc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[0][2]
-    df_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None,
-                title=f'AUC', ylabel='Avg. rank', xlabel='Method')
+    df_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
+                title=f'AUC ({n_auc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     ax = axs[1][2]
-    df_li_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None,
-                   title=f'{n_li_datasets} datasets', ylabel='Avg. rank', xlabel='Method')
+    df_li_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
+                   title=f'w/ LeafInf ({n_li_auc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
     logger.info(f'\nSaving results to {out_dir}/...')

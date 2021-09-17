@@ -20,7 +20,7 @@ def get_general_args(cmd=None):
                      'diabetes', 'energy', 'flight_delays', 'german_credit', 'htru2', 'life',
                      'naval', 'no_show', 'obesity', 'power', 'protein', 'spambase',
                      'surgical', 'twitter', 'vaccine', 'wine'])
-    cmd.add('--tree_type', type=str, nargs='+', default=['lgb'])
+    cmd.add('--tree_type', type=str, nargs='+', default=['lgb', 'xgb'])
     return cmd
 
 
@@ -36,13 +36,13 @@ def get_roar_args():
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, default=0.02)
     cmd.add('--n_ckpt', type=int, default=20)
-    cmd.add('--ckpt', type=int, nargs='+', default=[5, 10])
+    cmd.add('--ckpt', type=int, nargs='+', default=[5, 10, 15])
     return cmd
 
 
 def get_counterfactual_args():
     """
-    Add arguments specific to the "Counterfactual" summarization.
+    Add arguments specific to the "Counterfactual" rank.
 
     Return ArgParser object.
     """
@@ -56,27 +56,25 @@ def get_counterfactual_args():
     return cmd
 
 
-# def get_noise_args():
-#     """
-#     Add arguments specific to the "Noise" summarization.
+def get_noise_args():
+    """
+    Add arguments specific to the "Noise" rank.
 
-#     Return ArgParser object.
-#     """
-#     cmd = get_general_args()
-#     cmd = post_args.get_explainer_args(cmd)
-#     cmd.add('--in_dir', type=str, default='temp_noise/')
-#     cmd.add('--out_dir', type=str, default='output/plot/noise/')
-#     cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
-#     cmd.add('--noise_frac', type=float, default=0.1)
-#     cmd.add('--val_frac', type=float, default=0.1)
-#     cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
-#     cmd.add('--n_repeat', type=int, default=5)
-#     return cmd
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/plot/noise/')
+    cmd.add('--noise_frac', type=float, default=0.4)  # TODO: average over multiple fracs.?
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4])
+    return cmd
 
 
 def get_poison_args():
     """
-    Add arguments specific to the "Poison" summarization.
+    Add arguments specific to the "Poison" rank.
 
     Return ArgParser object.
     """
@@ -85,5 +83,5 @@ def get_poison_args():
     cmd.add('--in_dir', type=str, default='output/plot/poison/')
     cmd.add('--poison_frac', type=float, default=[0.01, 0.05, 0.1, 0.2, 0.3])
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--ckpt', type=int, nargs='+', default=[2, 3])
+    cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4])
     return cmd

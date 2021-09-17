@@ -98,24 +98,24 @@ def process(args, exp_hash, out_dir, logger):
     remove_cols = ['Leaf Inf.']
 
     rank_df_fd = get_rank_df(fd_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    # rank_li_df_fd = get_rank_df(loss_df[~pd.isna(fd_df['Leaf Inf.'])], skip_cols=skip_cols)
+    rank_li_df_fd = get_rank_df(loss_df[~pd.isna(fd_df['Leaf Inf.'])], skip_cols=skip_cols)
     logger.info(f'\nFrac. detected ranking:\n{rank_df_fd}')
-    # logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
+    logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
 
     rank_df_loss = get_rank_df(loss_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
-    # rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['Leaf Inf.'])], skip_cols=skip_cols, ascending=True)
+    rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['Leaf Inf.'])], skip_cols=skip_cols, ascending=True)
     logger.info(f'\nLoss ranking:\n{rank_df_loss}')
-    # logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')
+    logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')
 
     rank_df_acc = get_rank_df(acc_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    # rank_li_df_acc = get_rank_df(loss_df[~pd.isna(acc_df['Leaf Inf.'])], skip_cols=skip_cols)
+    rank_li_df_acc = get_rank_df(loss_df[~pd.isna(acc_df['Leaf Inf.'])], skip_cols=skip_cols)
     logger.info(f'\nAcc. ranking:\n{rank_df_acc}')
-    # logger.info(f'\nAcc. ranking (w/ leafinf):\n{rank_li_df_acc}')
+    logger.info(f'\nAcc. ranking (w/ leafinf):\n{rank_li_df_acc}')
 
     rank_df_auc = get_rank_df(auc_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    # rank_li_df_auc = get_rank_df(loss_df[~pd.isna(auc_df['Leaf Inf.'])], skip_cols=skip_cols)
+    rank_li_df_auc = get_rank_df(loss_df[~pd.isna(auc_df['Leaf Inf.'])], skip_cols=skip_cols)
     logger.info(f'\nAUC ranking:\n{rank_df_auc}')
-    # logger.info(f'\nAUC ranking (w/ leafinf):\n{rank_li_df_auc}')
+    logger.info(f'\nAUC ranking (w/ leafinf):\n{rank_li_df_auc}')
 
     # save results
     logger.info(f'\nSaving results to {out_dir}...')
@@ -130,10 +130,10 @@ def process(args, exp_hash, out_dir, logger):
     rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'))
     rank_df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'))
 
-    # rank_li_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank_li.csv'))
-    # rank_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
-    # rank_li_acc_df.to_csv(os.path.join(out_dir, 'acc_rank_li.csv'))
-    # rank_li_auc_df.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'))
+    rank_li_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank_li.csv'))
+    rank_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
+    rank_li_acc_df.to_csv(os.path.join(out_dir, 'acc_rank_li.csv'))
+    rank_li_auc_df.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'))
 
 
 def main(args):
