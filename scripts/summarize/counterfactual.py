@@ -46,8 +46,8 @@ def process(args, exp_hash, out_dir, logger):
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
         res_list = pp_util.filter_results(res_list, args.skip)
 
-        row = {'dataset': dataset}
-        row2 = {'dataset': dataset}
+        row = {'dataset': dataset, 'tree_type': args.tree_type}
+        row2 = {'dataset': dataset, 'tree_type': args.tree_type}
         
         for method, res in res_list:
 
@@ -74,8 +74,11 @@ def process(args, exp_hash, out_dir, logger):
     df2 = pd.DataFrame(rows2)
     logger.info(f'\nFrac. edit results:\n{df}')
 
-    rank_df = get_rank_df(df, skip_cols=['dataset'], remove_cols=['Leaf Inf.'], ascending=True)
-    rank_li_df = get_rank_df(df[~pd.isna(df['Leaf Inf.'])], skip_cols=['dataset'], ascending=True)
+    # compute ranks
+    skip_cols = ['dataset', 'tree_type']
+
+    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['Leaf Inf.'], ascending=True)
+    rank_li_df = get_rank_df(df[~pd.isna(df['Leaf Inf.'])], skip_cols=skip_cols, ascending=True)
     logger.info(f'\nFrac. edit ranking:\n{rank_df}')
     logger.info(f'\nFrac. edit ranking (w/ leafinf):\n{rank_li_df}')
 

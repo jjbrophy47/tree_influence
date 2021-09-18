@@ -79,15 +79,17 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc_all = pd.concat(df_li_auc_list)
 
     # average ranks among different checkpoints
-    df_loss_all = df_loss_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_loss_all = df_li_loss_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_acc_all = df_acc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_acc_all = df_li_acc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_auc_all = df_auc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_auc_all = df_li_auc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    group_cols = ['dataset', 'tree_type']
+
+    df_loss_all = df_loss_all.groupby(group_cols).mean().reset_index()
+    df_li_loss_all = df_li_loss_all.groupby(group_cols).mean().reset_index()
+    df_acc_all = df_acc_all.groupby(group_cols).mean().reset_index()
+    df_li_acc_all = df_li_acc_all.groupby(group_cols).mean().reset_index()
+    df_auc_all = df_auc_all.groupby(group_cols).mean().reset_index()
+    df_li_auc_all = df_li_auc_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
-    skip_cols = ['dataset', 'poison_frac']
+    skip_cols = ['dataset', 'tree_type', 'poison_frac']
 
     df_loss = get_mean_rank_df(df_loss_all, skip_cols=skip_cols, sort='ascending')
     df_li_loss = get_mean_rank_df(df_li_loss_all, skip_cols=skip_cols, sort='ascending')

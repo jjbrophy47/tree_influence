@@ -80,11 +80,17 @@ def process(args, exp_hash, out_dir, logger):
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
 
-    df_all = df_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_all = df_li_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    # average ranks among different checkpoints
+    group_cols = ['dataset', 'tree_type']
 
-    df = get_mean_rank_df(df_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
-    df_li = get_mean_rank_df(df_li_all, skip_cols=['dataset', 'remove_frac'], sort='ascending')
+    df_all = df_all.groupby(group_cols).mean().reset_index()
+    df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
+
+    # compute average ranks
+    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+
+    df = get_mean_rank_df(df_all, skip_cols=skip_cols, sort='ascending')
+    df_li = get_mean_rank_df(df_li_all, skip_cols=skip_cols, sort='ascending')
 
     # plot
     n_datasets = len(df_all['dataset'].unique())

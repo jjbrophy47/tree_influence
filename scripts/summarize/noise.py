@@ -65,7 +65,7 @@ def process(args, exp_hash, out_dir, logger):
 
         # average over random states
         temp_dict = {'dataset': dataset, 'noise_frac': args.noise_frac,
-                     'check_frac': args.check_frac[args.ckpt]}
+                     'check_frac': args.check_frac[args.ckpt], 'tree_type': args.tree_type}
         fd_d = temp_dict.copy()
         loss_d = temp_dict.copy()
         acc_d = temp_dict.copy()
@@ -80,13 +80,13 @@ def process(args, exp_hash, out_dir, logger):
         fd_d_list.append(fd_d)
         loss_d_list.append(loss_d)
         acc_d_list.append(acc_d)
-        auc_d_list.append(loss_d)
+        auc_d_list.append(auc_d)
 
     # organize results
-    fd_df = pd.DataFrame(fd_d_list)
-    loss_df = pd.DataFrame(loss_d_list)
-    acc_df = pd.DataFrame(acc_d_list)
-    auc_df = pd.DataFrame(auc_d_list)
+    fd_df = pd.DataFrame(fd_d_list).replace(-1, np.nan)
+    loss_df = pd.DataFrame(loss_d_list).replace(-1, np.nan)
+    acc_df = pd.DataFrame(acc_d_list).replace(-1, np.nan)
+    auc_df = pd.DataFrame(auc_d_list).replace(-1, np.nan)
 
     logger.info(f'\n\nFrac. detected:\n{fd_df}')
     logger.info(f'\n\nLoss:\n{loss_df}')
@@ -94,26 +94,26 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\n\nAUC:\n{auc_df}')
 
     # compute ranks
-    skip_cols = ['dataset', 'noise_frac', 'check_frac']
-    remove_cols = ['Leaf Inf.']
+    skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
+    remove_cols = ['Leaf Inf._test_sum']
 
     rank_df_fd = get_rank_df(fd_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df_fd = get_rank_df(loss_df[~pd.isna(fd_df['Leaf Inf.'])], skip_cols=skip_cols)
+    rank_li_df_fd = get_rank_df(fd_df[~pd.isna(fd_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
     logger.info(f'\nFrac. detected ranking:\n{rank_df_fd}')
     logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
 
     rank_df_loss = get_rank_df(loss_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
-    rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['Leaf Inf.'])], skip_cols=skip_cols, ascending=True)
+    rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['Leaf Inf._test_sum'])], skip_cols=skip_cols, ascending=True)
     logger.info(f'\nLoss ranking:\n{rank_df_loss}')
     logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')
 
     rank_df_acc = get_rank_df(acc_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df_acc = get_rank_df(loss_df[~pd.isna(acc_df['Leaf Inf.'])], skip_cols=skip_cols)
+    rank_li_df_acc = get_rank_df(acc_df[~pd.isna(acc_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
     logger.info(f'\nAcc. ranking:\n{rank_df_acc}')
     logger.info(f'\nAcc. ranking (w/ leafinf):\n{rank_li_df_acc}')
 
     rank_df_auc = get_rank_df(auc_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df_auc = get_rank_df(loss_df[~pd.isna(auc_df['Leaf Inf.'])], skip_cols=skip_cols)
+    rank_li_df_auc = get_rank_df(auc_df[~pd.isna(auc_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
     logger.info(f'\nAUC ranking:\n{rank_df_auc}')
     logger.info(f'\nAUC ranking (w/ leafinf):\n{rank_li_df_auc}')
 
@@ -125,15 +125,15 @@ def process(args, exp_hash, out_dir, logger):
     acc_df.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
     auc_df.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
 
-    rank_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank.csv'))
-    rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
-    rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'))
-    rank_df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'))
+    rank_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank.csv'), index=None)
+    rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
+    rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'), index=None)
+    rank_df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'), index=None)
 
-    rank_li_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank_li.csv'))
-    rank_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
-    rank_li_acc_df.to_csv(os.path.join(out_dir, 'acc_rank_li.csv'))
-    rank_li_auc_df.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'))
+    rank_li_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank_li.csv'), index=None)
+    rank_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'), index=None)
+    rank_li_df_acc.to_csv(os.path.join(out_dir, 'acc_rank_li.csv'), index=None)
+    rank_li_df_auc.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'), index=None)
 
 
 def main(args):

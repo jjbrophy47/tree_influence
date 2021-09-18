@@ -41,7 +41,7 @@ def process(args, exp_hash, out_dir, logger):
         res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
         res_list = pp_util.filter_results(res_list, args.skip)
 
-        row_loss = {'dataset': dataset}
+        row_loss = {'dataset': dataset, 'tree_type': args.tree_type}
         row_acc = row_loss.copy()
         row_auc = row_loss.copy()
 
@@ -68,13 +68,16 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nAccuracy:\n{df_acc}')
     logger.info(f'\nAUC:\n{df_auc}')
 
-    rank_df_loss = get_rank_df(df_loss, skip_cols=['dataset', 'poison_frac'], remove_cols=['Leaf Inf.'])
-    rank_df_acc = get_rank_df(df_acc, skip_cols=['dataset', 'poison_frac'], remove_cols=['Leaf Inf.'], ascending=True)
-    rank_df_auc = get_rank_df(df_auc, skip_cols=['dataset', 'poison_frac'], remove_cols=['Leaf Inf.'], ascending=True)
+    # compute rankings
+    skip_cols = ['dataset', 'tree_type', 'poison_frac']
 
-    rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['Leaf Inf.'])], ['dataset', 'poison_frac'])
-    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['Leaf Inf.'])], ['dataset', 'poison_frac'], ascending=True)
-    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['Leaf Inf.'])], ['dataset', 'poison_frac'], ascending=True)
+    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=['Leaf Inf.'])
+    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=['Leaf Inf.'], ascending=True)
+    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=['Leaf Inf.'], ascending=True)
+
+    rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['Leaf Inf.'])], skip_cols)
+    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['Leaf Inf.'])], skip_cols, ascending=True)
+    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['Leaf Inf.'])], skip_cols, ascending=True)
 
     logger.info(f'\nLoss ranking:\n{rank_df_loss}')
     logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')

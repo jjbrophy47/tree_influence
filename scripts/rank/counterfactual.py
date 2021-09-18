@@ -50,8 +50,11 @@ def process(args, exp_hash, out_dir, logger):
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
 
-    df = get_mean_rank_df(df_all, skip_cols=['dataset'], sort='ascending')
-    df_li = get_mean_rank_df(df_li_all, skip_cols=['dataset'], sort='ascending')
+    # compute average rankings
+    skip_cols = ['dataset', 'tree_type']
+
+    df = get_mean_rank_df(df_all, skip_cols=skip_cols, sort='ascending')
+    df_li = get_mean_rank_df(df_li_all, skip_cols=skip_cols, sort='ascending')
 
     # plot
     n_datasets = len(df_all['dataset'].unique())

@@ -5,6 +5,7 @@ TODO: Average over multiple noise fracs.?
 """
 import os
 import sys
+import time
 import argparse
 from datetime import datetime
 from itertools import product
@@ -20,10 +21,12 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
-from config import summ_args
+from config import rank_args
+from rank.roar import get_mean_rank_df
 
 
-def process(args, out_dir, logger):
+def process(args, exp_hash, out_dir, logger):
+    begin = time.time()
 
     # get dataset
     color, line, label = pp_util.get_plot_dicts()
@@ -91,17 +94,19 @@ def process(args, out_dir, logger):
     df_li_auc_all = pd.concat(df_li_auc_list)
 
     # average ranks among different checkpoints
-    df_fd_all = df_fd_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_fd_all = df_li_fd_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_loss_all = df_loss_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_loss_all = df_li_loss_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_acc_all = df_acc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_acc_all = df_li_acc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_auc_all = df_auc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
-    df_li_auc_all = df_li_auc_all.groupby('dataset').mean().reset_index().rename(columns={'index': 'dataset'})
+    group_cols = ['dataset', 'tree_type', 'noise_frac']
+
+    df_fd_all = df_fd_all.groupby(group_cols).mean().reset_index()
+    df_li_fd_all = df_li_fd_all.groupby(group_cols).mean().reset_index()
+    df_loss_all = df_loss_all.groupby(group_cols).mean().reset_index()
+    df_li_loss_all = df_li_loss_all.groupby(group_cols).mean().reset_index()
+    df_acc_all = df_acc_all.groupby(group_cols).mean().reset_index()
+    df_li_acc_all = df_li_acc_all.groupby(group_cols).mean().reset_index()
+    df_auc_all = df_auc_all.groupby(group_cols).mean().reset_index()
+    df_li_auc_all = df_li_auc_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
-    skip_cols = ['dataset', 'noise_frac', 'check_frac']
+    skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
 
     df_fd = get_mean_rank_df(df_fd_all, skip_cols=skip_cols, sort='ascending')
     df_li_fd = get_mean_rank_df(df_li_fd_all, skip_cols=skip_cols, sort='ascending')
@@ -159,7 +164,7 @@ def process(args, out_dir, logger):
                 title=f'AUC ({n_auc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
-    ax = axs[1][4]
+    ax = axs[1][3]
     df_li_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
                    title=f'w/ LeafInf ({n_li_auc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
