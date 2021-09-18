@@ -6,6 +6,7 @@ import numpy as np
 
 from .parser_cb import parse_cb_ensemble
 from .parser_lgb import parse_lgb_ensemble
+from .parser_sk import parse_skhgbm_ensemble
 from .parser_sk import parse_skgbm_ensemble
 from .parser_sk import parse_skrf_ensemble
 from .parser_xgb import parse_xgb_ensemble
@@ -25,20 +26,23 @@ def parse_model(model, X, y):
     """
 
     # extract underlying tree-ensemble model representation
-    if 'CatBoost' in str(model):
-        trees, params = parse_cb_ensemble(model)
-
-    elif 'LGBM' in str(model):
+    if 'LGBM' in str(model):
         trees, params = parse_lgb_ensemble(model, X, y)
+
+    elif 'XGB' in str(model):
+        trees, params = parse_xgb_ensemble(model)
+
+    elif 'HistGradientBoosting' in str(model):
+        trees, params = parse_skhgbm_ensemble(model)
 
     elif 'GradientBoosting' in str(model):
         trees, params = parse_skgbm_ensemble(model)
 
+    elif 'CatBoost' in str(model):
+        trees, params = parse_cb_ensemble(model)
+
     elif 'RandomForest' in str(model):
         trees, params = parse_skrf_ensemble(model)
-
-    elif 'XGB' in str(model):
-        trees, params = parse_xgb_ensemble(model)
 
     else:
         raise ValueError(f'Could not parse {str(model)}')

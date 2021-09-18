@@ -29,7 +29,7 @@ sbatch -a 7,14 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 
 sbatch -a 9    -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 sbatch -a 22   -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
-# TEMP - updated hyperparams (xgb)
+# TEMP - updated hyperparams (xgb) - already run
 sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'
 sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'
 sbatch -a 2,5,10,18  -c 3  -t 1440 -p 'short' -o ${o}${t}'_input_sim-%a.out'  $run $t 'input_sim'

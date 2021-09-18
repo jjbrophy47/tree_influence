@@ -7,6 +7,9 @@ from catboost import CatBoostRegressor
 from catboost import CatBoostClassifier
 from lightgbm import LGBMRegressor
 from lightgbm import LGBMClassifier
+from sklearn.experimental import enable_hist_gradient_boosting  # noqa
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestRegressor
@@ -187,6 +190,80 @@ def test_lgb_multiclass_classifier(args):
 
     tree = LGBMClassifier(n_estimators=args.n_tree, max_depth=args.max_depth,
                           random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree, X_train, y_train)
+
+    tree_pred_test = tree.predict_proba(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    tree_pred_train = tree.predict_proba(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
+
+
+"""
+SGB
+"""
+
+
+def test_sgb_regressor(args):
+    print(f'\n***** test_sgb_regressor *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=-1)
+
+    tree = HistGradientBoostingRegressor(max_iter=args.n_tree, max_depth=args.max_depth,
+                                         random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree, X_train, y_train)
+
+    tree_pred_train = tree.predict(X_train).flatten()
+    model_pred_train = model.predict(X_train).flatten()
+
+    tree_pred_test = tree.predict(X_test).flatten()
+    model_pred_test = model.predict(X_test).flatten()
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
+
+
+def test_sgb_binary_classifier(args):
+    print(f'\n***** test_sgb_binary_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=2)
+
+    tree = HistGradientBoostingClassifier(max_iter=args.n_tree, max_depth=args.max_depth,
+                                          random_state=args.rs)
+    tree = tree.fit(X_train, y_train)
+
+    model = parse_model(tree, X_train, y_train)
+
+    tree_pred_test = tree.predict_proba(X_test)[:, 1]
+    model_pred_test = model.predict(X_test)
+
+    tree_pred_train = tree.predict_proba(X_train)[:, 1]
+    model_pred_train = model.predict(X_train)
+
+    status = compare_predictions(tree_pred_train, model_pred_train)
+    print('train:', status)
+
+    status = compare_predictions(tree_pred_test, model_pred_test)
+    print('test:', status)
+
+
+def test_sgb_multiclass_classifier(args):
+    print(f'\n***** test_sgb_multiclass_classifier *****')
+    X_train, X_test, y_train, y_test = get_test_data(args, n_class=args.n_class)
+
+    tree = HistGradientBoostingClassifier(max_iter=args.n_tree, max_depth=args.max_depth,
+                                          random_state=args.rs)
     tree = tree.fit(X_train, y_train)
 
     model = parse_model(tree, X_train, y_train)
@@ -435,7 +512,7 @@ def test_xgb_multiclass_classifier(args):
     print('test:', status)
 
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_train', type=int, default=100)
     parser.add_argument('--n_test', type=int, default=100)
@@ -447,22 +524,26 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # tests
-    test_cb_regressor(args)
-    test_cb_binary_classifier(args)
-    test_cb_multiclass_classifier(args)
+    # test_cb_regressor(args)
+    # test_cb_binary_classifier(args)
+    # test_cb_multiclass_classifier(args)
 
-    test_lgb_regressor(args)
-    test_lgb_binary_classifier(args)
-    test_lgb_multiclass_classifier(args)
+    # test_lgb_regressor(args)
+    # test_lgb_binary_classifier(args)
+    # test_lgb_multiclass_classifier(args)
 
-    test_skgbm_regressor(args)
-    test_skgbm_binary_classifier(args)
-    test_skgbm_multiclass_classifier(args)
+    test_sgb_regressor(args)
+    test_sgb_binary_classifier(args)
+    test_sgb_multiclass_classifier(args)
 
-    test_skrf_regressor(args)
-    test_skrf_binary_classifier(args)
-    test_skrf_multiclass_classifier(args)
+    # test_skgbm_regressor(args)
+    # test_skgbm_binary_classifier(args)
+    # test_skgbm_multiclass_classifier(args)
 
-    test_xgb_regressor(args)
-    test_xgb_binary_classifier(args)
-    test_xgb_multiclass_classifier(args)
+    # test_skrf_regressor(args)
+    # test_skrf_binary_classifier(args)
+    # test_skrf_multiclass_classifier(args)
+
+    # test_xgb_regressor(args)
+    # test_xgb_binary_classifier(args)
+    # test_xgb_multiclass_classifier(args)

@@ -1,15 +1,117 @@
 import numpy as np
+import pandas as pd
 
 from . import util
 from .tree import Tree
+
+
+def parse_skhgbm_ensemble(model, lt_op=0, is_float32=False):
+    """
+    Parse SKLearn HistGBM model using its underlying tree representations.
+
+    Reference
+        - https://scikit-learn.org/stable/modules/generated/\
+            sklearn.ensemble.HistGradientBoostingRegressor.html#sklearn.ensemble.HistGradientBoostingRegressor
+        - https://scikit-learn.org/stable/modules/generated/\
+        sklearn.ensemble.HistGradientBoostingClassifier.html#sklearn.ensemble.HistGradientBoostingClassifier
+
+    Note
+        - RandomForestRegressor and RandomForestClassifier, `_predictors`
+            is a list of lists of shape=(no. estimators, no .classes).
+        - Each tree's `nodes` attribute is a multitype array that can
+            be converted into a pd.DataFrame.
+    """
+
+    # validation
+    model_params = model.get_params()
+
+    estimators = model._predictors
+    n_boost = len(estimators)
+    n_class = len(estimators[0])
+    trees = np.zeros((n_boost, n_class), dtype=np.dtype(object))
+
+    # scale = model.learning_rate
+    scale = 1.0
+
+    for i in range(n_boost):  # per boost
+        for j in range(n_class):  # per class
+            nodes_df = pd.DataFrame(estimators[i][j].nodes)
+            left_children_arr = np.array(nodes_df['left'], dtype=np.int32)
+            right_children_arr = np.array(nodes_df['right'], dtype=np.int32)
+            feature_idx_arr = np.array(nodes_df['feature_idx'], dtype=np.int32)
+            threshold_arr = np.array(nodes_df['num_threshold'], dtype=np.float64)
+            leaf_vals_arr = np.array(nodes_df['value'], dtype=np.float64)
+
+            # fill unused values with -1
+            decision_node_idxs = np.array(nodes_df[nodes_df['is_leaf'] == 0].index, np.int32)
+            leaf_idxs = np.array(nodes_df[nodes_df['is_leaf'] == 1].index, np.int32)
+
+            left_children_arr[leaf_idxs] = -1
+            right_children_arr[leaf_idxs] = -1
+            feature_idx_arr[leaf_idxs] = -1
+            threshold_arr[leaf_idxs] = -1
+            leaf_vals_arr[decision_node_idxs] = -1
+
+            # create tree
+            children_left = list(left_children_arr)
+            children_right = list(right_children_arr)
+            feature = list(feature_idx_arr)
+            threshold = list(threshold_arr)
+            leaf_vals = list(leaf_vals_arr * scale)
+            trees[i][j] = Tree(children_left, children_right, feature, threshold,
+                               leaf_vals, lt_op, is_float32)
+
+    # set bias
+    bias = 0.0
+
+    # regression
+    if model._estimator_type == 'regressor':
+        assert model_params['loss'] == 'least_squares'
+        bias = model._baseline_prediction  # target mean
+        objective = 'regression'
+        factor = 0
+
+    # classification
+    else:
+        assert model._estimator_type == 'classifier'
+        n_class = model.classes_.shape[0]
+
+        # binary
+        if n_class == 2:
+            bias = model._baseline_prediction  # log space
+            objective = 'binary'
+            factor = 0
+
+        # multiclass
+        else:
+            assert n_class > 2
+            bias = list(model._baseline_prediction.flatten())  # log space
+            objective = 'multiclass'
+            factor = (n_class) / (n_class - 1)
+
+    params = {}
+    params['bias'] = bias
+    params['learning_rate'] = model_params['learning_rate']
+    params['l2_leaf_reg'] = model_params['l2_regularization']
+    params['objective'] = objective
+    params['tree_type'] = 'gbdt'
+    params['factor'] = factor
+
+    return trees, params
 
 
 def parse_skgbm_ensemble(model, lt_op=0, is_float32=False):
     """
     Parse SKLearn GBM model using its underlying tree representations.
 
-    Note:
-        - RandomForestRegressor and RandomForestClassifier, `estimators_`.shape=(no. estimators, no .classes).
+    Reference
+        - https://scikit-learn.org/stable/modules/generated/\
+            sklearn.ensemble.GradientBoostingRegressor.html#sklearn.ensemble.GradientBoostingRegressor
+        - https://scikit-learn.org/stable/modules/generated/\
+        sklearn.ensemble.GradientBoostingClassifier.html#sklearn.ensemble.GradientBoostingClassifier
+
+    Note
+        - GradientBoostingRegressor and GradientBoostingClassifier, `estimators_`.shape=(no. estimators, no .classes).
         - Each tree's `value`.shape=(no. nodes, 1, 1).
     """
 
@@ -77,7 +179,13 @@ def parse_skrf_ensemble(model, lt_op=0, is_float32=False):
     """
     Parse SKLearn RF model using its underlying tree representations.
 
-    Note:
+    Reference
+        - https://scikit-learn.org/stable/modules/generated/\
+        sklearn.ensemble.RandomForestRegressor.html#sklearn.ensemble.RandomForestRegressor
+        - https://scikit-learn.org/stable/modules/generated/\
+        sklearn.ensemble.GradientBoostingClassifier.html#sklearn.ensemble.GradientBoostingClassifier
+
+    Note
         - RandomForestRegressor and RandomForestClassifier, `estimators_`.shape=(no. estimators).
         - For multiclass classification, each tree's `value`.shape=(no. nodes, 1, no. classes).
     """

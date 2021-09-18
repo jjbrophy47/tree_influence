@@ -25,11 +25,11 @@ class Tree(object):
         Initialize internal tree optimized using Cython.
 
         Input
-            children_left: 1d array of integers; value of i is the node ID of i's left child.
-            children_right: 1d array of integers; value of i is the node ID of i's right child.
-            feature: 1d array of floats; value of entry i is feature index of node i.
-            threshold: 1d array of floats; value of entry i is threshold value of node i.
-            leaf_vals: 1d array of floats; value of entry i is leaf value of node i.
+            children_left: 1d array of integers; value of i is the node ID of i's left child; -1 if None.
+            children_right: 1d array of integers; value of i is the node ID of i's right child; -1 if None.
+            feature: 1d array of floats; value of entry i is feature index of node i; -1 if leaf.
+            threshold: 1d array of floats; value of entry i is threshold value of node i; -1 if leaf.
+            leaf_vals: 1d array of floats; value of entry i is leaf value of node i; -1 if decision node.
             lt_op: bool, 1 if tree uses the '<' operatior, 0 otherwise (assumes '<=').
             if_float32: bool, 1 if tree uses 32-bit floats, 0 if 64-bit floats.
         """
