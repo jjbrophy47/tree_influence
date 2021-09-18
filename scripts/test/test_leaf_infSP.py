@@ -11,7 +11,7 @@ from intent.explainers import LeafInfluenceSP
 def main(args):
 
     # explainer arguments
-    kwargs = {'local_op': args.local_op}
+    kwargs = {}
 
     # tests
     test_util.test_local_influence_regression(args, LeafInfluenceSP, 'LeafInfluenceSP', kwargs)
@@ -36,9 +36,6 @@ if __name__ == '__main__':
     parser.add_argument('--tree_type', type=str, default='lgb')
     parser.add_argument('--model_type', type=str, default='dummy')
     parser.add_argument('--rs', type=int, default=1)
-
-    # explainer settings
-    parser.add_argument('--local_op', type=str, default='normal')
 
     args = parser.parse_args()
 

@@ -524,26 +524,26 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # tests
-    # test_cb_regressor(args)
-    # test_cb_binary_classifier(args)
-    # test_cb_multiclass_classifier(args)
+    test_cb_regressor(args)
+    test_cb_binary_classifier(args)
+    test_cb_multiclass_classifier(args)
 
-    # test_lgb_regressor(args)
-    # test_lgb_binary_classifier(args)
-    # test_lgb_multiclass_classifier(args)
+    test_lgb_regressor(args)
+    test_lgb_binary_classifier(args)
+    test_lgb_multiclass_classifier(args)
 
     test_sgb_regressor(args)
     test_sgb_binary_classifier(args)
     test_sgb_multiclass_classifier(args)
 
-    # test_skgbm_regressor(args)
-    # test_skgbm_binary_classifier(args)
-    # test_skgbm_multiclass_classifier(args)
+    test_skgbm_regressor(args)
+    test_skgbm_binary_classifier(args)
+    test_skgbm_multiclass_classifier(args)
 
-    # test_skrf_regressor(args)
-    # test_skrf_binary_classifier(args)
-    # test_skrf_multiclass_classifier(args)
+    test_skrf_regressor(args)
+    test_skrf_binary_classifier(args)
+    test_skrf_multiclass_classifier(args)
 
-    # test_xgb_regressor(args)
-    # test_xgb_binary_classifier(args)
-    # test_xgb_multiclass_classifier(args)
+    test_xgb_regressor(args)
+    test_xgb_binary_classifier(args)
+    test_xgb_multiclass_classifier(args)

@@ -39,7 +39,7 @@ def get_model(args, objective):
     """
     Return the appropriate classifier.
     """
-    if args.model in ['lgb', 'cb', 'xgb', 'skgbm', 'skrf']:
+    if args.model in ['lgb', 'sgb', 'cb', 'xgb', 'skgbm', 'skrf']:
         clf = util.get_model(tree_type=args.model,
                              objective=objective,
                              n_tree=args.n_estimators,
@@ -50,6 +50,13 @@ def get_model(args, objective):
         if args.model == 'lgb':
             params['max_depth'] = [-1]
             params['num_leaves'] = [15, 31, 61, 91]
+
+        elif args.model == 'sgb':
+            params['max_iter'] = params['n_estimators']
+            params['max_depth'] = [None]
+            params['max_leaf_nodes'] = [15, 31, 61, 91]
+            params['max_bins'] = [50, 100, 250]
+            del params['n_estimators']
 
     elif args.model == 'dt':
         if objective == 'regression':

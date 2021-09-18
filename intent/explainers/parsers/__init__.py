@@ -1,6 +1,5 @@
 """
-TODO: Add HistGradientBoostingRegressor.
-TODO: Add HistGradientBoostingClassifier.
+Parse the incoming model into a standardized representation.
 """
 import numpy as np
 

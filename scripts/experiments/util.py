@@ -12,6 +12,9 @@ from catboost import CatBoostRegressor
 from catboost import CatBoostClassifier
 from lightgbm import LGBMRegressor
 from lightgbm import LGBMClassifier
+from sklearn.experimental import enable_hist_gradient_boosting  # noqa
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestRegressor
@@ -200,7 +203,8 @@ def get_toy_data(dataset, objective, random_state, test_size=0.2):
     return X_train, X_test, y_train, y_test
 
 
-def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, random_state=1):
+def get_model(tree_type='lgb', objective='regression', n_tree=100,
+              max_depth=5, random_state=1, max_bins=255):
     """
     Return the ensemble object from the specified framework and objective.
     """
@@ -215,6 +219,11 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100, max_depth=5, 
         class_fn = LGBMRegressor if objective == 'regression' else LGBMClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth, num_leaves=2 ** max_depth,
                         random_state=random_state)
+
+    elif tree_type == 'sgb':
+        class_fn = HistGradientBoostingRegressor if objective == 'regression' else HistGradientBoostingClassifier
+        tree = class_fn(max_iter=n_tree, max_depth=max_depth, max_leaf_nodes=2 ** max_depth,
+                        random_state=random_state, max_bins=max_bins, early_stopping=False)
 
     elif tree_type == 'skgbm':
         class_fn = GradientBoostingRegressor if objective == 'regression' else GradientBoostingClassifier

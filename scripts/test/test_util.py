@@ -8,6 +8,9 @@ from catboost import CatBoostRegressor
 from catboost import CatBoostClassifier
 from lightgbm import LGBMRegressor
 from lightgbm import LGBMClassifier
+from sklearn.experimental import enable_hist_gradient_boosting  # noqa
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestRegressor
@@ -241,6 +244,10 @@ def _get_model(args):
     elif args.tree_type == 'lgb':
         class_fn = LGBMRegressor if args.model_type == 'regressor' else LGBMClassifier
         tree = class_fn(n_estimators=args.n_tree, num_leaves=args.n_leaf, random_state=args.rs)
+
+    elif args.tree_type == 'sgb':
+        class_fn = HistGradientBoostingRegressor if args.model_type == 'regressor' else HistGradientBoostingClassifier
+        tree = class_fn(max_iter=args.n_tree, max_leaf_nodes=args.n_leaf, random_state=args.rs)
 
     elif args.tree_type == 'skgbm':
         class_fn = GradientBoostingRegressor if args.model_type == 'regressor' else GradientBoostingClassifier
