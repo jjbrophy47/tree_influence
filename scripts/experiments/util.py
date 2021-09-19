@@ -431,10 +431,8 @@ def get_hyperparams(tree_type, dataset):
     lgb['energy'] = {'n_estimators': 200, 'num_leaves': 15, 'max_depth': -1}
     lgb['flight_delays'] = {'n_estimators': 100, 'num_leaves': 91, 'max_depth': -1}
     lgb['german_credit'] = {'n_estimators': 25, 'num_leaves': 15, 'max_depth': -1}
-    lgb['heart'] = {'n_estimators': 10, 'num_leaves': 31, 'max_depth': -1}
     lgb['htru2'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['life'] = {'n_estimators': 200, 'num_leaves': 61, 'max_depth': -1}
-    lgb['msd'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['naval'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['no_show'] = {'n_estimators': 50, 'num_leaves': 61, 'max_depth': -1}
     lgb['obesity'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
@@ -445,6 +443,30 @@ def get_hyperparams(tree_type, dataset):
     lgb['twitter'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
     lgb['vaccine'] = {'n_estimators': 100, 'num_leaves': 15, 'max_depth': -1}
     lgb['wine'] = {'n_estimators': 200, 'num_leaves': 91, 'max_depth': -1}
+
+    sgb = {}
+    sgb['adult'] = {'max_iter': 200, 'max_leaf_nodes': 15, 'max_bins': 250, 'max_depth': None}
+    sgb['bank_marketing'] = {'max_iter': 50, 'max_leaf_nodes': 31, 'max_bins': 100, 'max_depth': None}
+    sgb['bean'] = {'max_iter': 25, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
+    sgb['compas'] = {'max_iter': 50, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
+    sgb['concrete'] = {'max_iter': 200, 'max_leaf_nodes': 15, 'max_bins': 250, 'max_depth': None}
+    sgb['credit_card'] = {'max_iter': 25, 'max_leaf_nodes': 15, 'max_bins': 100, 'max_depth': None}
+    sgb['diabetes'] = {'max_iter': 200, 'max_leaf_nodes': 31, 'max_bins': 100, 'max_depth': None}
+    sgb['energy'] = {'max_iter': 200, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
+    sgb['flight_delays'] = {'max_iter': 100, 'max_leaf_nodes': 91, 'max_bins': 50, 'max_depth': None}
+    sgb['german_credit'] = {'max_iter': 25, 'max_leaf_nodes': 15, 'max_bins': 100, 'max_depth': None}
+    sgb['htru2'] = {'max_iter': 50, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
+    sgb['life'] = {'max_iter': 200, 'max_leaf_nodes': 31, 'max_bins': 250, 'max_depth': None}
+    sgb['naval'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 250, 'max_depth': None}
+    sgb['no_show'] = {'max_iter': 50, 'max_leaf_nodes': 61, 'max_bins': 100, 'max_depth': None}
+    sgb['obesity'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 250, 'max_depth': None}
+    sgb['power'] = {'max_iter': 200, 'max_leaf_nodes': 61, 'max_bins': 250, 'max_depth': None}
+    sgb['protein'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 250, 'max_depth': None}
+    sgb['spambase'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 250, 'max_depth': None}
+    sgb['surgical'] = {'max_iter': 100, 'max_leaf_nodes': 31, 'max_bins': 250, 'max_depth': None}
+    sgb['twitter'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 250, 'max_depth': None}
+    sgb['vaccine'] = {'max_iter': 100, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
+    sgb['wine'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 100, 'max_depth': None}
 
     cb = {}
     cb['adult'] = {'n_estimators': 200, 'max_depth': 7}
@@ -459,7 +481,6 @@ def get_hyperparams(tree_type, dataset):
     cb['german_credit'] = {'n_estimators': 200, 'max_depth': 7}
     cb['htru2'] = {'n_estimators': 200, 'max_depth': 5}
     cb['life'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['msd'] = {'n_estimators': 200, 'max_depth': 7}
     cb['naval'] = {'n_estimators': 200, 'max_depth': 7}
     cb['no_show'] = {'n_estimators': 200, 'max_depth': 7}
     cb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
