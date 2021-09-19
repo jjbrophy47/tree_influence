@@ -542,6 +542,7 @@ def get_hyperparams(tree_type, dataset):
 
     hp = {}
     hp['lgb'] = lgb
+    hp['sgb'] = sgb
     hp['cb'] = cb
     hp['xgb'] = xgb
     hp['skrf'] = skrf
