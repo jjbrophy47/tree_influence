@@ -50,28 +50,19 @@ def select_elements(arr, rng, n):
 
 def remove_and_evaluate(objective, ranking, tree,
                         X_train, y_train, X_test, y_test,
-                        remove_frac, n_ckpt, logger):
+                        remove_frac_list, logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
 
-    # get list of remove fractions
-    remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)
-    n_remove = int((remove_frac / n_ckpt) * X_train.shape[0])
-
     # result container
     result = {}
-    result['remove_frac'] = remove_frac_arr
-    result['loss'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
-    result['pred'] = []
+    result['loss'] = np.full(len(remove_frac_list), np.nan, dtype=np.float32)
 
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
+    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.3f}%')
     result['loss'][0] = res['loss']
-    result['pred'].append(res['pred'])
 
-    for i in range(1, n_ckpt):
-
-        remove_frac = remove_frac_arr[i]
+    for i, remove_frac in enumerate(remove_frac_list):
         n_remove = int(X_train.shape[0] * remove_frac)
 
         new_X_train = np.delete(X_train, ranking[:n_remove], axis=0)
@@ -88,12 +79,9 @@ def remove_and_evaluate(objective, ranking, tree,
         else:
             new_tree = clone(tree).fit(new_X_train, new_y_train)
 
-            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.2f}%'
+            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.3f}%'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
             result['loss'][i] = res['loss']
-            result['pred'].append(res['pred'])
-
-    result['pred'] = np.vstack(result['pred'])
 
     return result
 
@@ -164,7 +152,7 @@ def experiment(args, logger, params, out_dir):
             results = parallel(joblib.delayed(remove_and_evaluate)
                                              (objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.remove_frac, args.n_ckpt, logger)
+                                              args.remove_frac, logger)
                                               for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
@@ -178,7 +166,6 @@ def experiment(args, logger, params, out_dir):
                         f', cum. time: {cum_time:.3f}s')
 
         # combine results from each test example
-        result['remove_frac'] = res_list[0]['remove_frac']  # shape=(no. ckpts,)
         result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
 
     # store ALL train and test predictions
@@ -196,6 +183,7 @@ def experiment(args, logger, params, out_dir):
         y_test_pred = tree.predict_proba(X_test)
 
     # save results
+    result['remove_frac'] = np.array(args.remove_frac, dtype=np.float32)
     result['influence'] = influence
     result['ranking'] = ranking
     result['test_idxs'] = test_idxs
@@ -214,8 +202,7 @@ def experiment(args, logger, params, out_dir):
 def main(args):
 
     # get unique hash for this experiment setting
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
-                'n_ckpt': args.n_ckpt}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = util.dict_to_hash(exp_dict)
 
     # special cases

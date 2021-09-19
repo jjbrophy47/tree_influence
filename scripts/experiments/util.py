@@ -453,7 +453,7 @@ def get_hyperparams(tree_type, dataset):
     sgb['credit_card'] = {'max_iter': 25, 'max_leaf_nodes': 15, 'max_bins': 100, 'max_depth': None}
     sgb['diabetes'] = {'max_iter': 200, 'max_leaf_nodes': 31, 'max_bins': 100, 'max_depth': None}
     sgb['energy'] = {'max_iter': 200, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
-    sgb['flight_delays'] = {'max_iter': 100, 'max_leaf_nodes': 91, 'max_bins': 50, 'max_depth': None}
+    sgb['flight_delays'] = {'max_iter': 200, 'max_leaf_nodes': 61, 'max_bins': 250, 'max_depth': None}
     sgb['german_credit'] = {'max_iter': 25, 'max_leaf_nodes': 15, 'max_bins': 100, 'max_depth': None}
     sgb['htru2'] = {'max_iter': 50, 'max_leaf_nodes': 15, 'max_bins': 50, 'max_depth': None}
     sgb['life'] = {'max_iter': 200, 'max_leaf_nodes': 31, 'max_bins': 250, 'max_depth': None}

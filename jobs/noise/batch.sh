@@ -2,8 +2,8 @@
 run='jobs/noise/runner.sh'
 run2='jobs/noise/runner2.sh'
 o='jobs/logs/noise/'
-t='lgb'
-nf=0.3
+t='sgb'
+nf=0.4
 
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'     'test_sum' $nf
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_self-%a.out'       $run $t 'loss'       'self'     $nf
