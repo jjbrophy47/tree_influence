@@ -30,7 +30,6 @@ def parse_skhgbm_ensemble(model, lt_op=0, is_float32=False):
     n_class = len(estimators[0])
     trees = np.zeros((n_boost, n_class), dtype=np.dtype(object))
 
-    # scale = model.learning_rate
     scale = 1.0
 
     for i in range(n_boost):  # per boost
@@ -87,7 +86,7 @@ def parse_skhgbm_ensemble(model, lt_op=0, is_float32=False):
             assert n_class > 2
             bias = list(model._baseline_prediction.flatten())  # log space
             objective = 'multiclass'
-            factor = (n_class) / (n_class - 1)
+            factor = 1.0
 
     params = {}
     params['bias'] = bias
