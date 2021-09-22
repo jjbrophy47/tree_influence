@@ -45,7 +45,7 @@ def get_model(args, objective):
                              n_tree=args.n_estimators,
                              max_depth=args.max_depth,
                              random_state=args.random_state)
-        params = {'n_estimators': [10, 25, 50, 100, 200], 'max_depth': [2, 3, 4, 5, 7]}
+        params = {'n_estimators': [10, 25, 50, 100, 200], 'max_depth': [2, 3, 4, 5, 6, 7]}
 
         if args.model == 'lgb':
             params['max_depth'] = [-1]
@@ -57,6 +57,9 @@ def get_model(args, objective):
             params['max_leaf_nodes'] = [15, 31, 61, 91]
             params['max_bins'] = [50, 100, 250]
             del params['n_estimators']
+
+        elif args.model == 'cb':
+            params['learning_rate'] = [0.1, 0.3, 0.6, 0.9]
 
     elif args.model == 'dt':
         if objective == 'regression':

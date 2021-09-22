@@ -204,7 +204,7 @@ def get_toy_data(dataset, objective, random_state, test_size=0.2):
 
 
 def get_model(tree_type='lgb', objective='regression', n_tree=100,
-              max_depth=5, random_state=1, max_bins=255):
+              max_depth=5, random_state=1, max_bins=255, learning_rate=0.3):
     """
     Return the ensemble object from the specified framework and objective.
     """
@@ -213,7 +213,7 @@ def get_model(tree_type='lgb', objective='regression', n_tree=100,
         class_fn = CatBoostRegressor if objective == 'regression' else CatBoostClassifier
         tree = class_fn(n_estimators=n_tree, max_depth=max_depth,
                         leaf_estimation_iterations=1, random_state=random_state,
-                        logging_level='Silent')
+                        logging_level='Silent', learning_rate=learning_rate)
 
     elif tree_type == 'lgb':
         class_fn = LGBMRegressor if objective == 'regression' else LGBMClassifier
@@ -469,28 +469,28 @@ def get_hyperparams(tree_type, dataset):
     sgb['wine'] = {'max_iter': 200, 'max_leaf_nodes': 91, 'max_bins': 100, 'max_depth': None}
 
     cb = {}
-    cb['adult'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['bank_marketing'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['bean'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['compas'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['concrete'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['credit_card'] = {'n_estimators': 200, 'max_depth': 5}
-    cb['diabetes'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['energy'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['flight_delays'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['german_credit'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['htru2'] = {'n_estimators': 200, 'max_depth': 5}
-    cb['life'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['naval'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['no_show'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['obesity'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['power'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['protein'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['spambase'] = {'n_estimators': 200, 'max_depth': 5}
-    cb['surgical'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['twitter'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['vaccine'] = {'n_estimators': 200, 'max_depth': 7}
-    cb['wine'] = {'n_estimators': 200, 'max_depth': 7}
+    cb['adult'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['bank_marketing'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['bean'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['compas'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['concrete'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['credit_card'] = {'n_estimators': 200, 'max_depth': 5, 'learning_rate': 0.3}
+    cb['diabetes'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['energy'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['flight_delays'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['german_credit'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['htru2'] = {'n_estimators': 200, 'max_depth': 5, 'learning_rate': 0.3}
+    cb['life'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['naval'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['no_show'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['obesity'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['power'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['protein'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['spambase'] = {'n_estimators': 200, 'max_depth': 5, 'learning_rate': 0.3}
+    cb['surgical'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['twitter'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['vaccine'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
+    cb['wine'] = {'n_estimators': 200, 'max_depth': 7, 'learning_rate': 0.3}
 
     xgb = {}
     xgb['adult'] = {'n_estimators': 200, 'max_depth': 3}

@@ -209,7 +209,7 @@ def main(args):
     if args.method == 'leaf_inf':
         if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
             args.leaf_inf_atol = 1e-1
-        elif args.tree_type == 'cb' and args.dataset == 'bean':
+        elif args.tree_type == 'cb' and args.dataset in ['bean', 'naval']:
             args.leaf_inf_atol = 1e-1
 
     # get unique hash for the explainer

@@ -153,7 +153,7 @@ class LeafInfluence(Explainer):
         # copy and compute new leaf values resulting from the removal of each x in X.
         start = time.time()
         if self.logger:
-            self.logger.info(f'\n[INFO] no. leaf vals not within {self.atol} tol.: {n_not_close:,}, '
+            self.logger.info(f'\n[INFO] no. leaf vals not within 1e-5 tol.: {n_not_close:,}, '
                              f'max. diff.: {max_diff:.5f}')
             self.logger.info(f'\n[INFO] computing alternate leaf values...')
 
