@@ -16,8 +16,10 @@ trf=1.0
 ./jobs/pp/primer.sh 'bean' 'xgb' $tf $trf 3 300 'short'
 
 ./jobs/pp/primer.sh 'compas' 'sgb' $tf $trf 3 300 'short'
+./jobs/pp/primer.sh 'compas' 'cb'  $tf $trf 3 300 'short'
 ./jobs/pp/primer.sh 'compas' 'xgb' $tf $trf 3 300 'short'
 
+./jobs/pp/primer.sh 'concrete' 'cb'  $tf $trf 3 300 'short'
 ./jobs/pp/primer.sh 'concrete' 'xgb' $tf $trf 3 300 'short'
 
 ./jobs/pp/primer.sh 'credit_card' 'sgb' $tf $trf 3 1440 'short'
@@ -32,6 +34,7 @@ trf=1.0
 ./jobs/pp/primer.sh 'diabetes' 'svm' 0.1 $trf 7 1440 'short'
 ./jobs/pp/primer.sh 'diabetes' 'mlp' $tf $trf 7 600  'short'
 
+./jobs/pp/primer.sh 'energy' 'cb'  $tf $trf 3 300  'short'
 ./jobs/pp/primer.sh 'energy' 'xgb' $tf $trf 3 300  'short'
 
 ./jobs/pp/primer.sh 'flight_delays' 'sgb'  $tf $trf 7 600  'short'
@@ -44,6 +47,7 @@ trf=1.0
 ./jobs/pp/primer.sh 'flight_delays' 'svm'  0.1 $trf 7 1440 'short'
 ./jobs/pp/primer.sh 'flight_delays' 'mlp'  $tf $trf 7 600  'short'
 
+./jobs/pp/primer.sh 'german_credit' 'cb'   $tf $trf 3 300 'short'
 ./jobs/pp/primer.sh 'german_credit' 'xgb'  $tf $trf 3 300 'short'
 
 ./jobs/pp/primer.sh 'msd' 'lgb'  $tf  $trf 7 1440 'short'
