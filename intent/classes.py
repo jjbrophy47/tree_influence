@@ -2,6 +2,7 @@ from .explainers import BoostIn
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LeafInfluenceSP
+from .explainers import LeafRefit
 from .explainers import LOO
 from .explainers import DShap
 from .explainers import Random
@@ -19,24 +20,33 @@ class TreeExplainer(object):
     Wrapper object for the chosen explainer.
 
     Currently supported models:
-        - CatBoostRegressor, CatBoostClassifier
         - LGBMRegressor, LGBMClassifier
-        - GradientBoostingRegressor, GradientBoostingClassifier
-        - RandomForestRegressor, RandomForestClassifier
         - XGBRegressor, XGBClassifier
+        - CatBoostRegressor, CatBoostClassifier
+        - HistGradientBoostingRegressor, HistGradientBoostingClassifier
+        - GradientBoostingRegressor, GradientBoostingClassifier
+
+    Semi-supported models:
+        - RandomForestRegressor, RandomForestClassifier
 
     Currently supported explainers:
-        - TracIn (BoostIn)
-        - Representer-point (Trex)
-        - Influence Function (LeafInfluence)
-        - LOO
-        - TMC-Shap (Appox. Data Shapley)
-        - Random
-        - Random Minority
-        - Loss
-        - Similarity
-        - Target
+        - BoostIn (adapted TracIn)
+        - TREX (adapted representer-point)
+        - LeafInfluenceSP (efficient version of LeafInfluence: single point)
+        - LeafInfluence (adapted influence functions)
+        - LeafRefit (LOO w/ fixed structure)
+        - LeafSim  (similarity based on the weighted-leaf-path tree kernel)
+        - TreeSim  (similarity based on an arbitrary tree kernel)
+        - InputSim (similarity based on input features)
         - SubSample (Approx. Data Shapley)
+        - TMC-Shap (Appox. Data Shapley)
+        - LOO (leave-one-out retraining)
+        - Target (random from same class as test example)
+        - Random
+
+    Global-only explainers:
+        - Loss (loss of train examples)
+        - Minority (random from the minority class)
     """
     def __init__(self, method='boostin', params={}, logger=None):
 
@@ -51,6 +61,9 @@ class TreeExplainer(object):
 
         elif method == 'leaf_infSP':
             self.explainer = LeafInfluenceSP(**params, logger=logger)
+
+        elif method == 'leaf_refit':
+            self.explainer = LeafRefit(**params, logger=logger)
 
         elif method == 'loo':
             self.explainer = LOO(**params, logger=logger)

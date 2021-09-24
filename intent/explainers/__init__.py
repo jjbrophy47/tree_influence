@@ -2,6 +2,7 @@ from .boostin import BoostIn
 from .trex import Trex
 from .leaf_inf import LeafInfluence
 from .leaf_infSP import LeafInfluenceSP
+from .leaf_refit import LeafRefit
 from .loo import LOO
 from .dshap import DShap
 from .random import Random
