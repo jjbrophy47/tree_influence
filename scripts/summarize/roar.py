@@ -134,7 +134,7 @@ def process(args, out_dir, exp_hash, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,

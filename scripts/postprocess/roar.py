@@ -28,7 +28,7 @@ def process(args, out_dir, logger):
     results = []
     reinf_list = []
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     for in_dir in args.in_dir:
@@ -125,7 +125,7 @@ def process(args, out_dir, logger):
     if args.zoom <= 0.0 or args.zoom >= 1.0:
         fig.delaxes(axs[1])
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     custom_dir = 'reestimation' if reinf_exists else args.custom_dir

@@ -69,8 +69,7 @@ def experiment(args, exp_dir, out_dir, logger):
 def main(args):
 
     # get experiment directory
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
-                'n_ckpt': args.n_ckpt, 'step_size': args.step_size}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': args.step_size}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     exp_dir = os.path.join(args.in_dir,

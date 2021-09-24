@@ -197,6 +197,8 @@ class TreeEnsemble(object):
         """
         Returns 3d array of leaf indices; shape=(X.shape[0], no. boost, no. class).
         """
+        X = util.check_input_data(X)
+
         leaves = np.zeros((X.shape[0], self.n_boost_, self.n_class_), dtype=np.int32)
 
         for boost_idx in range(self.n_boost_):
@@ -244,6 +246,8 @@ class TreeEnsemble(object):
         Increment each node's count for each x in X that passes through each node
             for all trees in the ensemble.
         """
+        X = util.check_input_data(X)
+
         for tree in self.trees.flatten():
             tree.update_node_count(X)
 

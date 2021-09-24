@@ -61,8 +61,7 @@ def get_roar_args():
     cmd.add('--in_dir', type=str, nargs='+', default=['temp_influence/', 'temp_reinfluence/'])
     cmd.add('--out_dir', type=str, default='output/plot/roar/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--std_err', type=int, default=0)
     cmd.add('--custom_dir', type=str, default='')
     cmd.add('--zoom', type=float, default=0.2)
@@ -81,9 +80,7 @@ def get_counterfactual_args():
     cmd.add('--in_dir', type=str, default='temp_counterfactual/')
     cmd.add('--out_dir', type=str, default='output/plot/counterfactual/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
-    cmd.add('--step_size', type=int, default=10)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     return cmd
 
 

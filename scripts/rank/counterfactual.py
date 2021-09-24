@@ -88,8 +88,7 @@ def process(args, exp_hash, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac,
-                'n_ckpt': args.n_ckpt, 'step_size': args.step_size}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': args.step_size}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     if len(args.tree_type) == 1:

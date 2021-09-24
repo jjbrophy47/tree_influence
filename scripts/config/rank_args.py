@@ -34,9 +34,8 @@ def get_roar_args():
     cmd = post_args.get_explainer_args(cmd)
     cmd.add('--in_dir', type=str, default='output/plot/roar/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
-    cmd.add('--ckpt', type=int, nargs='+', default=[1, 5, 10, 15, 19])
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4, 5])
     return cmd
 
 
@@ -50,8 +49,7 @@ def get_counterfactual_args():
     cmd = post_args.get_explainer_args(cmd)
     cmd.add('--in_dir', type=str, default='output/plot/counterfactual/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--step_size', type=int, default=10)
     return cmd
 

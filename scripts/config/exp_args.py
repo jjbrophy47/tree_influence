@@ -57,7 +57,7 @@ def get_influence_args():
     cmd = get_explainer_args(cmd)
     cmd.add('--out_dir', type=str, default='output/influence/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     return cmd
 
 
@@ -72,8 +72,7 @@ def get_counterfactual_args():
     cmd.add('--in_dir', type=str, default='output/influence/')
     cmd.add('--out_dir', type=str, default='output/counterfactual/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--step_size', type=int, default=10)
     return cmd
 
@@ -121,4 +120,20 @@ def get_resources_args():
     cmd.add('--out_dir', type=str, default='output/resources/')
     cmd.add('--n_repeat', type=int, default=5)
     cmd.add('--seed', type=int, default=-1)
+    return cmd
+
+
+def get_structure_args():
+    """
+    Add arguments specific to the "Structure" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_influence/')
+    cmd.add('--out_dir', type=str, default='output/structure/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--n_remove', type=float, nargs='+', default=[1, 10, 100])
     return cmd
