@@ -178,11 +178,11 @@ class LeafRefit(Explainer):
 
             # get number of fits to perform for this iteration
             while n_remaining > 0:
-                n = min(100, n_remaining)
+                n = min(2, n_remaining)
 
                 results = parallel(joblib.delayed(_compute_new_leaf_values)
                                                  (train_idx, leaf_counts, leaf2docs, gradients, hessians,
-                                                  sum_gradients, sum_hessians_l2, leaf_values, original_approx,
+                                                  sum_gradients, sum_hessians_l2, leaf_values, original_approx, y,
                                                   n_boost, n_class, X.shape[0], learning_rate, self.update_set,
                                                   self.loss_fn_) for train_idx in range(n_completed,
                                                                                         n_completed + n))
@@ -266,7 +266,7 @@ class LeafRefit(Explainer):
 
 
 def _compute_new_leaf_values(remove_idx, leaf_counts, leaf2docs, gradients, hessians,
-                             sum_gradients, sum_hessians_l2, leaf_values, original_approx,
+                             sum_gradients, sum_hessians_l2, leaf_values, original_approx, y,
                              n_boost, n_class, n_train, learning_rate, update_set, loss_fn):
     """
     Compute new leaf values based on the example being removed.
@@ -302,26 +302,27 @@ def _compute_new_leaf_values(remove_idx, leaf_counts, leaf2docs, gradients, hess
 
                 # update gradients and hessians based on updated predictions
                 if len(update_leaf_docs) > 0:
-                    update_gradient = self.loss_fn_.gradient(y[update_leaf_docs],
-                                                             update_approx[update_leaf_docs])
-                    update_gradient -= gradients[update_leaf_docs, boost_idx, class_idx]
+                    update_gradients = loss_fn.gradient(y[update_leaf_docs],
+                                                        update_approx[update_leaf_docs])[:, class_idx]
+                    update_sum_gradient = np.sum(update_gradients - gradients[update_leaf_docs, boost_idx, class_idx])
 
-                    update_hessian = self.loss_fn_.hessian(y[update_leaf_docs], update_approx[update_leaf_docs])
-                    update_hessian -= hessians[update_leaf_docs, boost_idx, class_idx]
+                    update_hessians = loss_fn.hessian(y[update_leaf_docs],
+                                                      update_approx[update_leaf_docs])[:, class_idx]
+                    update_sum_hessian_l2 = np.sum(update_hessians - hessians[update_leaf_docs, boost_idx, class_idx])
 
                 # no other training examples affected
                 else:
-                    update_gradient = 0
-                    update_hessian = 0
+                    update_sum_gradient = 0
+                    update_sum_hessian_l2 = 0
 
                 # remove effect of target training example
                 if remove_idx in leaf_docs:
-                    update_gradient -= gradients[remove_idx, boost_idx, class_idx]
-                    update_hessian -= hessians[remove_idx, boost_idx, class_idx]
+                    update_sum_gradient -= gradients[remove_idx, boost_idx, class_idx]
+                    update_sum_hessian_l2 -= hessians[remove_idx, boost_idx, class_idx]
 
                 # compute new leaf value and leaf value delta
-                new_sum_gradient = sum_gradients[n_prev_leaves + leaf_idx] + update_gradient
-                new_sum_hessian_l2 = sum_hessians_l2[n_prev_leaves + leaf_idx] + update_hessian
+                new_sum_gradient = sum_gradients[n_prev_leaves + leaf_idx] + update_sum_gradient
+                new_sum_hessian_l2 = sum_hessians_l2[n_prev_leaves + leaf_idx] + update_sum_hessian_l2
 
                 new_leaf_value = -new_sum_gradient / new_sum_hessian_l2 * learning_rate
                 leaf_value_delta = new_leaf_value - leaf_values[n_prev_leaves + leaf_idx]

@@ -200,7 +200,7 @@ class LeafInfluence(Explainer):
 
                 if self.logger:
                     cum_time = time.time() - start
-                    self.logger.info(f'[INFO - LR] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
+                    self.logger.info(f'[INFO - LI] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
 
         # save results of this method
         self.leaf_values_ = leaf_values  # shape=(total no. leaves,)

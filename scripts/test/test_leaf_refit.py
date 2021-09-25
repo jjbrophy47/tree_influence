@@ -167,7 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('--rs', type=int, default=1)
 
     # explainer settings
-    parser.add_argument('--update_set', type=int, default=0)
+    parser.add_argument('--update_set', type=int, default=-1)
     parser.add_argument('--atol', type=float, default=1e-2)
     parser.add_argument('--n_jobs', type=int, default=1)
 
