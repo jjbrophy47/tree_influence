@@ -1,4 +1,5 @@
 import time
+import joblib
 
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
@@ -31,7 +32,7 @@ class LeafInfluence(Explainer):
     Note
         - Only supports GBDTs.
     """
-    def __init__(self, update_set=-1, atol=1e-5, logger=None):
+    def __init__(self, update_set=-1, atol=1e-5, n_jobs=1, logger=None):
         """
         Input
             update_set: int, No. neighboring leaf values to use for approximating leaf influence.
@@ -39,11 +40,14 @@ class LeafInfluence(Explainer):
                 -1: Use all other trees, most accurate but also most computationally expensive.
                 1+: Trade-off between accuracy and computational resources.
             atol: float, Tolerance between actual and predicted leaf values.
+            n_jobs: int, No. processes to run in parallel.
+                -1 means use the no. of available CPU cores.
             logger: object, If not None, output to logger.
         """
         assert update_set >= -1
         self.update_set = update_set
         self.atol = atol
+        self.n_jobs = n_jobs
         self.logger = logger
 
     def fit(self, model, X, y):
@@ -147,9 +151,6 @@ class LeafInfluence(Explainer):
             # n_prev_trees += n_class
             current_approx += doc_preds  # update approximation
 
-        # result container
-        leaf_derivatives = np.zeros((X.shape[0], np.sum(leaf_counts)), dtype=util.dtype_t)
-
         # copy and compute new leaf values resulting from the removal of each x in X.
         start = time.time()
         if self.logger:
@@ -161,48 +162,45 @@ class LeafInfluence(Explainer):
         if max_diff > self.atol:
             raise ValueError(f'{max_diff:.5f} (max. diff.) > {self.atol} (tolerance)')
 
-        for remove_idx in range(X.shape[0]):
+        # select no. processes to run in parallel
+        if self.n_jobs == -1:
+            n_jobs = joblib.cpu_count()
 
-            # display progress
-            if self.logger and (remove_idx + 1) % 100 == 0:
-                cum_time = time.time() - start
-                self.logger.info(f'[INFO] {remove_idx + 1:,} / {X.shape[0]:,}: cum. time: {cum_time:.3f}s')
+        else:
+            assert self.n_jobs >= 1
+            n_jobs = min(self.n_jobs, joblib.cpu_count())
 
-            # intermediate containers
-            da = np.zeros((X.shape[0], n_class), dtype=util.dtype_t)
-            tree_idx = 0
-            n_prev_leaves = 0
+        # process each training example removal in parallel
+        with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
-            for boost_idx in range(n_boost):
+            # result container
+            leaf_derivatives = np.zeros((0, np.sum(leaf_counts)), dtype=util.dtype_t)
 
-                for class_idx in range(n_class):
+            # trackers
+            n_completed = 0
+            n_remaining = X.shape[0]
 
-                    leaf_count = leaf_counts[boost_idx, class_idx]
-                    update_docs = self._get_docs_to_update(leaf_count, leaf2docs[tree_idx], remove_idx, da)
+            # get number of fits to perform for this iteration
+            while n_remaining > 0:
+                n = min(100, n_remaining)
 
-                    for leaf_idx in range(leaf_count):
+                results = parallel(joblib.delayed(_compute_leaf_derivatives)
+                                                 (train_idx, leaf_counts, leaf2docs, denominator,
+                                                  da_vector_multiplier, naive_gradient_addendum,
+                                                  n_boost, n_class, X.shape[0], learning_rate,
+                                                  self.update_set) for train_idx in range(n_completed,
+                                                                                          n_completed + n))
 
-                        # get intersection of leaf documents and update documents
-                        leaf_docs = leaf2docs[tree_idx][leaf_idx]
-                        update_leaf_docs = sorted(update_docs.intersection(leaf_docs))
+                # synchronization barrier
+                results = np.vstack(results)  # shape=(n, 1 or X_test.shape[0])
+                leaf_derivatives = np.vstack([leaf_derivatives, results])
 
-                        # compute and save leaf derivative
-                        grad_enumerator = np.dot(da[update_leaf_docs, class_idx],
-                                                 da_vector_multiplier[update_leaf_docs, boost_idx, class_idx])
+                n_completed += n
+                n_remaining -= n
 
-                        if remove_idx in update_leaf_docs:
-                            grad_enumerator += naive_gradient_addendum[remove_idx, boost_idx, class_idx]
-
-                        leaf_derivative = -grad_enumerator / denominator[n_prev_leaves + leaf_idx] * learning_rate
-
-                        # update da
-                        da[update_leaf_docs, class_idx] += leaf_derivative
-
-                        # save
-                        leaf_derivatives[remove_idx, n_prev_leaves + leaf_idx] = leaf_derivative
-
-                    n_prev_leaves += leaf_count
-                    tree_idx += 1
+                if self.logger:
+                    cum_time = time.time() - start
+                    self.logger.info(f'[INFO - LR] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
 
         # save results of this method
         self.leaf_values_ = leaf_values  # shape=(total no. leaves,)
@@ -211,6 +209,7 @@ class LeafInfluence(Explainer):
         self.bias_ = bias
         self.n_boost_ = n_boost
         self.n_class_ = n_class
+        self.n_train_ = X.shape[0]
 
         return self
 
@@ -224,13 +223,13 @@ class LeafInfluence(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        influence = np.zeros((self.X_train_.shape[0], X.shape[0], self.n_class_), dtype=util.dtype_t)
+        influence = np.zeros((self.n_train_, X.shape[0], self.n_class_), dtype=util.dtype_t)
 
         if self.logger:
             self.logger.info('\n[INFO] computing influence for each test example...')
 
         # compute influence of each training example on the test example
-        for remove_idx in range(self.X_train_.shape[0]):
+        for remove_idx in range(self.n_train_):
             influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
 
         # reshape result
@@ -278,29 +277,89 @@ class LeafInfluence(Explainer):
 
         return -self.loss_fn_.gradient(y, og_pred) * new_pred
 
-    def _get_docs_to_update(self, leaf_count, leaf_docs, remove_idx, da):
-        """
-        Return a set of document indices to be udpated for this tree.
-        """
 
-        # update only the remove example
-        if self.update_set == 0:
-            result = set({remove_idx})
+def _compute_leaf_derivatives(remove_idx, leaf_counts, leaf2docs, denominator,
+                              da_vector_multiplier, naive_gradient_addendum,
+                              n_boost, n_class, n_train, learning_rate, update_set):
+    """
+    Compute leaf value derivatives based on the example being removed.
 
-        # update all train
-        elif self.update_set == -1:
-            result = set(np.arange(da.shape[0], dtype=np.int32))  # shape=(no. train,)
+    Return
+        - 1d array of leaf value derivatives of shape=(total no. leaves,).
 
-        # update examples for the top leaves
-        else:
+    Note
+        - Parallelizable method.
+    """
+    leaf_derivatives = np.zeros(np.sum(leaf_counts), dtype=util.dtype_t)
 
-            # sort leaf indices based on largest abs. da sum
-            leaf_das = [np.sum(np.abs(da[list(leaf_docs[leaf_idx])])) for leaf_idx in range(leaf_count)]
-            top_leaf_ids = np.argsort(leaf_das)[-self.update_set:]
-            
-            # return remove_idx + document indices for the top `k` leaves
-            result = {remove_idx}
-            for leaf_idx in top_leaf_ids:
-                result |= leaf_docs[leaf_idx]
+    # intermediate containers
+    da = np.zeros((n_train, n_class), dtype=util.dtype_t)
+    tree_idx = 0
+    n_prev_leaves = 0
 
-        return result
+    for boost_idx in range(n_boost):
+
+        for class_idx in range(n_class):
+
+            leaf_count = leaf_counts[boost_idx, class_idx]
+            update_docs = _get_docs_to_update(update_set, leaf_count, leaf2docs[tree_idx], remove_idx, da)
+
+            for leaf_idx in range(leaf_count):
+
+                # get intersection of leaf documents and update documents
+                leaf_docs = leaf2docs[tree_idx][leaf_idx]
+                update_leaf_docs = sorted(update_docs.intersection(leaf_docs))
+
+                # compute and save leaf derivative
+                grad_enumerator = np.dot(da[update_leaf_docs, class_idx],
+                                         da_vector_multiplier[update_leaf_docs, boost_idx, class_idx])
+
+                if remove_idx in update_leaf_docs:
+                    grad_enumerator += naive_gradient_addendum[remove_idx, boost_idx, class_idx]
+
+                leaf_derivative = -grad_enumerator / denominator[n_prev_leaves + leaf_idx] * learning_rate
+
+                # update da
+                da[update_leaf_docs, class_idx] += leaf_derivative
+
+                # save
+                leaf_derivatives[n_prev_leaves + leaf_idx] = leaf_derivative
+
+            n_prev_leaves += leaf_count
+            tree_idx += 1
+
+    return leaf_derivatives
+
+
+def _get_docs_to_update(update_set, leaf_count, leaf_docs, remove_idx, da):
+    """
+    Return a set of document indices to be udpated for this tree.
+
+    Return
+        - Set of training indices.
+
+    Note
+        -Parallelizable method.
+    """
+
+    # update only the remove example
+    if update_set == 0:
+        result = set({remove_idx})
+
+    # update all train
+    elif update_set == -1:
+        result = set(np.arange(da.shape[0], dtype=np.int32))  # shape=(no. train,)
+
+    # update examples for the top leaves
+    else:
+
+        # sort leaf indices based on largest abs. da sum
+        leaf_das = [np.sum(np.abs(da[list(leaf_docs[leaf_idx])])) for leaf_idx in range(leaf_count)]
+        top_leaf_ids = np.argsort(leaf_das)[-update_set:]
+        
+        # return remove_idx + document indices for the top `k` leaves
+        result = {remove_idx}
+        for leaf_idx in top_leaf_ids:
+            result |= leaf_docs[leaf_idx]
+
+    return result

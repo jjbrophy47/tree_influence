@@ -198,69 +198,6 @@ class LeafRefit(Explainer):
                     cum_time = time.time() - start
                     self.logger.info(f'[INFO - LR] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
 
-        # for remove_idx in range(X.shape[0]):
-
-        #     # display progress
-        #     if self.logger and (remove_idx + 1) % 100 == 0:
-        #         cum_time = time.time() - start
-        #         self.logger.info(f'[INFO] {remove_idx + 1:,} / {X.shape[0]:,}: cum. time: {cum_time:.3f}s')
-
-        #     # intermediate containers
-        #     doc_deltas = np.zeros((X.shape[0], n_class), dtype=util.dtype_t)
-        #     tree_idx = 0
-        #     n_prev_leaves = 0
-
-        #     for boost_idx in range(n_boost):
-        #         update_approx = original_approx[:, boost_idx, :] + doc_deltas
-
-        #         for class_idx in range(n_class):
-
-        #             leaf_count = leaf_counts[boost_idx, class_idx]
-        #             update_docs = self._get_docs_to_update(leaf_count, leaf2docs[tree_idx], remove_idx, doc_deltas)
-
-        #             for leaf_idx in range(leaf_count):
-
-        #                 # get intersection of leaf documents and update documents
-        #                 leaf_docs = leaf2docs[tree_idx][leaf_idx]
-        #                 update_leaf_docs = update_docs.intersection(leaf_docs)
-        #                 update_leaf_docs.discard(remove_idx)
-        #                 update_leaf_docs = sorted(update_leaf_docs)
-
-        #                 # update gradients and hessians based on updated predictions
-        #                 if len(update_leaf_docs) > 0:
-        #                     update_gradient = self.loss_fn_.gradient(y[update_leaf_docs],
-        #                                                              update_approx[update_leaf_docs])
-        #                     update_gradient -= gradients[update_leaf_docs, boost_idx, class_idx]
-
-        #                     update_hessian = self.loss_fn_.hessian(y[update_leaf_docs], update_approx[update_leaf_docs])
-        #                     update_hessian -= hessians[update_leaf_docs, boost_idx, class_idx]
-
-        #                 # no other training examples affected
-        #                 else:
-        #                     update_gradient = 0
-        #                     update_hessian = 0
-
-        #                 # remove effect of target training example
-        #                 if remove_idx in leaf_docs:
-        #                     update_gradient -= gradients[remove_idx, boost_idx, class_idx]
-        #                     update_hessian -= hessians[remove_idx, boost_idx, class_idx]
-
-        #                 # compute new leaf value and leaf value delta
-        #                 new_sum_gradient = sum_gradients[n_prev_leaves + leaf_idx] + update_gradient
-        #                 new_sum_hessian_l2 = sum_hessians_l2[n_prev_leaves + leaf_idx] + update_hessian
-
-        #                 new_leaf_value = -new_sum_gradient / new_sum_hessian_l2 * learning_rate
-        #                 leaf_value_delta = new_leaf_value - leaf_values[n_prev_leaves + leaf_idx]
-
-        #                 # update prediction deltas
-        #                 doc_deltas[update_leaf_docs, class_idx] += leaf_value_delta
-
-        #                 # save
-        #                 new_leaf_values[remove_idx, n_prev_leaves + leaf_idx] = new_leaf_value
-
-        #             n_prev_leaves += leaf_count
-        #             tree_idx += 1
-
         # save results of this method
         self.leaf_values_ = leaf_values  # shape=(total no. leaves,)
         self.new_leaf_values_ = new_leaf_values  # shape=(no. train, total no. leaves)
