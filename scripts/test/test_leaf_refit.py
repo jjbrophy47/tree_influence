@@ -136,8 +136,8 @@ def test_local_influence_binary_original_vs_adapted(args, kwargs, n=10, show_plo
 def main(args):
 
     # explainer arguments
-    kwargs = {'update_set': args.update_set}
-    kwargs2 = {'update_set': args.update_set, 'atol': args.atol}
+    kwargs = {'update_set': args.update_set, 'n_jobs': args.n_jobs}
+    kwargs2 = {'update_set': args.update_set, 'atol': args.atol, 'n_jobs': args.n_jobs}
 
     # tests
     test_util.test_local_influence_regression(args, LeafRefit, 'LeafRefit', kwargs)
@@ -169,6 +169,7 @@ if __name__ == '__main__':
     # explainer settings
     parser.add_argument('--update_set', type=int, default=0)
     parser.add_argument('--atol', type=float, default=1e-2)
+    parser.add_argument('--n_jobs', type=int, default=1)
 
     args = parser.parse_args()
 
