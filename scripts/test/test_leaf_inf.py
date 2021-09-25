@@ -17,6 +17,7 @@ from intent.explainers import LeafInfluence
 from influence_boosting.influence.leaf_influence import CBLeafInfluenceEnsemble
 from test_util import _get_model
 from test_util import _get_test_data
+from test_parser import compare_predictions
 
 
 def get_cb_influence_original_method(model, X_train, y_train, X_test, y_test, kwargs):
@@ -113,16 +114,17 @@ def test_local_influence_binary_original_vs_adapted(args, kwargs, n=10, show_plo
         print('influence (head, sorted):', influence[s_ids][:n])
 
     p1 = influences1[:, 0]
-    p2 = influences2[:, 0]
+    p2 = -influences2[:, 0]
     spearman = spearmanr(p1, p2)[0]
     pearson = pearsonr(p1, p2)[0]
+    status = compare_predictions(p1, p2)
     print('spearmanr:', spearman)
     print('pearsonr:', pearson)
+
     if show_plot:
         plt.scatter(p1, p2)
         plt.show()
 
-    status = 'passed' if np.abs(spearman) > 0.999 and np.abs(pearson) > 0.99 else 'failed'
     print(f'\n{status}')
 
 
@@ -130,11 +132,12 @@ def main(args):
 
     # explainer arguments
     kwargs = {'update_set': args.update_set}
+    kwargs2 = {'update_set': args.update_set, 'atol': args.atol}
 
     # tests
     test_util.test_local_influence_regression(args, LeafInfluence, 'leaf_influence', kwargs)
     test_util.test_local_influence_binary(args, LeafInfluence, 'leaf_influence', kwargs)
-    test_util.test_local_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs)
+    test_util.test_local_influence_multiclass(args, LeafInfluence, 'leaf_influence', kwargs2)
 
     if args.tree_type == 'cb':
         test_local_influence_binary_original_vs_adapted(args, kwargs)
@@ -160,6 +163,7 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--update_set', type=int, default=0)
+    parser.add_argument('--atol', type=float, default=1e-2)
 
     args = parser.parse_args()
 

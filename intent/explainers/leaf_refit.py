@@ -132,7 +132,7 @@ class LeafRefit(Explainer):
                     # compare leaf values to actual leaf values
                     if not np.isclose(leaf_value, leaf_vals[leaf_idx], atol=1e-5):
                         n_not_close += 1
-                        max_diff = max(max_diff, abs(leaf_prediction - leaf_vals[leaf_idx]))
+                        max_diff = max(max_diff, abs(leaf_value - leaf_vals[leaf_idx]))
 
                     # store statistics
                     sum_gradients[n_prev_leaves + leaf_idx] = sum_gradient

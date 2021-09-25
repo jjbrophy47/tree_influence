@@ -14,9 +14,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
 from intent.explainers import LeafRefit
-from influence_boosting.influence.leaf_influence import CBLeafInfluenceEnsemble
+from intent.explainers.parsers.util import LogisticLoss
+from influence_boosting.influence.leaf_refit import CBOneStepLeafRefitEnsemble
 from test_util import _get_model
 from test_util import _get_test_data
+from test_parser import compare_predictions
 
 
 def get_cb_influence_original_method(model, X_train, y_train, X_test, y_test, kwargs):
@@ -37,26 +39,30 @@ def get_cb_influence_original_method(model, X_train, y_train, X_test, y_test, kw
         update_set = 'TopKLeaves'
 
     # save CatBoost model
-    temp_dir = os.path.join('.catboost_info', 'leaf_influence')
+    temp_dir = os.path.join('.catboost_info', 'leaf_refit')
     temp_fp = os.path.join(temp_dir, 'cb.json')
     os.makedirs(temp_dir, exist_ok=True)
     model.save_model(temp_fp, format='json')
 
     # initialize Leaf Influence
-    explainer = CBLeafInfluenceEnsemble(temp_fp,
-                                        X_train,
-                                        y_train,
-                                        k=k,
-                                        learning_rate=model.learning_rate_,
-                                        update_set=update_set)
+    explainer = CBOneStepLeafRefitEnsemble(temp_fp,
+                                           X_train,
+                                           y_train,
+                                           k=k,
+                                           learning_rate=model.learning_rate_,
+                                           update_set=update_set)
 
     buf = deepcopy(explainer)
     influence = np.zeros((X_train.shape[0], X_test.shape[0]), dtype=np.float32)
 
+    loss_fn = LogisticLoss()
+
     # compute influence for each training instance
     for train_idx in tqdm(range(X_train.shape[0])):
         explainer.fit(removed_point_idx=train_idx, destination_model=buf)
-        influence[train_idx, :] = buf.loss_derivative(X_test, y_test)  # shape=(1, no. test)
+        original_loss = loss_fn(y_test, explainer(X_test), raw=True)
+        new_loss = loss_fn(y_test, buf(X_test), raw=True)
+        influence[train_idx, :] = new_loss - original_loss
 
     # clean up
     shutil.rmtree('.catboost_info')
@@ -75,7 +81,7 @@ def test_local_influence_binary_original_vs_adapted(args, kwargs, n=10, show_plo
     tree = _get_model(args)
     tree = tree.fit(X_train, y_train)
 
-    explainer = LeafInfluence(**kwargs).fit(tree, X_train, y_train)
+    explainer = LeafRefit(**kwargs).fit(tree, X_train, y_train)
 
     # compute influences, shape=(no. train, no. test)
     influences1 = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])
@@ -116,13 +122,14 @@ def test_local_influence_binary_original_vs_adapted(args, kwargs, n=10, show_plo
     p2 = influences2[:, 0]
     spearman = spearmanr(p1, p2)[0]
     pearson = pearsonr(p1, p2)[0]
-    print('spearmanr:', spearman)
+    status = compare_predictions(p1, p2)
+    print('\nspearmanr:', spearman)
     print('pearsonr:', pearson)
+
     if show_plot:
         plt.scatter(p1, p2)
         plt.show()
 
-    status = 'passed' if np.abs(spearman) > 0.999 and np.abs(pearson) > 0.99 else 'failed'
     print(f'\n{status}')
 
 
@@ -130,11 +137,12 @@ def main(args):
 
     # explainer arguments
     kwargs = {'update_set': args.update_set}
+    kwargs2 = {'update_set': args.update_set, 'atol': args.atol}
 
     # tests
     test_util.test_local_influence_regression(args, LeafRefit, 'LeafRefit', kwargs)
     test_util.test_local_influence_binary(args, LeafRefit, 'LeafRefit', kwargs)
-    test_util.test_local_influence_multiclass(args, LeafRefit, 'LeafRefit', kwargs)
+    test_util.test_local_influence_multiclass(args, LeafRefit, 'LeafRefit', kwargs2)
 
     if args.tree_type == 'cb':
         test_local_influence_binary_original_vs_adapted(args, kwargs)
@@ -160,6 +168,7 @@ if __name__ == '__main__':
 
     # explainer settings
     parser.add_argument('--update_set', type=int, default=0)
+    parser.add_argument('--atol', type=float, default=1e-2)
 
     args = parser.parse_args()
 

@@ -23,26 +23,34 @@ class CBLeafRefitObliviousTree(CatBoostTree):
     def _custom_initialize(self, train_documents, train_targets, previous_approxes, train_weights):
         self._document_idxs_for_leaves = self.assign_documents_to_leaves(train_documents)
         self._gradients = self.loss_function.gradient(train_targets, previous_approxes)
+
         if self.leaf_method == 'Newton':
             self._hessians = self.loss_function.hessian(train_targets, previous_approxes)
         else:
             self._hessians = np.ones_like(train_targets, dtype=np.float64)
+
         self._sum_gradients_in_leaves, self._sum_hessians_with_l2_in_leaves = [], []
         self._document_predictions_in_this_tree = np.zeros_like(train_targets, dtype=np.float64)
         number_of_target_dimensions = train_targets.shape[-1] if self.loss_function.is_multidimensional else 1
-        for leaf_idx in xrange(len(self.leaf_values)):
+
+        for leaf_idx in range(len(self.leaf_values)):
             idxs_of_documents_in_leaf = sorted(list(self._document_idxs_for_leaves[leaf_idx]))
+
             self._sum_gradients_in_leaves.append(
                 np.sum(train_weights[idxs_of_documents_in_leaf] * self._gradients[idxs_of_documents_in_leaf], axis=0)
             )
+
             self._sum_hessians_with_l2_in_leaves.append(
                 np.sum(train_weights[idxs_of_documents_in_leaf] * self._hessians[idxs_of_documents_in_leaf], axis=0)
                 + self.l2_reg_coef * (np.eye(number_of_target_dimensions) if number_of_target_dimensions > 1 else 1)
             )
+
             leaf_prediction = self._calculate_leaf_formula(self._sum_gradients_in_leaves[-1],
                                                            self._sum_hessians_with_l2_in_leaves[-1])
-            #assert np.allclose(leaf_prediction, self.leaf_values[leaf_idx], atol=1e-5), '%s %s' % (
-            #leaf_prediction, self.leaf_values[leaf_idx])
+
+            # assert np.allclose(leaf_prediction, self.leaf_values[leaf_idx], atol=1e-5), '%s %s' % (
+            # leaf_prediction, self.leaf_values[leaf_idx])
+
             self.leaf_values[leaf_idx] = leaf_prediction
             self._document_predictions_in_this_tree[
                 sorted(list(self._document_idxs_for_leaves[leaf_idx]))] = leaf_prediction
@@ -60,17 +68,22 @@ class CBLeafRefitObliviousTree(CatBoostTree):
 
     def get_leaf_value_update(self, leaf_idx, removed_point_idx, labels_train, updated_leaf_document_idxs,
                               current_updated_approxes):
+
         num_target_dimensions = len(labels_train[0]) if self.loss_function.is_multidimensional else 1
         removed_point_was_in_leaf = removed_point_idx in self._document_idxs_for_leaves[leaf_idx]
-        idxs_without_removed = filter(lambda idx: idx != removed_point_idx, updated_leaf_document_idxs)
+        # idxs_without_removed = filter(lambda idx: idx != removed_point_idx, updated_leaf_document_idxs)
+
+        idxs_without_removed = [x for x in updated_leaf_document_idxs if x != removed_point_idx]
 
         if len(idxs_without_removed) and self.leaf_method == 'Newton':
             changed_hessians_with_l2 = np.sum(self.loss_function.hessian(
                 labels_train[idxs_without_removed],
                 current_updated_approxes[idxs_without_removed]
             ) - self._hessians[idxs_without_removed], axis=0)
+
         else:
             changed_hessians_with_l2 = np.zeros([num_target_dimensions] * 2) if num_target_dimensions > 1 else 0
+
         if removed_point_was_in_leaf:
             changed_hessians_with_l2 -= self._hessians[removed_point_idx]
 
@@ -79,15 +92,19 @@ class CBLeafRefitObliviousTree(CatBoostTree):
                 labels_train[idxs_without_removed],
                 current_updated_approxes[idxs_without_removed]
             ) - self._gradients[idxs_without_removed], axis=0)
+
         else:
             changed_gradients = np.zeros_like(labels_train[0]) if num_target_dimensions > 1 else 0
+
         if removed_point_was_in_leaf:
             changed_gradients -= self._gradients[removed_point_idx]
 
         new_sum_hessians_with_l2 = self._sum_hessians_with_l2_in_leaves[leaf_idx] + changed_hessians_with_l2
         new_sum_gradients = self._sum_gradients_in_leaves[leaf_idx] + changed_gradients
+
         new_value = self._calculate_leaf_formula(new_sum_gradients, new_sum_hessians_with_l2)
         old_value = self.leaf_values[leaf_idx]
+
         return new_value - old_value
 
 
@@ -105,31 +122,39 @@ class CBOneStepLeafRefitEnsemble(CatBoostEnsemble):
         self._initialize_influence_trees(train_documents, train_targets, loss_function, train_weights,
                                          l2_regularization_coef, learning_rate, leaf_method)
         self._get_documents_to_update_idxs = self._documents_to_update_method_from_update_set_param(update_set,
-                                                                                                     **update_set_params)
+                                                                                                    **update_set_params)
 
     def fit(self, removed_point_idx, destination_model=None):
+
         if destination_model is None:
             destination_model = deepcopy(self)
+
         document_deltas = np.zeros_like(self._train_targets, dtype=float)
+
         for t, (tree, new_tree) in enumerate(zip(self.trees, destination_model.trees)):
             documents_to_update_idxs = self._get_documents_to_update_idxs(t, removed_point_idx, document_deltas) # set
             current_updated_approxes = self.trees[t - 1]._documents_original_approxes + document_deltas \
                 if t > 0 else np.zeros_like(document_deltas)
-            for leaf_idx in xrange(len(tree.leaf_values)):
+
+            for leaf_idx in range(len(tree.leaf_values)):
                 leaf_documents_idxs = tree._document_idxs_for_leaves[leaf_idx]  # set?
                 updated_leaf_documents_idxs = sorted(list(documents_to_update_idxs.intersection(leaf_documents_idxs)))
+
                 if len(documents_to_update_idxs) == 0:
                     continue
+
                 value_delta = tree.get_leaf_value_update(leaf_idx, removed_point_idx, self._train_targets,
                                                          updated_leaf_documents_idxs, current_updated_approxes)
                 new_tree.leaf_values[leaf_idx] = tree.leaf_values[leaf_idx] + value_delta
                 document_deltas[updated_leaf_documents_idxs] += value_delta
+
         return destination_model
 
     def _initialize_influence_trees(self, train_documents, train_targets, loss_function, train_weights,
                                     l2_regularization_coef, learning_rate, leaf_method):
-        #assert all(isinstance(tree, CBLeafRefitObliviousTree) for tree in self.trees)
+        # assert all(isinstance(tree, CBLeafRefitObliviousTree) for tree in self.trees)
         current_approxes = np.zeros_like(train_targets)
+
         for t, tree in enumerate(self.trees):
             tree._initialize_influence_tree(train_documents, train_targets, current_approxes, loss_function,
                                             train_weights, l2_regularization_coef, learning_rate, leaf_method)
@@ -159,7 +184,8 @@ class CBOneStepLeafRefitEnsemble(CatBoostEnsemble):
             for leaf_idx in xrange(len(tree.leaf_values))
         ]
         leaf_idxs_to_update = np.argsort(leaf_deltas)[-k:]
-        return reduce(lambda x, y: x | y, (tree._document_idxs_for_leaves[l] for l in leaf_idxs_to_update)) | {removed_point_idxs}
+        return reduce(lambda x, y: x | y, (tree._document_idxs_for_leaves[l] for l in leaf_idxs_to_update))\
+            | {removed_point_idxs}
 
     @property
     def _tree_class(self):
