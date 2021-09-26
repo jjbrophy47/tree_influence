@@ -42,7 +42,7 @@ def get_explainer_args(cmd=None):
     cmd.add('--dshap_check_every', type=int, default=100)  # DShap
     cmd.add('--subsample_sub_frac', type=float, default=0.7)  # SubSample
     cmd.add('--subsample_n_iter', type=int, default=4000)  # SubSample
-    cmd.add('--n_jobs', type=int, default=-1)  # LOO and DShap
+    cmd.add('--n_jobs', type=int, default=-1)  # LOO, DShap, SubSample, LeafInf, LeafRefit
     cmd.add('--random_state', type=int, default=1)  # DShap, LOO, Minority, Random, SubSample, Target, Trex
     return cmd
 
