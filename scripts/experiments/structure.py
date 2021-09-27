@@ -64,8 +64,8 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
     for i, n_remove in enumerate(n_remove_list):
         remove_idxs = ranking[:n_remove]
 
-        new_X_train = np.delete(X_train, remove_idxs, axis=0)
-        new_y_train = np.delete(y_train, remove_idxs)
+        new_X_train = np.delete(X_train, remove_idxs, axis=0).copy()
+        new_y_train = np.delete(y_train, remove_idxs).copy()
         new_tree = clone(tree).fit(new_X_train, new_y_train)
 
         new_explainer = intent.TreeExplainer('boostin', {}, logger).fit(new_tree, new_X_train, new_y_train)
