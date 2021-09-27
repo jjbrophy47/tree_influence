@@ -52,10 +52,10 @@ def check_input_data(X):
     # const memoryviews not supported in cython 0.29.23
     if not X.flags.writeable:
         try:
-            X.set_flags(write=1)
+            X.setflags(write=1)
         except:
             X = X.copy()
-            X.set_flags(write=1)
+            X.setflags(write=1)
 
     return X
 
