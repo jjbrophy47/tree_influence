@@ -43,11 +43,20 @@ def check_data(X, y=None, objective='regression'):
 
 def check_input_data(X):
     """
-    Makes sure data is of dtype_t type.
+    Makes sure data is of dtype_t type and is writeable.
     """
     assert X.ndim == 2
     if X.dtype != dtype_t:
         X = X.astype(dtype_t)
+
+    # const memoryviews not supported in cython 0.29.23
+    if not X.flags.writeable:
+        try:
+            X.set_flags(write=1)
+        except:
+            X = X.copy()
+            X.set_flags(write=1)
+
     return X
 
 
