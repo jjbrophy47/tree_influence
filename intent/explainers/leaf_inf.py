@@ -170,6 +170,9 @@ class LeafInfluence(Explainer):
             assert self.n_jobs >= 1
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
+        if self.logger:
+            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
+
         # process each training example removal in parallel
         with joblib.Parallel(n_jobs=n_jobs) as parallel:
 

@@ -32,7 +32,8 @@ def get_explainer_args(cmd=None):
     if cmd is None:
         cmd = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     cmd.add('--method', type=str, nargs='+', default=['random', 'target', 'input_sim', 'leaf_sim', 'boostin',
-                                                      'trex', 'leaf_inf', 'leaf_infSP', 'loo', 'subsample'])
+                                                      'trex', 'leaf_inf', 'leaf_infSP', 'loo', 'subsample',
+                                                      'leaf_refit'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--leaf_inf_update_set', type=int, default=[-1])  # LeafInfluence
     cmd.add('--input_sim_measure', type=str, default=['euclidean'])  # InputSim
@@ -64,8 +65,6 @@ def get_roar_args():
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--std_err', type=int, default=0)
     cmd.add('--custom_dir', type=str, default='')
-    cmd.add('--zoom', type=float, default=0.2)
-    cmd.add('--plt', type=str, default='no_fill')
     return cmd
 
 

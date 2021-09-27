@@ -166,6 +166,9 @@ class LeafRefit(Explainer):
             assert self.n_jobs >= 1
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
+        if self.logger:
+            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
+
         # process each training example removal in parallel
         with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
@@ -178,7 +181,7 @@ class LeafRefit(Explainer):
 
             # get number of fits to perform for this iteration
             while n_remaining > 0:
-                n = min(2, n_remaining)
+                n = min(100, n_remaining)
 
                 results = parallel(joblib.delayed(_compute_new_leaf_values)
                                                  (train_idx, leaf_counts, leaf2docs, gradients, hessians,

@@ -53,7 +53,7 @@ def process(args, out_dir, logger):
 
     color, line, label = util.get_plot_dicts()
 
-    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+    fig, ax = plt.subplots()
 
     for i, (method, res) in enumerate(results):
 
@@ -66,14 +66,7 @@ def process(args, out_dir, logger):
 
         is_reinf = reinf_list[i]
 
-        ax = axs[0]
-
-        # TEMP
-        if res['remove_frac'].ndim == 1:
-            x = res['remove_frac'] * 100
-        else:
-            x = res['remove_frac'][0] * 100
-
+        x = res['remove_frac'] * 100
         y = res['loss'].mean(axis=0)
         y_err = sem(res['loss'], axis=0)
         y_err = y_err if args.std_err else None
@@ -85,45 +78,12 @@ def process(args, out_dir, logger):
             linestyle = line[method]
             labelstyle = label[method]
 
-        if args.plt == 'fill':
-            assert y_err is not None
-
-            ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
-            ax.fill_between(x, y - y_err, y + y_err, color=color[method],
-                            linestyle=linestyle, alpha=0.2)
-
-        else:
-            ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
-                        linestyle=linestyle, alpha=0.75)
+        ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
+                    linestyle=linestyle, alpha=0.75)
 
         ax.set_xlabel('Train data removed (%)')
         ax.set_ylabel(f'Avg. example test loss')
         ax.legend(fontsize=6)
-
-        if args.zoom > 0.0 and args.zoom < 1.0:
-            ax = axs[1]
-
-            n = int(len(x) * args.zoom)
-            x, y = x[:n], y[:n]
-
-            if y_err is not None:
-                y_err = y_err[:n]
-
-            if args.plt == 'fill':
-                assert y_err is not None
-
-                ax.errorbar(x, y, label=labelstyle, color=color[method], linestyle=linestyle)
-                ax.fill_between(x, y - y_err, y + y_err, label=labelstyle, color=color[method],
-                                linestyle=linestyle, alpha=0.2)
-            else:
-                ax.errorbar(x, y, yerr=y_err, label=labelstyle, color=color[method],
-                            linestyle=linestyle, alpha=0.75)
-
-            ax.set_xlabel('Train data removed (%)')
-            ax.set_ylabel(f'Avg. example test loss')
-
-    if args.zoom <= 0.0 or args.zoom >= 1.0:
-        fig.delaxes(axs[1])
 
     exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
