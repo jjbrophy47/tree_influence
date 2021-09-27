@@ -63,23 +63,17 @@ def _check_predictions(original_model, model, X, y):
     if model.objective == 'regression':
         p1 = original_model.predict(X)
         X = check_input_data(X)
-        # if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
-        #     X.flags.writeable = True
         p2 = model.predict(X)[:, 0]
 
     elif model.objective == 'binary':
         p1 = original_model.predict_proba(X)[:, 1]
         X = check_input_data(X)
-        # if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
-        #     X.flags.writeable = True
         p2 = model.predict(X)[:, 0]
 
     else:
         assert model.objective == 'multiclass'
         p1 = original_model.predict_proba(X)
         X = check_input_data(X)
-        # if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
-        #     X.flags.writeable = True
         p2 = model.predict(X)
 
     assert np.allclose(p1, p2)

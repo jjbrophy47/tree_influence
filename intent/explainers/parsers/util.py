@@ -49,7 +49,7 @@ def check_input_data(X):
     if X.dtype != dtype_t:
         X = X.astype(dtype_t)
 
-    # const memoryviews not supported in cython 0.29.23
+    # const. memoryviews not supported in cython 0.29.23
     if not X.flags.writeable:
         try:
             X.setflags(write=1)
