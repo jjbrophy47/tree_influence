@@ -10,7 +10,7 @@ from .parser_sk import parse_skgbm_ensemble
 from .parser_sk import parse_skrf_ensemble
 from .parser_xgb import parse_xgb_ensemble
 from .tree import TreeEnsemble
-from .util import check_data
+from .util import check_input_data
 
 
 def parse_model(model, X, y):
@@ -60,16 +60,16 @@ def _check_predictions(original_model, model, X, y):
     """
     Check to make sure both models produce the same predictions.
     """
-    X = check_data(X, y, objective=model.objective)
-
     if model.objective == 'regression':
         p1 = original_model.predict(X)
+        X = check_input_data(X)
         # if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
         #     X.flags.writeable = True
         p2 = model.predict(X)[:, 0]
 
     elif model.objective == 'binary':
         p1 = original_model.predict_proba(X)[:, 1]
+        X = check_input_data(X)
         # if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
         #     X.flags.writeable = True
         p2 = model.predict(X)[:, 0]
@@ -77,6 +77,7 @@ def _check_predictions(original_model, model, X, y):
     else:
         assert model.objective == 'multiclass'
         p1 = original_model.predict_proba(X)
+        X = check_input_data(X)
         # if not X.flags.writeable:  # const memoryviews not supported in cython 0.29.23
         #     X.flags.writeable = True
         p2 = model.predict(X)
