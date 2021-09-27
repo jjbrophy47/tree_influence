@@ -129,7 +129,7 @@ def main(args):
     exp_hash = util.dict_to_hash(exp_dict)
 
     # special cases
-    if args.method == 'leaf_inf':
+    if args.method in ['leaf_inf', 'leaf_refit']:
         if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
             args.leaf_inf_atol = 1e-1
         elif args.tree_type == 'cb' and args.dataset == 'bean':
