@@ -20,6 +20,7 @@ from poison import poison
 import intent
 import util
 from config import exp_args
+from influence import get_special_case_tol
 
 
 def add_noise(X, y, objective, rng, frac=0.1):
@@ -183,11 +184,7 @@ def main(args):
         exp_hash = util.dict_to_hash(exp_dict)
 
         # special cases
-        if args.method in ['leaf_inf', 'leaf_refit']:
-            if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
-                args.leaf_inf_atol = 1e-1
-            elif args.tree_type == 'cb' and args.dataset == 'bean':
-                args.leaf_inf_atol = 1e-1
+        args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
 
         # get unique hash for the explainer
         params, method_hash = util.explainer_params_to_dict(args.method, vars(args))

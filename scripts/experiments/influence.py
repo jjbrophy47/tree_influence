@@ -20,6 +20,37 @@ import util
 from config import exp_args
 
 
+def get_special_case_tol(dataset, tree_type, method, default_tol=1e-5):
+    """
+    Special cases for `leaf_inf` and `leaf_refit`.
+
+    Input
+        dataset: str, dataset.
+        tree_type: str, tree-ensemble model.
+        method: str, explainer.
+        default_tol: float, original tolerance.
+
+    Return
+        - Tolerance (float).
+    """
+    tol = default_tol
+
+    if method in ['leaf_inf', 'leaf_refit']:
+
+        if tree_type == 'lgb' and dataset == 'flight_delays':
+            tol = 1e-1
+
+        elif tree_type == 'cb':
+
+            if dataset == 'bean':
+                tol = 0.5
+
+            elif dataset == 'naval':
+                tol = 1e-4
+
+    return tol
+
+
 def select_elements(arr, rng, n):
     """
     - Randomly select `n` elements from `arr`.
@@ -206,11 +237,7 @@ def main(args):
     exp_hash = util.dict_to_hash(exp_dict)
 
     # special cases
-    if args.method in ['leaf_inf', 'leaf_refit']:
-        if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
-            args.leaf_inf_atol = 1e-1
-        elif args.tree_type == 'cb' and args.dataset in ['bean', 'naval']:
-            args.leaf_inf_atol = 1e-1
+    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
 
     # get unique hash for the explainer
     params, method_hash = util.explainer_params_to_dict(args.method, vars(args))

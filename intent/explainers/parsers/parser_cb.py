@@ -56,7 +56,7 @@ def parse_cb_ensemble(model):
 
 
 # private
-def _parse_cb_tree(tree_dict, n_class, lt_op=0, is_float32=True):
+def _parse_cb_tree(tree_dict, n_class, lt_op=0, is_float32=False):
     """
     Data has format:
     {

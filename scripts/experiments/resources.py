@@ -18,6 +18,7 @@ sys.path.insert(0, here + '/../')
 import intent
 import util
 from config import exp_args
+from influence import get_special_case_tol
 
 
 def experiment(args, logger, params, random_state, out_dir):
@@ -85,11 +86,7 @@ def main(args):
             seed = random_state
 
         # special cases
-        if args.method == 'leaf_inf':
-            if args.tree_type == 'lgb' and args.dataset == 'flight_delays':
-                args.leaf_inf_atol = 1e-1
-            elif args.tree_type == 'cb' and args.dataset == 'bean':
-                args.leaf_inf_atol = 1e-1
+        args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
 
         # get unique hash for the explainer
         params, hash_str = util.explainer_params_to_dict(args.method, vars(args))
