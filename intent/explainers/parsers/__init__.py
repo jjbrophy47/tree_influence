@@ -10,7 +10,7 @@ from .parser_sk import parse_skgbm_ensemble
 from .parser_sk import parse_skrf_ensemble
 from .parser_xgb import parse_xgb_ensemble
 from .tree import TreeEnsemble
-from .util import check_input_data
+from .util import check_data
 
 
 def parse_model(model, X, y):
