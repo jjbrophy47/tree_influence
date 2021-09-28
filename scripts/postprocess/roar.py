@@ -38,7 +38,7 @@ def process(args, out_dir, logger):
                                args.tree_type,
                                f'exp_{exp_hash}')
 
-        res = util.get_results(args, in_dir, exp_dir, logger)
+        res = util.get_results(args, exp_dir, logger)
         res = util.filter_results(res, args.skip)
         results += res
 

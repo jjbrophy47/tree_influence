@@ -1,5 +1,5 @@
 """
-Evaluate min. no. train examples to edit to flip test prediction.
+Evaluate structural changes of LOO.
 """
 import os
 import sys
@@ -31,37 +31,41 @@ def experiment(args, exp_dir, out_dir, logger):
 
     color, line, label = util.get_plot_dicts()
 
-    fig, ax = plt.subplots()
-    ax2 = ax.twiny()
+    rng = np.random.default_rng(args.random_state)
     
-    for method, res in res_list:
+    assert len(res_list) == 1
+    method, res = res_list[0]
+    aff = res['affinity']
 
-        df = res['df']
-        n_correct = len(df[df['status'] == 'success']) + len(df[df['status'] == 'fail'])
+    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
 
-        df = df[df['status'] == 'success']
-        if len(df) == 0:
-            continue
+    # plot 1
+    test_idx = 1  # pick a test instance
 
-        df = df.sort_values('n_edits')
-        df['count'] = np.arange(1, len(df) + 1)
+    ax = axs[0]
+    sns.histplot(aff[:, 0, test_idx], ax=ax, label='initial', element='step', fill=True, color='black')
+    sns.histplot(aff[:, 1, test_idx], ax=ax, label='1 removal', element='step', fill=True)
+    ax.set_xlabel('No. times train and test in same leaf')
+    ax.set_ylabel('No. train examples')
+    ax.set_title(f'Test Index: {test_idx} ({args.dataset})')
+    ax.legend(fontsize=6)
 
-        ax.plot(df['frac_edits'] * 100, df['count'], label=label[method], color=color[method],
-                linestyle=line[method], alpha=0.75)
-        ax.set_xlabel('% train targets poisoned')
-        ax.set_ylabel(f'No. correct test preds. flipped (cum.)')
+    # plot 2
+    abs_diff = np.abs(aff[:, 0, :] - aff[:, 1, :])  # shape=(no. train, no. test)
+    avg_abs_diff = np.mean(abs_diff, axis=1)  # shape=(no. train,)
 
-        ax2.plot(df['n_edits'], df['count'], label=label[method], color=color[method],
-                 linestyle=line[method], alpha=0.75)
-        ax2.set_xlabel('No. train targets poisoned')
-
-    ax.axhline(n_correct, label='No. correct test preds.', color='k', linestyle='--', linewidth=1)
+    ax = axs[1]
+    sns.histplot(avg_abs_diff, ax=ax, label='|1 removal - initial|', element='step')
+    ax.set_xlabel('Avg. abs. diff. in no. times train/test in same leaf')
+    ax.set_ylabel('No. train examples')
+    ax.set_title(f'{aff.shape[2]} test examples')
     ax.legend(fontsize=6)
 
     logger.info(f'\nsaving results to {out_dir}/...')
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
+    plt.show()
 
     logger.info(f'\ntotal time: {time.time() - begin:.3f}s')
 
@@ -69,7 +73,7 @@ def experiment(args, exp_dir, out_dir, logger):
 def main(args):
 
     # get experiment directory
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': args.step_size}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_remove': args.n_remove}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     exp_dir = os.path.join(args.in_dir,
@@ -95,4 +99,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(post_args.get_counterfactual_args().parse_args())
+    main(post_args.get_structure_args().parse_args())

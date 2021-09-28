@@ -1,7 +1,7 @@
 
 run='jobs/poison/runner.sh'
 o='jobs/logs/poison/'
-t='cb'
+t='lgb'
 
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'
@@ -12,7 +12,8 @@ sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t
 sbatch -a 1-21  -c 9  -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'
 sbatch -a 1-21  -c 5  -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
 sbatch -a 1-21  -c 5  -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 2,3,4,5,10,11,12,13,16,18,19,20,21 -c 3 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out' $run $t 'leaf_inf'
+sbatch -a 3-6,8,10-13,16,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'
+sbatch -a 3-6,8,10-13,16,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit'
 
 sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'
 sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'
@@ -24,7 +25,14 @@ sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 't
 sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
 sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
-# xgb and sgb only
-sbatch -a 7  -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 9  -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 22 -c 28 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+# xgb only
+sbatch -a 7,9,22 -c 28 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 22     -c 28 -t 2880 -p 'long'  -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
+
+# sgb only
+sbatch -a 7 -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 9 -c 28 -t 7200 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+
+# scratch pad
+sbatch -a 7,9   -c 28 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 3,6,8 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'

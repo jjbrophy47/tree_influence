@@ -81,7 +81,7 @@ def process(args, out_dir, exp_hash, logger):
                                args.tree_type,
                                f'exp_{exp_hash}')
 
-        res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
+        res_list = pp_util.get_results(args, exp_dir, logger, progress_bar=False)
         res_list = pp_util.filter_results(res_list, args.skip)
 
         row = {'dataset': dataset, 'tree_type': args.tree_type}

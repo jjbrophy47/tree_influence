@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+from uuid import uuid4
 
 import numpy as np
 
@@ -147,7 +148,7 @@ def _get_json_data_from_cb_model(model):
     assert 'CatBoost' in str(model)
     here = os.path.abspath(os.path.dirname(__file__))
 
-    temp_dir = os.path.join(here, 'temp')
+    temp_dir = os.path.join(here, f'temp_{uuid4()}')
     os.makedirs(temp_dir, exist_ok=True)
 
     temp_model_json_fp = os.path.join(temp_dir, 'model.json')

@@ -26,7 +26,7 @@ def process(args, exp_dir, out_dir, logger):
     # get dataset
     color, line, label = util.get_plot_dicts()
 
-    res_list = util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
+    res_list = util.get_results(args, exp_dir, logger, progress_bar=False)
     res_list = util.filter_results(res_list, args.skip)
 
     fig, axs = plt.subplots(1, 3, figsize=(15, 5))

@@ -40,7 +40,7 @@ def process(args, exp_hash, out_dir, logger):
                                    strategy,
                                    f'random_state_{random_state}')
 
-            res_list = util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
+            res_list = util.get_results(args, exp_dir, logger, progress_bar=False)
             res_list = util.filter_results(res_list, args.skip)
 
             for method, res in res_list:

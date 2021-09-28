@@ -11,7 +11,7 @@ from experiments import util as exp_util
 
 
 # public
-def get_results(args, in_dir, exp_dir, logger=None, progress_bar=True):
+def get_results(args, exp_dir, logger=None, progress_bar=True):
     """
     Retrieve results for the multiple methods.
     """

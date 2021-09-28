@@ -166,9 +166,8 @@ def main(args):
     # get unique hash for the explainer
     _, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
-
     # get input dir., get unique hash for the influence experiment setting
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     in_exp_hash = util.dict_to_hash(exp_dict)
 
     exp_dir = os.path.join(args.in_dir,

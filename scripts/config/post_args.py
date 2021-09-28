@@ -70,7 +70,7 @@ def get_roar_args():
 
 def get_counterfactual_args():
     """
-    Add arguments specific to the "Counterfactual" experiment.
+    Add arguments specific to the "Counterfactual" postprocessing.
 
     Return ArgParser object.
     """
@@ -80,6 +80,7 @@ def get_counterfactual_args():
     cmd.add('--out_dir', type=str, default='output/plot/counterfactual/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--step_size', type=int, default=10)
     return cmd
 
 
@@ -147,4 +148,20 @@ def get_resources_args():
     cmd.add('--in_dir', type=str, default='temp_resources/')
     cmd.add('--out_dir', type=str, default='output/plot/resources/')
     cmd.add('--n_repeat', type=int, default=5)
+    return cmd
+
+
+def get_structure_args():
+    """
+    Add arguments specific to the "Structure" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_structure/')
+    cmd.add('--out_dir', type=str, default='output/plot/structure/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--n_remove', type=float, nargs='+', default=[1, 10, 100])
     return cmd
