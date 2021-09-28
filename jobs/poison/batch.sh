@@ -34,5 +34,6 @@ sbatch -a 7 -c 28 -t 2880 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'lo
 sbatch -a 9 -c 28 -t 7200 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # scratch pad
-sbatch -a 7,9   -c 28 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 3,6,8 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'
+sbatch -a 1-21        -c 11 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
+sbatch -a 1-7,9,11-22 -c 11 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 3,6,8,12,16 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'
