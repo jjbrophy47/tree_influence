@@ -5,7 +5,7 @@
 **.html
 **build
 
-myenv/
+py39/
 output/
 data/
 jobs/logs/

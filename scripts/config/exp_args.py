@@ -87,7 +87,7 @@ def get_noise_args():
     cmd = get_explainer_args(cmd)
     cmd.add('--out_dir', type=str, default='output/noise/')
     cmd.add('--strategy', type=str, default='test_sum')
-    cmd.add('--noise_frac', type=float, default=0.1)
+    cmd.add('--noise_frac', type=float, default=0.4)
     cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
     cmd.add('--n_repeat', type=int, default=5)

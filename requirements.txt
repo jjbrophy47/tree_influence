@@ -19,5 +19,5 @@ pandas==1.3.1
 
 # visualizers
 tqdm==4.61.2
-seaborn=0.11.1
+seaborn==0.11.1
 matplotlib==3.4.2
