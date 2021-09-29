@@ -4,6 +4,7 @@ run2='jobs/noise/runner2.sh'
 o='jobs/logs/noise/'
 t='lgb'
 nf=0.4
+seed_list=(1 2 3 4 5)
 
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'     'test_sum' $nf
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_self-%a.out'       $run $t 'loss'       'self'     $nf
@@ -22,8 +23,6 @@ sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_sim-%a.out'   $run $t 'l
 sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostin-%a.out'    $run $t 'boostin'    'test_sum' $nf
 sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t 'leaf_infSP' 'test_sum' $nf
 
-seed_list=(1 2 3 4 5)
-
 for seed in ${seed_list[@]}; do
     sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out' $run2 $t 'trex' 'test_sum' $nf $seed
     sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out' $run2 $t 'subsample' 'test_sum' $nf $seed
@@ -32,4 +31,12 @@ for seed in ${seed_list[@]}; do
         'leaf_inf' 'test_sum' $nf $seed
     sbatch -a 3-6,8,10-13,16,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run2 $t\
         'leaf_refit' 'test_sum' $nf $seed
+done
+
+# scratch pad
+for seed in ${seed_list[@]}; do
+    # sbatch -a 7,9,14,22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out' $run2 $t 'subsample' 'test_sum' $nf $seed
+    sbatch -a 1,7,9,14,15,22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' 'test_sum' $nf $seed
+    # sbatch -a 3,6,8 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out' $run2 $t 'leaf_inf' 'test_sum' $nf $seed
+    # sbatch -a 3-6,8,10-13,16,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run2 $t 'leaf_refit' 'test_sum' $nf $seed
 done
