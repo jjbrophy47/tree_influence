@@ -50,6 +50,12 @@ def process(args, exp_hash, out_dir, logger):
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
 
+    # average ranks among different tree types
+    group_cols = ['dataset']
+
+    df_all = df_all.groupby(group_cols).mean().reset_index()
+    df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
+
     # compute average rankings
     skip_cols = ['dataset', 'tree_type']
 

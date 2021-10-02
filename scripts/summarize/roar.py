@@ -116,7 +116,7 @@ def process(args, out_dir, exp_hash, logger):
     # compute rankings
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
 
-    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['Leaf Inf.'])
+    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['Leaf Inf.', 'Leaf Refit'])
     rank_li_df = get_rank_df(df[~pd.isna(df['Leaf Inf.'])], skip_cols=skip_cols)
     logger.info(f'\nLoss ranking:\n{rank_df}')
     logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df}')

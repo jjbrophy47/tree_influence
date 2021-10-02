@@ -25,6 +25,10 @@ sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 't
 sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
 sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
+# lgb only
+sbatch -a 6 -c 28 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'
+sbatch -a 6 -c 28 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit'
+
 # xgb only
 sbatch -a 7,9,22 -c 28 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 sbatch -a 22     -c 28 -t 2880 -p 'long'  -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'

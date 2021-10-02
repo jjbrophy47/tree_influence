@@ -140,7 +140,7 @@ def get_plot_dicts():
     label['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'Data Shap'
     label['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'SubSample'
     label['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = 'Leaf Inf.'
-    label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = ' Leaf Refit'
+    label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'Leaf Refit'
 
     return color, line, label
 

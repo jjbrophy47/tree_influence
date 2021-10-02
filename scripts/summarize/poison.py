@@ -70,10 +70,11 @@ def process(args, exp_hash, out_dir, logger):
 
     # compute rankings
     skip_cols = ['dataset', 'tree_type', 'poison_frac']
+    remove_cols = ['Leaf Inf.', 'Leaf Refit']
 
-    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=['Leaf Inf.'])
-    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=['Leaf Inf.'], ascending=True)
-    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=['Leaf Inf.'], ascending=True)
+    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols)
+    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
+    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
 
     rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['Leaf Inf.'])], skip_cols)
     rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['Leaf Inf.'])], skip_cols, ascending=True)

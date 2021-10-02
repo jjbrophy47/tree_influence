@@ -55,8 +55,8 @@ def remove_and_reinfluence(objective, tree, method, params,
         # get new training data
         if strategy == 'fixed':
             remove_idxs = init_ranking[:n_remove]
-            new_X_train = np.delete(new_X_train, remove_idxs, axis=0)
-            new_y_train = np.delete(new_y_train, remove_idxs)
+            new_X_train = np.delete(X_train, remove_idxs, axis=0)
+            new_y_train = np.delete(y_train, remove_idxs)
 
         # reestimation influence
         else:
@@ -134,7 +134,7 @@ def experiment(args, logger, params, out_dir):
         res_list = []
 
         while n_remain > 0:
-            n = min(min(10, n_jobs), n_remain)
+            n = min(min(20, n_jobs), n_remain)
 
             results = parallel(joblib.delayed(remove_and_reinfluence)
                                              (objective, tree, args.method, params,
@@ -184,6 +184,7 @@ def main(args):
                            args.dataset,
                            args.tree_type,
                            f'exp_{exp_hash}',
+                           args.strategy,
                            f'{args.method}_{method_hash}')
 
     # create output directory and clear previous contents

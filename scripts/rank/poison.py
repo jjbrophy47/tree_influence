@@ -79,7 +79,7 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc_all = pd.concat(df_li_auc_list)
 
     # average ranks among different checkpoints
-    group_cols = ['dataset', 'tree_type']
+    group_cols = ['dataset']
 
     df_loss_all = df_loss_all.groupby(group_cols).mean().reset_index()
     df_li_loss_all = df_li_loss_all.groupby(group_cols).mean().reset_index()

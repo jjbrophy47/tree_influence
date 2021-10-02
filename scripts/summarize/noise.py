@@ -72,10 +72,13 @@ def process(args, exp_hash, out_dir, logger):
         auc_d = temp_dict.copy()
 
         for name in r1[random_state].keys():
-            fd_d[name] = np.mean([r1[rs][name]['frac_detected'] for rs in r1.keys()])
-            loss_d[name] = np.mean([r1[rs][name]['loss'] for rs in r1.keys()])
-            acc_d[name] = np.mean([r1[rs][name]['acc'] for rs in r1.keys()])
-            auc_d[name] = np.mean([r1[rs][name]['auc'] for rs in r1.keys()])
+            try:
+                fd_d[name] = np.mean([r1[rs][name]['frac_detected'] for rs in r1.keys()])
+                loss_d[name] = np.mean([r1[rs][name]['loss'] for rs in r1.keys()])
+                acc_d[name] = np.mean([r1[rs][name]['acc'] for rs in r1.keys()])
+                auc_d[name] = np.mean([r1[rs][name]['auc'] for rs in r1.keys()])
+            except:
+                logger.info(f'\tfailed averaging random states for {name}')
 
         fd_d_list.append(fd_d)
         loss_d_list.append(loss_d)
@@ -95,7 +98,7 @@ def process(args, exp_hash, out_dir, logger):
 
     # compute ranks
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
-    remove_cols = ['Leaf Inf._test_sum']
+    remove_cols = ['Leaf Inf._test_sum', 'Leaf Refit_test_sum']
 
     rank_df_fd = get_rank_df(fd_df, skip_cols=skip_cols, remove_cols=remove_cols)
     rank_li_df_fd = get_rank_df(fd_df[~pd.isna(fd_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
