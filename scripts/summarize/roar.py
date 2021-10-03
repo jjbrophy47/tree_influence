@@ -71,6 +71,7 @@ def process(args, out_dir, exp_hash, logger):
 
     rows = []
     rows2 = []
+    rows3 = []
 
     logger.info('')
     for dataset in args.dataset_list:
@@ -86,6 +87,7 @@ def process(args, out_dir, exp_hash, logger):
 
         row = {'dataset': dataset, 'tree_type': args.tree_type}
         row2 = {'dataset': dataset, 'tree_type': args.tree_type}
+        row3 = {'dataset': dataset, 'tree_type': args.tree_type}
 
         for j, (method, res) in enumerate(res_list):
 
@@ -98,20 +100,29 @@ def process(args, out_dir, exp_hash, logger):
                 assert n_test == temp, f'Inconsistent no. test: {temp:,} != {n_test:,}'
 
             loss_mean = res['loss'].mean(axis=0)[args.ckpt]
-            loss_sem = sem(res['loss'], axis=0)[args.ckpt]
+            runtime = res['fit_time'] + res['inf_time']
+            mem = res['max_rss_MB']
 
             row['remove_frac'] = res['remove_frac'][args.ckpt]
             row[f'{label[method]}'] = loss_mean
 
             row2['remove_frac'] = row['remove_frac']
-            row2[f'{label[method]}'] = loss_sem
+            row2[f'{label[method]}'] = runtime
+
+            row3['remove_frac'] = row['remove_frac']
+            row3[f'{label[method]}'] = mem
 
         rows.append(row)
         rows2.append(row2)
+        rows3.append(row3)
 
     df = pd.DataFrame(rows)
     df2 = pd.DataFrame(rows2)
+    df3 = pd.DataFrame(rows3)
+
     logger.info(f'\nLoss:\n{df}')
+    logger.info(f'\nRuntime:\n{df2}')
+    logger.info(f'\nMemory:\n{df3}')
 
     # compute rankings
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
@@ -124,7 +135,8 @@ def process(args, out_dir, exp_hash, logger):
     logger.info(f'\nSaving results to {out_dir}...')
 
     df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
-    df2.to_csv(os.path.join(out_dir, 'loss_sem.csv'), index=None)
+    df2.to_csv(os.path.join(out_dir, 'runtime.csv'), index=None)
+    df3.to_csv(os.path.join(out_dir, 'mem.csv'), index=None)
 
     rank_df.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
     rank_li_df.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'), index=None)

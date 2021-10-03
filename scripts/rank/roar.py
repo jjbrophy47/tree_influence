@@ -58,6 +58,8 @@ def process(args, exp_hash, out_dir, logger):
 
     df_list = []
     df_li_list = []
+    df_time_list = []
+    df_mem_list = []
 
     for tree_type in args.tree_type:
 
@@ -66,6 +68,18 @@ def process(args, exp_hash, out_dir, logger):
                               f'exp_{exp_hash}',
                               'summary')
 
+        # get resource usage
+        ckpt_dir = os.path.join(in_dir, f'ckpt_{args.ckpt[0]}')
+
+        fp_time = os.path.join(ckpt_dir, 'runtime.csv')
+        fp_mem = os.path.join(ckpt_dir, 'mem.csv')
+        assert os.path.exists(fp_time), f'{fp_time} does not exist!'
+        assert os.path.exists(fp_mem), f'{fp_mem} does not exist!'
+
+        df_time_list.append(pd.read_csv(fp_time))
+        df_mem_list.append(pd.read_csv(fp_mem))
+
+        # get loss
         for ckpt in args.ckpt:
             ckpt_dir = os.path.join(in_dir, f'ckpt_{ckpt}')
 
@@ -79,12 +93,16 @@ def process(args, exp_hash, out_dir, logger):
 
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
+    df_time_all = pd.concat(df_time_list)
+    df_mem_all = pd.concat(df_mem_list)
 
-    # average ranks among different checkpoints and tree types
+    # average ranks among different checkpoints and/or tree types
     group_cols = ['dataset']
 
     df_all = df_all.groupby(group_cols).mean().reset_index()
     df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
+    df_time_all = df_time_all.groupby(group_cols).mean().reset_index()
+    df_mem_all = df_mem_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
@@ -118,6 +136,45 @@ def process(args, exp_hash, out_dir, logger):
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
+
+    # plot resource usage
+    df_time = df_time_all.drop(columns=['Leaf Inf.', 'Leaf Refit']).dropna()  # drop slow methods, drop NaN rows
+    df_time_li = df_time_all.dropna()  # keep slow methods, drop NaN rows
+
+    time_cols = [x for x in list(df_time.columns) if x not in skip_cols + ['Random', 'Target', 'Input Sim.']]
+    time_li_cols = [x for x in list(df_time_li.columns) if x not in skip_cols + ['Random', 'Target', 'Input Sim.']]
+
+    df_time = df_time[time_cols].copy()
+    df_time_li = df_time_li[time_li_cols].copy()
+
+    df_time.loc[:, time_cols] = df_time.loc[:, time_cols].div(df_time['Leaf Sim.'], axis=0)
+    df_time_li.loc[:, time_li_cols] = df_time_li.loc[:, time_li_cols].div(df_time_li['Leaf Sim.'], axis=0)
+
+    df_time = df_time.drop(columns=['Leaf Sim.'])
+    df_time_li = df_time_li.drop(columns=['Leaf Sim.'])
+    time_cols.remove('Leaf Sim.')
+    time_li_cols.remove('Leaf Sim.')
+
+    time_vals = df_time.values
+    time_li_vals = df_time_li.values
+
+    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
+
+    ax = axs[0]
+    ax.bar(time_cols, np.mean(time_vals, axis=0))
+    ax.set_ylabel('Speed relative to Leaf Sim.')
+    ax.set_yscale('log')
+    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
+
+    ax = axs[1]
+    ax.bar(time_li_cols, np.mean(time_li_vals, axis=0))
+    ax.set_ylabel('Speed relative to Leaf Sim.')
+    ax.set_yscale('log')
+    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
+
+    plt.savefig(os.path.join(out_dir, 'runtime.png'), bbox_inches='tight')
+    plt.tight_layout()
+    plt.show()
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
