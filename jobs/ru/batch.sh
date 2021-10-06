@@ -19,3 +19,8 @@ for seed in ${seed_list[@]}; do
     sbatch -a 3-6,8,10-13,16,18-19,21 -c 3 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out' $run2 $t 'leaf_inf' $seed
     sbatch -a 3-6,8,10-13,16,18-19,21 -c 3 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run2 $t 'leaf_refit' $seed
 done
+
+# scratch pad
+for seed in ${seed_list[@]}; do
+    sbatch -a 3 -c 3 -t 2880 -p 'long' -o ${o}${t}'_leaf_refit-%a.out' $run2 $t 'leaf_refit' $seed
+done

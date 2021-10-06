@@ -110,6 +110,9 @@ def process(args, exp_hash, out_dir, logger):
     df = get_mean_rank_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_rank_df(df_li_all, skip_cols=skip_cols, sort='ascending')
 
+    logger.info(f'\nLoss:\n{df}')
+    logger.info(f'\nLoss (li):\n{df_li}')
+
     # plot
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())
@@ -136,45 +139,6 @@ def process(args, exp_hash, out_dir, logger):
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
-
-    # plot resource usage
-    df_time = df_time_all.drop(columns=['Leaf Inf.', 'Leaf Refit']).dropna()  # drop slow methods, drop NaN rows
-    df_time_li = df_time_all.dropna()  # keep slow methods, drop NaN rows
-
-    time_cols = [x for x in list(df_time.columns) if x not in skip_cols + ['Random', 'Target', 'Input Sim.']]
-    time_li_cols = [x for x in list(df_time_li.columns) if x not in skip_cols + ['Random', 'Target', 'Input Sim.']]
-
-    df_time = df_time[time_cols].copy()
-    df_time_li = df_time_li[time_li_cols].copy()
-
-    df_time.loc[:, time_cols] = df_time.loc[:, time_cols].div(df_time['Leaf Sim.'], axis=0)
-    df_time_li.loc[:, time_li_cols] = df_time_li.loc[:, time_li_cols].div(df_time_li['Leaf Sim.'], axis=0)
-
-    df_time = df_time.drop(columns=['Leaf Sim.'])
-    df_time_li = df_time_li.drop(columns=['Leaf Sim.'])
-    time_cols.remove('Leaf Sim.')
-    time_li_cols.remove('Leaf Sim.')
-
-    time_vals = df_time.values
-    time_li_vals = df_time_li.values
-
-    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
-
-    ax = axs[0]
-    ax.bar(time_cols, np.mean(time_vals, axis=0))
-    ax.set_ylabel('Speed relative to Leaf Sim.')
-    ax.set_yscale('log')
-    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
-
-    ax = axs[1]
-    ax.bar(time_li_cols, np.mean(time_li_vals, axis=0))
-    ax.set_ylabel('Speed relative to Leaf Sim.')
-    ax.set_yscale('log')
-    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
-
-    plt.savefig(os.path.join(out_dir, 'runtime.png'), bbox_inches='tight')
-    plt.tight_layout()
-    plt.show()
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

@@ -66,14 +66,16 @@ def get_correlation_args():
     cmd = get_general_args()
     cmd = exp_args.get_explainer_args(cmd)
     cmd.add('--method_list', type=str, nargs='+',
-            default=['target', 'leaf_sim', 'boostin', 'trex', 'leaf_infSP', 'loo', 'subsample'])
+            default=['target', 'leaf_sim', 'boostin', 'trex', 'leaf_infSP', 'loo', 'subsample',
+                     'leaf_inf', 'leaf_refit'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--in_dir', type=str, default='output/plot/correlation/')
+    cmd.add('--in_sub_dir', type=str, default=None)
     cmd.add('--out_dir', type=str, default='output/plot/correlation/')
-    cmd.add('--sub_dir', type=str, default=None)
+    cmd.add('--out_sub_dir', type=str, default=None)
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb'])
     return cmd
 
 
@@ -123,4 +125,5 @@ def get_resources_args():
     cmd.add('--in_dir', type=str, default='temp_resources/')
     cmd.add('--out_dir', type=str, default='output/plot/resources/')
     cmd.add('--n_repeat', type=int, default=5)
+    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb'])
     return cmd

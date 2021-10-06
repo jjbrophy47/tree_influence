@@ -31,8 +31,8 @@ def get_explainer_args(cmd=None):
     """
     if cmd is None:
         cmd = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
-    cmd.add('--method', type=str, nargs='+', default=['random', 'target', 'input_sim', 'leaf_sim', 'boostin',
-                                                      'trex', 'leaf_inf', 'leaf_infSP', 'loo', 'subsample',
+    cmd.add('--method', type=str, nargs='+', default=['random', 'target', 'leaf_sim', 'boostin',
+                                                      'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
                                                       'leaf_refit'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--leaf_inf_update_set', type=int, default=[-1])  # LeafInfluence
@@ -99,8 +99,8 @@ def get_correlation_args():
     cmd.add('--in_dir', type=str, default='temp_influence/')
     cmd.add('--out_dir', type=str, default='output/plot/correlation/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, default=0.02)
-    cmd.add('--n_ckpt', type=int, default=20)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--custom_dir', type=str, default=None)
     return cmd
 
 

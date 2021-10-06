@@ -62,6 +62,9 @@ def process(args, exp_hash, out_dir, logger):
     df = get_mean_rank_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_rank_df(df_li_all, skip_cols=skip_cols, sort='ascending')
 
+    logger.info(f'\nFrac. edits:\n{df}')
+    logger.info(f'\nFrac. edits (li):\n{df_li}')
+
     # plot
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())

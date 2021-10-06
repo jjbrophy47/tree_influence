@@ -20,6 +20,8 @@ sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import summ_args
+from summarize.roar import get_rank_df
+from rank.roar import get_mean_rank_df
 
 
 def process(args, out_dir, logger):
@@ -27,108 +29,154 @@ def process(args, out_dir, logger):
 
     # result containers
     time_rows = []
-    time_rows2 = []
     mem_rows = []
-    mem_rows2 = []
 
     color, line, label = pp_util.get_plot_dicts()
 
-    logger.info('')
-    for dataset in args.dataset_list:
-        logger.info(f'\n{dataset}')
+    for tree_type in args.tree_type_list:
+        logger.info(f'\n{tree_type}')
 
-        args.dataset = dataset
+        for dataset in args.dataset_list:
+            logger.info(f'\n{dataset}')
 
-        # collect results
-        r1 = {}
-        for random_state in range(1, args.n_repeat + 1):
-            logger.info(f'random state: {random_state}')
+            args.dataset = dataset
 
-            r1[random_state] = {}
+            # collect results
+            r1 = {}
+            for random_state in range(1, args.n_repeat + 1):
+                logger.info(f'random state: {random_state}')
 
-            exp_dir = os.path.join(args.in_dir,
-                                   args.dataset,
-                                   args.tree_type,
-                                   f'random_state_{random_state}')
-            res_list = pp_util.get_results(args, args.in_dir, exp_dir, logger, progress_bar=False)
-            res_list = pp_util.filter_results(res_list, args.skip)
+                r1[random_state] = {}
 
-            for method, d in res_list:
-                r = {}
-                r['mem_GB'] = d['max_rss_MB']  # results were run on Linux
-                r['fit_time'] = d['fit_time']
-                r['inf_time'] = d['inf_time']
-                r['total_time'] = r['fit_time'] + r['inf_time']
+                exp_dir = os.path.join(args.in_dir,
+                                       dataset,
+                                       tree_type,
+                                       f'random_state_{random_state}')
+                res_list = pp_util.get_results(args, exp_dir, logger, progress_bar=False)
+                res_list = pp_util.filter_results(res_list, args.skip)
 
-                r1[random_state][label[method]] = r
+                for method, d in res_list:
+                    r = {}
+                    r['mem_GB'] = d['max_rss_MB']  # results were run on Linux
+                    r['fit_time'] = d['fit_time']
+                    r['inf_time'] = d['inf_time']
+                    r['total_time'] = r['fit_time'] + r['inf_time']
 
-        t = {'dataset': args.dataset}
-        t2 = {'dataset': args.dataset}
-        m = {'dataset': args.dataset}
-        m2 = {'dataset': args.dataset}
+                    r1[random_state][label[method]] = r
 
-        # average over random states
-        for method in r1[random_state].keys():
-            is_missing = False
+            t = {'dataset': dataset, 'tree_type': tree_type}
+            m = t.copy()
 
-            try:
-                time_vals = [r1[rs][method]['total_time'] for rs in r1.keys()]
-                time_mean = np.mean(time_vals)
-                time_std = np.std(time_vals)
+            # average over random states
+            for method in r1[random_state].keys():
+                is_missing = False
 
-                mem_vals = [r1[rs][method]['mem_GB'] for rs in r1.keys()]
-                mem_mean = np.mean(mem_vals)
-                mem_std = np.std(mem_vals)
+                try:
+                    time_vals = [r1[rs][method]['total_time'] for rs in r1.keys()]
+                    time_mean = np.mean(time_vals)
 
-            except:
-                is_missing = True
-                print(f'partially missing: {method}')
+                    mem_vals = [r1[rs][method]['mem_GB'] for rs in r1.keys()]
+                    mem_mean = np.mean(mem_vals)
 
-                t[f'{method}'] = np.nan
-                t2[f'{method}'] = np.nan
+                except:
+                    is_missing = True
+                    logger.info(f'partially missing: {method}')
 
-                m[f'{method}'] = np.nan
-                m2[f'{method}'] = np.nan
+                    t[f'{method}'] = np.nan
+                    m[f'{method}'] = np.nan
 
-            if not is_missing:
+                if not is_missing:
+                    t[f'{method}'] = time_mean
+                    m[f'{method}'] = mem_mean
 
-                t[f'{method}'] = time_mean
-                t2[f'{method}'] = time_std
-
-                m[f'{method}'] = mem_mean
-                m2[f'{method}'] = mem_std
-
-        time_rows.append(t)
-        time_rows2.append(t2)
-
-        mem_rows.append(m)
-        mem_rows2.append(m2)
+            time_rows.append(t)
+            mem_rows.append(m)
 
     # compile results
     t_df = pd.DataFrame(time_rows)
-    t2_df = pd.DataFrame(time_rows2)
-
     m_df = pd.DataFrame(mem_rows)
-    m2_df = pd.DataFrame(mem_rows2)
 
     logger.info(f'\nTime results:\n{t_df}')
     logger.info(f'\nMemory results:\n{m_df}')
     logger.info(f'\nSaving results to {out_dir}...')
 
     t_df.to_csv(os.path.join(out_dir, 'time.csv'), index=None)
-    t2_df.to_csv(os.path.join(out_dir, 'time_std.csv'), index=None)
-
     m_df.to_csv(os.path.join(out_dir, 'mem.csv'), index=None)
-    m2_df.to_csv(os.path.join(out_dir, 'mem_std.csv'), index=None)
+
+    logger.info('\ndropping NaN rows...')
+    t_df = t_df.dropna()
+    m_df = m_df.dropna()
+
+    # get avg. rankings
+    group_cols = ['dataset']
+    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    remove_cols = ['Random', 'Target', 'Input Sim.']
+
+    t_rank_df = get_rank_df(t_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)  # get ranks
+    t_avg_rank_df = t_rank_df.groupby(group_cols).mean().reset_index()  # average over tree types
+    t_mean_rank_df = get_mean_rank_df(t_avg_rank_df, skip_cols=skip_cols)  # average over datasets
+
+    # average over tree types
+    t_df = t_df.groupby(['dataset']).mean().reset_index()
+    m_df = m_df.groupby(['dataset']).mean().reset_index()
+
+    # get relevant columns
+    cols = [x for x in t_df.columns if x not in ['dataset', 'tree_type', 'Random', 'Target', 'Input Sim.']]
+    t_df = t_df[cols].copy()
+    m_df = m_df[cols].copy()
+
+    # compute relative speedups
+    base_method = 'Leaf Sim.'  # fastest method
+
+    t_df.loc[:, cols] = t_df.loc[:, cols].div(t_df[base_method], axis=0)
+    m_df.loc[:, cols] = m_df.loc[:, cols].div(m_df[base_method], axis=0)
+
+    logger.info(f'\nAvg. time rankings:\n{t_mean_rank_df}')
+
+    logger.info(f'\nRelative time results:\n{t_df}')
+    logger.info(f'\nRelative memory results:\n{m_df}')
+
+    # remove base method
+    del t_df[base_method]
+    del m_df[base_method]
+    cols = [x for x in cols if x != base_method]
+
+    # compute mean/s.d. over datasets
+    t_mean, t_sd = np.mean(t_df[cols].values, axis=0), np.std(t_df[cols].values, axis=0)
+    m_mean, m_sd = np.mean(m_df[cols].values, axis=0), np.std(m_df[cols].values, axis=0)
+
+    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
+
+    ax = axs[0]
+    ax.bar(cols, t_mean)
+    ax.set_ylabel('Speed relative to Leaf Sim.')
+    ax.set_yscale('log')
+    ax.set_ylim(1, None)
+    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
+
+    ax = axs[1]
+    ax.bar(cols, m_mean)
+    ax.set_ylabel('Memory relative to Leaf Sim.')
+    ax.set_yscale('log')
+    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'resources.png'), bbox_inches='tight')
+    plt.show()
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
 
 def main(args):
 
-    out_dir = os.path.join(args.out_dir,
-                           args.tree_type,
-                           'summary')
+    if len(args.tree_type_list) == 1:
+        out_dir = os.path.join(args.out_dir,
+                               args.tree_type_list[0],
+                               'summary')
+
+    else:
+        out_dir = os.path.join(args.out_dir,
+                               'summary')
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)

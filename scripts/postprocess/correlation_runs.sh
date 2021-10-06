@@ -1,7 +1,8 @@
 #!/bin/bash
 
-tree_type='xgb'
-dataset_list=('adult' 'bank_marketing', 'bean' 'compas' 'concrete'
+tree_type=$1
+
+dataset_list=('adult' 'bank_marketing' 'bean' 'compas' 'concrete'
               'credit_card' 'diabetes' 'energy' 'flight_delays'
               'german_credit' 'htru2' 'life' 'naval' 'no_show'
               'obesity' 'power' 'protein' 'spambase' 'surgical'

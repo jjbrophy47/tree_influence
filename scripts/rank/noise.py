@@ -117,6 +117,18 @@ def process(args, exp_hash, out_dir, logger):
     df_auc = get_mean_rank_df(df_auc_all, skip_cols=skip_cols, sort='ascending')
     df_li_auc = get_mean_rank_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
 
+    logger.info(f'\nFrac. detected:\n{df_fd}')
+    logger.info(f'\nFrac. detected (li):\n{df_li_fd}')
+
+    logger.info(f'\nLoss:\n{df_loss}')
+    logger.info(f'\nLoss (li):\n{df_li_loss}')
+
+    logger.info(f'\nAcc.:\n{df_acc}')
+    logger.info(f'\nAcc. (li):\n{df_li_acc}')
+
+    logger.info(f'\nAUC:\n{df_auc}')
+    logger.info(f'\nAUC (li):\n{df_li_auc}')
+
     # plot
     n_fd_datasets = len(df_fd_all['dataset'].unique())
     n_li_fd_datasets = len(df_li_fd_all['dataset'].unique())

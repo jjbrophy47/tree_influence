@@ -29,8 +29,8 @@ sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'l
 sbatch -a 7,9,14,22 -c 28 -t 4320 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # sgb only
-sbatch -a 7,15 -c 28 -t 2000 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 9    -c 28 -t 7200 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 7,15 -c 28 -t 2000  -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 9    -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # cb only
 sbatch -a 7,11,13-15,18-19 -c 20 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'

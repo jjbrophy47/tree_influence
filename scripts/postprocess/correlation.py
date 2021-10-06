@@ -181,7 +181,7 @@ def experiment(args, logger, in_dir_list, out_dir):
 def main(args):
 
     # experiment hash string
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'n_ckpt': args.n_ckpt}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     in_dir_list = []
@@ -191,6 +191,7 @@ def main(args):
             continue
 
         _, method_hash = exp_util.explainer_params_to_dict(method, vars(args))
+
         in_dir = os.path.join(args.in_dir,
                               args.dataset,
                               args.tree_type,
@@ -200,6 +201,9 @@ def main(args):
 
     # create output dir
     out_dir = os.path.join(args.out_dir, args.tree_type, args.dataset)
+
+    if args.custom_dir is not None:
+        out_dir = os.path.join(out_dir, args.custom_dir)
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)

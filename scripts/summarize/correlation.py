@@ -27,60 +27,59 @@ from experiments import util as exp_util
 from config import summ_args
 
 
-def experiment(args, logger, in_dir, out_dir):
+def experiment(args, logger, out_dir):
     begin = time.time()
 
     p_mean_list = []
     s_mean_list = []
     j_mean_list = []
 
-    p_std_list = []
-    s_std_list = []
-    j_std_list = []
-
     idx_dict = None
 
     # get correlation results
     n_finish = 0
 
-    logger.info('')
-    for dataset in args.dataset_list:
-        logger.info(f'{dataset}')
+    for tree_type in args.tree_type_list:
+        logger.info(f'\n{tree_type}')
 
-        fp = os.path.join(in_dir, dataset, 'results.npy')
+        for dataset in args.dataset_list:
+            logger.info(f'{dataset}')
 
-        if not os.path.exists(fp):
-            logger.info(f'skipping {dataset}...')
-            continue
+            res_dir = os.path.join(args.in_dir, tree_type, dataset)
+            if args.in_sub_dir is not None:
+                res_dir = os.path.join(res_dir, args.in_sub_dir)
 
-        res = np.load(fp, allow_pickle=True)[()]
+            fp = os.path.join(res_dir, 'results.npy')
 
-        p_mean_list.append(res['p_mean_mat'])
-        s_mean_list.append(res['s_mean_mat'])
-        j_mean_list.append(res['j_mean_mat'])
+            if not os.path.exists(fp):
+                logger.info(f'skipping {fp}...')
+                continue
 
-        p_std_list.append(res['p_std_mat'])
-        s_std_list.append(res['s_std_mat'])
-        j_std_list.append(res['j_std_mat'])
+            res = np.load(fp, allow_pickle=True)[()]
 
-        # sanity check
-        if idx_dict is None:
-            idx_dict = res['idx_dict']
+            p_mean_list.append(res['p_mean_mat'])
+            s_mean_list.append(res['s_mean_mat'])
+            j_mean_list.append(res['j_mean_mat'])
 
-        else:
-            assert idx_dict == res['idx_dict']
+            # sanity check
+            if idx_dict is None:
+                idx_dict = res['idx_dict']
+
+            else:
+                assert idx_dict == res['idx_dict']
 
     inv_idx_dict = {v: k for k, v in idx_dict.items()}
-    names = [inv_idx_dict[i] for i in range(len(inv_idx_dict))]
+    idxs = np.array([k for k, v in inv_idx_dict.items() if v in args.method_list], dtype=np.int32)
+    names = [inv_idx_dict[i] for i in idxs]
     n_method = len(names)
 
     p_mean = np.dstack(p_mean_list).mean(axis=2)
     s_mean = np.dstack(s_mean_list).mean(axis=2)
     j_mean = np.dstack(j_mean_list).mean(axis=2)
 
-    p_std = np.dstack(p_std_list).mean(axis=2)
-    s_std = np.dstack(s_std_list).mean(axis=2)
-    j_std = np.dstack(j_std_list).mean(axis=2)
+    p_mean = p_mean[np.ix_(idxs, idxs)]
+    s_mean = s_mean[np.ix_(idxs, idxs)]
+    j_mean = j_mean[np.ix_(idxs, idxs)]
 
     p_mean_df = pd.DataFrame(p_mean, columns=names, index=names)
     s_mean_df = pd.DataFrame(s_mean, columns=names, index=names)
@@ -97,25 +96,26 @@ def experiment(args, logger, in_dir, out_dir):
     j_mean_df.to_csv(os.path.join(out_dir, 'jaccard_10.csv'))
 
     # plot correlations
-    mask = None
+    # mask = None
+    mask = np.triu(np.ones_like(p_mean, dtype=bool))  # uncomment for mask
 
     fig, ax = plt.subplots()
     sns.heatmap(p_mean, xticklabels=names, yticklabels=names, ax=ax,
-                cmap='YlGnBu', mask=mask, fmt='.2f', cbar=True, annot=True)
+                cmap='Greens', mask=mask, fmt='.2f', cbar=True, annot=True)
     ax.set_title(f'Pearson')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
     plt.savefig(os.path.join(out_dir, f'pearson.png'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
     sns.heatmap(s_mean, xticklabels=names, yticklabels=names, ax=ax,
-                cmap='YlGnBu', mask=mask, fmt='.2f', annot=True)
+                cmap='Purples', mask=mask, fmt='.2f', annot=True)
     ax.set_title('Spearman')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
     plt.savefig(os.path.join(out_dir, f'spearman.png'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
     sns.heatmap(j_mean, xticklabels=names, yticklabels=names, ax=ax,
-                cmap='YlGnBu', mask=mask, fmt='.2f', annot=True)
+                cmap='Blues', mask=mask, fmt='.2f', annot=True)
     ax.set_title('Jaccard (first 10% of sorted)')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
     plt.savefig(os.path.join(out_dir, f'jaccard_10.png'), bbox_inches='tight')
@@ -125,17 +125,19 @@ def experiment(args, logger, in_dir, out_dir):
 
 def main(args):
 
-    # create input dir
-    in_dir = os.path.join(args.in_dir,
-                          args.tree_type)
-
     # create output dir
-    out_dir = os.path.join(args.out_dir,
-                           args.tree_type,
-                           'summary')
+    if len(args.tree_type_list) > 1:
+        out_dir = os.path.join(args.out_dir,
+                               'summary')
 
-    if args.sub_dir is not None:
-        out_dir = os.path.join(out_dir, args.sub_dir)
+    else:
+        assert len(args.tree_type_list) == 1
+        out_dir = os.path.join(args.out_dir,
+                               args.tree_type_list[0],
+                               'summary')
+
+    if args.out_sub_dir is not None:
+        out_dir = os.path.join(out_dir, args.out_sub_dir)
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)
@@ -144,7 +146,7 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    experiment(args, logger, in_dir, out_dir)
+    experiment(args, logger, out_dir)
 
 
 if __name__ == '__main__':
