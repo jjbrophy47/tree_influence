@@ -8,6 +8,7 @@ conda activate jbrophy-20210713
 
 tree_type=$1
 method=$2
+step_size=$3
 
 . jobs/config.sh
 
@@ -17,3 +18,4 @@ python3 scripts/experiments/counterfactual.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
+  --step_size $step_size \
