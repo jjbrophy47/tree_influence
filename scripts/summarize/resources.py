@@ -126,7 +126,7 @@ def process(args, out_dir, logger):
     m_df = m_df[cols].copy()
 
     # compute relative speedups
-    base_method = 'Leaf Sim.'  # fastest method
+    base_method = 'TreeSim'  # fastest method
 
     t_df.loc[:, cols] = t_df.loc[:, cols].div(t_df[base_method], axis=0)
     m_df.loc[:, cols] = m_df.loc[:, cols].div(m_df[base_method], axis=0)
@@ -145,23 +145,25 @@ def process(args, out_dir, logger):
     t_mean, t_sd = np.mean(t_df[cols].values, axis=0), np.std(t_df[cols].values, axis=0)
     m_mean, m_sd = np.mean(m_df[cols].values, axis=0), np.std(m_df[cols].values, axis=0)
 
-    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
+    # plot
+    pp_util.plot_settings(fontsize=18)
+    width = 10
+    height = pp_util.get_height(width * 0.75)
 
-    ax = axs[0]
-    ax.bar(cols, t_mean)
-    ax.set_ylabel('Speed relative to Leaf Sim.')
+    fig, ax = plt.subplots(figsize=(width, height))
+
+    # alternate above and below for labels
+    labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(cols)]
+
+    ax.bar(labels, t_mean, color='mediumseagreen')
+    ax.set_ylabel('Slowdown relative to TreeSim')
     ax.set_yscale('log')
     ax.set_ylim(1, None)
-    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
-
-    ax = axs[1]
-    ax.bar(cols, m_mean)
-    ax.set_ylabel('Memory relative to Leaf Sim.')
-    ax.set_yscale('log')
-    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
+    ax.grid(True, which='major', axis='y')
+    ax.set_axisbelow(True)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'resources.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, 'resources.pdf'), bbox_inches='tight')
     plt.show()
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')

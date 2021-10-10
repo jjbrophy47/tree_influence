@@ -33,7 +33,7 @@ def add_noise(X, y, objective, rng, frac=0.1):
     # select examples to add noise to
     target_idxs = rng.choice(np.arange(len(y)), size=int(len(y) * frac))
 
-    # add gaussian noise to selected targets
+    # flip selected targets
     if objective == 'regression':
         new_y[target_idxs] = -y[target_idxs]
 

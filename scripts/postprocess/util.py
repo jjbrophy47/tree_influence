@@ -3,6 +3,7 @@ import sys
 from itertools import product
 
 import numpy as np
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -108,7 +109,7 @@ def get_plot_dicts():
     color['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'magenta'
     color['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'magenta'
     color['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
-    color['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'red'
+    color['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'purple'
 
     line = {}
     line['random_'] = '-'
@@ -132,17 +133,66 @@ def get_plot_dicts():
     label['minority_'] = 'Minority'
     label['loss_'] = 'Loss'
     label['boostin_'] = 'BoostIn'
-    label['leaf_infSP_'] = 'Leaf Inf. (SP)'
-    label['leaf_sim_'] = 'Leaf Sim.'
+    label['leaf_infSP_'] = 'LeafInfSP'
+    label['leaf_sim_'] = 'TreeSim'
     label['loo_'] = 'LOO'
     label['trex_248fba74c1d2d9c0f9d547bb84083c21'] = 'TREX'
     label['input_sim_1edfa114070a90bb762993ab47712d68'] = 'Input Sim.'
     label['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = 'Data Shap'
     label['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'SubSample'
-    label['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = 'Leaf Inf.'
-    label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'Leaf Refit'
+    label['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafInfluence'
+    label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafRefit'
 
     return color, line, label
+
+
+def plot_settings(family='serif', fontsize=11,
+                  markersize=5, linewidth=None):
+    """
+    Matplotlib settings.
+    """
+    plt.rc('font', family=family)
+    plt.rc('xtick', labelsize=fontsize)
+    plt.rc('ytick', labelsize=fontsize)
+    plt.rc('axes', labelsize=fontsize)
+    plt.rc('axes', titlesize=fontsize)
+    plt.rc('legend', fontsize=fontsize)
+    plt.rc('legend', title_fontsize=fontsize)
+    plt.rc('lines', markersize=markersize)
+    if linewidth is not None:
+        plt.rc('lines', linewidth=linewidth)
+
+
+def get_height(width, subplots=(1, 1)):
+    """
+    Set figure dimensions to avoid scaling in LaTeX.
+    """
+    golden_ratio = 1.618
+    height = (width / golden_ratio) * (subplots[0] / subplots[1])
+    return height
+
+
+def get_method_color(method):
+    """
+    Return color given the method name.
+    """
+    color = {}
+    color['Random'] = 'blue'
+    color['Target'] = 'cyan'
+    color['Minority'] = 'cyan'
+    color['Loss'] = 'yellow'
+    color['BoostIn'] = 'orange'
+    color['LeafInfSP'] = 'brown'
+    color['TREX'] = 'green'
+    color['TreeSim'] = 'mediumseagreen'
+    color['InputSim'] = 'gray'
+    color['LOO'] = 'red'
+    color['SubSample'] = 'rebeccapurple'
+    color['LeafInfluence'] = 'brown'
+    color['LeafRefit'] = 'gray'
+
+    assert method in color, f'{method} not in color dict'
+    return color[method]
 
 
 # private

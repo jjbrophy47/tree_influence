@@ -36,6 +36,16 @@ def experiment(args, logger, out_dir):
 
     idx_dict = None
 
+    # hardcode classification and regression datasets
+    if args.out_sub_dir == 'classification':
+        args.dataset_list = ['adult', 'bank_marketing', 'bean', 'compas', 'credit_card',
+                             'diabetes', 'flight_delays', 'german_credit', 'htru2', 'no_show',
+                             'spambase', 'surgical', 'twitter', 'vaccine']
+
+    elif args.out_sub_dir == 'regression':
+        args.dataset_list = ['concrete', 'energy', 'life', 'naval', 'obesity',
+                             'power', 'protein', 'wine']
+
     # get correlation results
     n_finish = 0
 
