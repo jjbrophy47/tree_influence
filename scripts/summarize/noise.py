@@ -98,25 +98,26 @@ def process(args, exp_hash, out_dir, logger):
 
     # compute ranks
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
-    remove_cols = ['Leaf Inf._test_sum', 'Leaf Refit_test_sum']
+    remove_cols = ['LeafInfluence_test_sum', 'LeafRefit_test_sum']
 
     rank_df_fd = get_rank_df(fd_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df_fd = get_rank_df(fd_df[~pd.isna(fd_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
+    rank_li_df_fd = get_rank_df(fd_df[~pd.isna(fd_df['LeafInfluence_test_sum'])], skip_cols=skip_cols)
     logger.info(f'\nFrac. detected ranking:\n{rank_df_fd}')
     logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
 
     rank_df_loss = get_rank_df(loss_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
-    rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['Leaf Inf._test_sum'])], skip_cols=skip_cols, ascending=True)
+    rank_li_df_loss = get_rank_df(loss_df[~pd.isna(loss_df['LeafInfluence_test_sum'])], skip_cols=skip_cols,
+                                  ascending=True)
     logger.info(f'\nLoss ranking:\n{rank_df_loss}')
     logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df_loss}')
 
     rank_df_acc = get_rank_df(acc_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df_acc = get_rank_df(acc_df[~pd.isna(acc_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
+    rank_li_df_acc = get_rank_df(acc_df[~pd.isna(acc_df['LeafInfluence_test_sum'])], skip_cols=skip_cols)
     logger.info(f'\nAcc. ranking:\n{rank_df_acc}')
     logger.info(f'\nAcc. ranking (w/ leafinf):\n{rank_li_df_acc}')
 
     rank_df_auc = get_rank_df(auc_df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df_auc = get_rank_df(auc_df[~pd.isna(auc_df['Leaf Inf._test_sum'])], skip_cols=skip_cols)
+    rank_li_df_auc = get_rank_df(auc_df[~pd.isna(auc_df['LeafInfluence_test_sum'])], skip_cols=skip_cols)
     logger.info(f'\nAUC ranking:\n{rank_df_auc}')
     logger.info(f'\nAUC ranking (w/ leafinf):\n{rank_li_df_auc}')
 
