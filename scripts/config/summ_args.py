@@ -125,5 +125,5 @@ def get_resources_args():
     cmd.add('--in_dir', type=str, default='temp_resources/')
     cmd.add('--out_dir', type=str, default='output/plot/resources/')
     cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb'])
+    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb', 'xgb', 'sgb', 'cb'])
     return cmd

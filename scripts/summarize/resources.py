@@ -155,12 +155,13 @@ def process(args, out_dir, logger):
     # alternate above and below for labels
     labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(cols)]
 
-    ax.bar(labels, t_mean, color='mediumseagreen')
+    ax.bar(labels, t_mean, color='mediumseagreen', label='Subgroup A')
     ax.set_ylabel('Slowdown relative to TreeSim')
     ax.set_yscale('log')
     ax.set_ylim(1, None)
     ax.grid(True, which='major', axis='y')
     ax.set_axisbelow(True)
+    ax.legend(framealpha=1.0)
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'resources.pdf'), bbox_inches='tight')
@@ -171,14 +172,10 @@ def process(args, out_dir, logger):
 
 def main(args):
 
-    if len(args.tree_type_list) == 1:
-        out_dir = os.path.join(args.out_dir,
-                               args.tree_type_list[0],
-                               'summary')
-
-    else:
-        out_dir = os.path.join(args.out_dir,
-                               'summary')
+    # create output directory
+    out_dir = os.path.join(args.out_dir,
+                           'summary',
+                           '+'.join(args.tree_type_list))
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)

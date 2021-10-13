@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tree_type_list=('lgb' 'xgb' 'sgb')
+tree_type_list=('lgb' 'xgb' 'sgb' 'cb')
 ckpt_list=(1 2 3 4 5)
 
 for tree_type in ${tree_type_list[@]}; do

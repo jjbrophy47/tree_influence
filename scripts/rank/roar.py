@@ -113,28 +113,59 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nLoss:\n{df}')
     logger.info(f'\nLoss (li):\n{df_li}')
 
+    # # combine dataframes
+    # index = df_li.index
+    # df = df_li.reset_index().merge(df.reset_index(), on='index', how='left')
+    # means_df = df[['index', 'mean_x', 'mean_y']].copy()
+    # sems_df = df[['index', 'sem_x', 'sem_y']].copy()
+
+    # # rename and clean up
+    # means_df.index = means_df['index']
+    # sems_df.index = means_df['index']
+    # del means_df['index']
+    # del sems_df['index']
+    # means_df.columns = ['Subgroup A', 'All datasets']
+    # sems_df.columns = ['Subgroup A', 'All datasets']
+
+    # print(means_df)
+    # print(sems_df)
+
+    # # plot
+    # fig, ax = plt.subplots(figsize=(4, 4))
+    # means_df.plot.bar(yerr=sems_df, ax=ax, rot=45,
+    #                   title=f'Loss ({len(means_df)} datasets)', capsize=3,
+    #                   ylabel='Avg. rank', xlabel='Method')
+
     # plot
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())
 
-    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
+    df = df.rename(columns={'mean': 'All datasets'}, index={'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.'})
+    df_li = df_li.rename(columns={'mean': 'Subgroup A'}, index={'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.'})
+
+    labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
+    labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
+
+    pp_util.plot_settings(fontsize=28)
+    width = 22
+    height = pp_util.get_height(width, subplots=(1, 2))
+
+    fig, axs = plt.subplots(1, 2, figsize=(width, height), gridspec_kw={'width_ratios': [6, 8]})
 
     ax = axs[0]
-    df.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
-            title=f'Loss ({n_datasets} datasets)', capsize=3,
-            ylabel='Avg. rank', xlabel='Method', legend=None)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    df.plot(kind='bar', y='All datasets', yerr='sem', ax=ax, title=None, capsize=3,
+            ylabel='Average rank', xlabel=None, legend=True, color='blueviolet')
+    ax.set_xticklabels(labels, rotation=0)
 
     ax = axs[1]
-    df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45,
-               title=f'w/ LeafInf ({n_li_datasets} datasets)', capsize=3,
-               ylabel='Avg. rank', xlabel='Method', legend=None)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    df_li.plot(kind='bar', y='Subgroup A', yerr='sem', ax=ax, title=None, capsize=3,
+               ylabel=None, xlabel=None, legend=True, color='mediumseagreen')
+    ax.set_xticklabels(labels_li, rotation=0)
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
     plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'roar.pdf'), bbox_inches='tight')
     plt.show()
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
@@ -148,18 +179,11 @@ def main(args):
     exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
-    if len(args.tree_type) == 1:
-        out_dir = os.path.join(args.in_dir,
-                               args.tree_type[0],
-                               f'exp_{exp_hash}',
-                               'summary',
-                               'rank')
-
-    else:
-        assert len(args.tree_type) > 1
-        out_dir = os.path.join(args.in_dir,
-                               'rank',
-                               f'exp_{exp_hash}')
+    assert len(args.tree_type) > 0
+    out_dir = os.path.join(args.in_dir,
+                           'rank',
+                           f'exp_{exp_hash}',
+                           f'+'.join(args.tree_type))
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)

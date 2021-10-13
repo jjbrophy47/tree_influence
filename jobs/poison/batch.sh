@@ -51,4 +51,4 @@ sbatch -a 2,20                   -c 28 -t 10080 -p 'long' -o ${o}${t}'_loo-%a.ou
 sbatch -a 1-3,5,7-11,13-15,18-19 -c 20 -t 2880 -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
 sbatch -a 14                     -c 28 -t 4320 -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
 sbatch -a 3                      -c 28 -t 5760 -p 'long' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'
-sbatch -a 11                     -c 28 -t 4320 -p 'long' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit'
+sbatch -a 6                      -c 28 -t 2880 -p 'long' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit'

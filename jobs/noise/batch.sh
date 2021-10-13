@@ -61,29 +61,33 @@ done
 
 # cb only
 for seed in ${seed_list[@]}; do
-    sbatch -a 1-3,5,7-11,13,15,17-21 -c 20 -t 2880  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample' 'test_sum'  $nf $seed
-    sbatch -a 12,16                  -c 28 -t 2880  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample' 'test_sum'  $nf $seed
-    sbatch -a 14,22                  -c 28 -t 5760  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample' 'test_sum'  $nf $seed
-    sbatch -a 3-6,8,10-13,16,18-21 -c 28 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit' 'test_sum' $nf $seed
-    sbatch -a 3-6,8,10-13,16,18-21 -c 28 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out' $run $t 'leaf_inf' 'test_sum' $nf $seed
+    sbatch -a 1-3,5,7-11,13,15,17-21 -c 20 -t 2880  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run2 $t 'subsample' 'test_sum'  $nf $seed
+    sbatch -a 12,16                  -c 28 -t 2880  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run2 $t 'subsample' 'test_sum'  $nf $seed
+    sbatch -a 14,22                  -c 28 -t 5760  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run2 $t 'subsample' 'test_sum'  $nf $seed
+    sbatch -a 3-6,8,10-13,16,18-21 -c 28 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run2 $t 'leaf_refit' 'test_sum' $nf $seed
+    sbatch -a 3-6,8,10-13,16,18-21 -c 28 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out' $run2 $t 'leaf_inf' 'test_sum' $nf $seed
+    sbatch -a 3-6,8,10,12,18,21 -c 28 -t 2880  -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
+    sbatch -a 13-16,19          -c 28 -t 4320  -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
+    sbatch -a 2,11,20           -c 28 -t 7200  -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
+    sbatch -a 1,17              -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
 done
 
 # scratch pad
 for seed in ${seed_list[@]}; do
-    sbatch -a 1-3,5,7-11,13,15,18,19 -c 20 -t 2880  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample' 'test_sum'  $nf $seed
-    sbatch -a 12,16                  -c 28 -t 2880  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample' 'test_sum'  $nf $seed
-    sbatch -a 14                     -c 28 -t 5760  -p 'long' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample' 'test_sum'  $nf $seed
+    sbatch -a 3-6,8,10,12,18,21 -c 28 -t 2880  -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
+    sbatch -a 13-16,19          -c 28 -t 4320  -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
+    sbatch -a 2,11,20           -c 28 -t 7200  -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
+    sbatch -a 1,17              -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out' $run2 $t 'loo' $ts $nf $seed
 done
 
-sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'     'test_sum' $nf
-sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'     'test_sum' $nf
+sbatch -a 3  -c 3  -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'     $ts $nf
+sbatch -a 9  -c 10 -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t 'leaf_infSP' $ts $nf
 
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_loss-%a.out'       $run $t 'loss'       $sl $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'     $ts $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'     $ts $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_input_sim-%a.out'  $run $t 'input_sim'  $ts $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_leaf_sim-%a.out'   $run $t 'leaf_sim'   $ts $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_boostin-%a.out'    $run $t 'boostin'    $ts $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t 'leaf_infSP' $ts $nf
-sbatch -a 5,8,12,13,14-17,21    -c 15 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'       $ts $nf
-sbatch -a 5,8,12,13,15-17,21-22 -c 15 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'  $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_loss-%a.out'       $run $t 'loss'       $sl $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $t 'random'     $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $t 'target'     $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_input_sim-%a.out'  $run $t 'input_sim'  $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_leaf_sim-%a.out'   $run $t 'leaf_sim'   $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_boostin-%a.out'    $run $t 'boostin'    $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $t 'leaf_infSP' $ts $nf
+sbatch -a 13 -c 5 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'       $ts $nf
