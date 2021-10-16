@@ -8,6 +8,7 @@ import joblib
 import argparse
 import resource
 from datetime import datetime
+from datetime import timedelta
 
 import numpy as np
 from sklearn.base import clone
@@ -35,6 +36,7 @@ def remove_and_reinfluence(objective, tree, method, params,
     # result container
     result = {}
     result['loss'] = np.full(total_n_remove + 1, np.nan, dtype=np.float32)
+    result['remove_frac'] = np.full(total_n_remove + 1, np.nan, dtype=np.float32)
 
     # trackers
     new_X_train = X_train.copy()
@@ -42,8 +44,9 @@ def remove_and_reinfluence(objective, tree, method, params,
 
     # initial loss
     new_tree = clone(tree).fit(new_X_train, new_y_train)
-    res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.2f}%')
+    res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=f'Removal {0:>5}: {0:>5.2f}%')
     result['loss'][0] = res['loss']
+    result['remove_frac'][0] = 0
 
     # initial ranking
     explainer = intent.TreeExplainer(method, params, logger).fit(new_tree, new_X_train, new_y_train)
@@ -83,9 +86,10 @@ def remove_and_reinfluence(objective, tree, method, params,
         else:
             new_tree = clone(tree).fit(new_X_train, new_y_train)
 
-            prefix = f'{n_remove:>5}: {n_remove / X_train.shape[0] * 100:>5.2f}%'
+            prefix = f'Removal {n_remove:>5}: {n_remove / X_train.shape[0] * 100:>5.2f}%'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
             result['loss'][n_remove] = res['loss']
+            result['remove_frac'][n_remove] = n_remove / X_train.shape[0]
 
     return result
 
@@ -107,64 +111,67 @@ def experiment(args, logger, params, out_dir):
     hp = util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
     tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
     tree.set_params(**hp)
+
     start = time.time()
     tree = tree.fit(X_train, y_train)
-    print(time.time() - start)
+    train_time = time.time() - start
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
-    exit(0)
+
+    # shorten remove frac.
+    if args.strategy == 'reestimate' and args.n_early_stop > 0:
+        args.remove_frac = args.n_early_stop / X_train.shape[0]
+        logger.info(f'\nEarly stop active: {args.n_early_stop:,} (remove {args.remove_frac:.3f}%)')
+
+    # estimate experiment time for reestimate strategy
+    if args.strategy == 'reestimate' and args.method in ['loo', 'leaf_refit']:
+        n_jobs = joblib.cpu_count()
+
+        n_remove = int(len(X_train) * args.remove_frac)  # per test
+        n_retrains = len(X_train) * n_remove  # per test
+        n_sec = train_time * n_retrains  # per test
+
+        logger.info('\nLOO reestimation time estimates:')
+        logger.info(f'\tTime to train 1 model: {train_time:.3f}s')
+
+        logger.info(f'\n\tNo. remove (per test): {n_remove:,}')
+        logger.info(f'\tNo. retrains (per test): {n_retrains:,}')
+        logger.info(f'\tTime (per test): {timedelta(seconds=n_sec)}')
+        logger.info(f'\t\tWith {n_jobs:,} CPUs: {timedelta(seconds=n_sec / n_jobs)}s')
+
+        logger.info(f'\n\tNo. retrains (all): {n_retrains * args.n_test:,}')
+        logger.info(f'\tTime (all): {timedelta(seconds=n_sec * args.n_test)}')
+        logger.info(f'\t\tWith {n_jobs:,} CPUs: {timedelta(seconds=n_sec * args.n_test / n_jobs)}s')
 
     # randomly select test instances to compute influence values for
     avail_idxs = np.arange(X_test.shape[0])
     n_test = min(args.n_test, len(avail_idxs))
     test_idxs = select_elements(avail_idxs, rng, n=n_test)
 
-    # get no. jobs to run in parallel
-    if args.n_jobs == -1:
-        n_jobs = joblib.cpu_count()
+    # evaluate each test example
+    res_list = []
 
-    else:
-        assert args.n_jobs >= 1
-        n_jobs = min(args.n_jobs, joblib.cpu_count())
+    # TODO: PARALELLIZE
+    for i, test_idx in enumerate(test_idxs):
+        logger.info(f'\n[Test {i + 1:,}] index {test_idx}')
+        res = remove_and_reinfluence(objective, tree, args.method, params,
+                                     X_train, y_train, X_test[[test_idx]], y_test[[test_idx]],
+                                     args.remove_frac, args.strategy, logger)
+        res_list.append(res)
 
-    logger.info(f'[INFO] no. jobs: {n_jobs:,}')
-    start = time.time()
+        cum_time = time.time() - start
+        logger.info(f'[INFO] test instances finished: {i + 1:,} / {test_idxs.shape[0]:,}'
+                    f', cum. time: {cum_time:.3f}s')
 
-    with joblib.Parallel(n_jobs=n_jobs) as parallel:
-
-        n_finish = 0
-        n_remain = len(test_idxs)
-
-        res_list = []
-
-        while n_remain > 0:
-            n = min(min(20, n_jobs), n_remain)
-
-            results = parallel(joblib.delayed(remove_and_reinfluence)
-                                             (objective, tree, args.method, params,
-                                              X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.remove_frac, args.strategy, logger)
-                                              for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
-
-            # synchronization barrier
-            res_list += results
-
-            n_finish += n
-            n_remain -= n
-
-            cum_time = time.time() - start
-            logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
-                        f', cum. time: {cum_time:.3f}s')
-
-        # combine results from each test example
-        result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
+    # combine results from each test example
+    result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
 
     # save results
-    result['remove_frac'] = np.linspace(0, args.remove_frac, round(args.remove_frac * X_train.shape[0]) + 1)
+    result['remove_frac'] = res_list[0]['remove_frac']
     result['test_idxs'] = test_idxs
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
-    result['n_jobs'] = n_jobs
+    result['n_jobs'] = args.n_jobs
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))
     np.save(os.path.join(out_dir, 'results.npy'), result)
