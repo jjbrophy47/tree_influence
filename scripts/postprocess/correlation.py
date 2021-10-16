@@ -104,7 +104,11 @@ def experiment(args, logger, in_dir_list, out_dir):
     n_finish = 0
 
     for i, (method1, in_dir1) in enumerate(in_dir_list):
-        inf_res1 = np.load(os.path.join(in_dir1, 'results.npy'), allow_pickle=True)[()]
+
+        try:
+            inf_res1 = np.load(os.path.join(in_dir1, 'results.npy'), allow_pickle=True)[()]
+        except:
+            inf_res1 = None
 
         for j, (method2, in_dir2) in enumerate(in_dir_list):
 
@@ -113,9 +117,17 @@ def experiment(args, logger, in_dir_list, out_dir):
                 logger.info(f'no. finish: {n_finish:>10,} / {n_method ** 2}, cum. time: {time.time() - begin:.3f}s')
                 continue
 
-            inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
-            mean_p, std_p, mean_s, std_s, mean_j, std_j = get_correlation(inf_res1['influence'],
-                                                                          inf_res2['influence'], logger=logger)
+            try:
+                inf_res2 = np.load(os.path.join(in_dir2, 'results.npy'), allow_pickle=True)[()]
+                mean_p, std_p, mean_s, std_s, mean_j, std_j = get_correlation(inf_res1['influence'],
+                                                                              inf_res2['influence'], logger=logger)
+
+            except:
+                logger.info(f'failed to read {method2} or {method1}')
+                mean_p, std_p, mean_s, std_s, mean_j, std_j = 0, 0, 0, 0, 0, 0
+
+            if inf_res1 is None:
+                mean_p, std_p, mean_s, std_s, mean_j, std_j = 0, 0, 0, 0, 0, 0
 
             idx1 = idx_dict[method1]
             idx2 = idx_dict[method2]
@@ -131,7 +143,8 @@ def experiment(args, logger, in_dir_list, out_dir):
             n_finish += 1
             logger.info(f'no. finish: {n_finish:>10,} / {n_method ** 2}, cum. time: {time.time() - begin:.3f}s')
 
-            n_test = inf_res1['influence'].shape[1]
+            if inf_res1 is not None:
+                n_test = inf_res1['influence'].shape[1]
 
     logger.info(f'\ntotal time: {time.time() - begin:.3f}s')
 

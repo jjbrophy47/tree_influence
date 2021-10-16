@@ -96,6 +96,12 @@ def process(args, out_dir, logger):
     t_df = pd.DataFrame(time_rows)
     m_df = pd.DataFrame(mem_rows)
 
+    # use time results if already availabled
+    fp = os.path.join(out_dir, 'time.csv')
+    if os.path.exists(fp) and args.use_existing:
+        logger.info('\nUsing saved time.csv...')
+        t_df = pd.read_csv(fp)
+
     logger.info(f'\nTime results:\n{t_df}')
     logger.info(f'\nMemory results:\n{m_df}')
     logger.info(f'\nSaving results to {out_dir}...')

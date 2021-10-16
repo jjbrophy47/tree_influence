@@ -171,6 +171,7 @@ def _run_iteration(model, X_train, y_train, X_test, y_test, loss_fn, objective, 
     """
     rng = np.random.default_rng(seed)
 
+    start = time.time()
     idxs = rng.choice(X_train.shape[0], size=int(X_train.shape[0] * sub_frac), replace=False)
     new_X_train = X_train[idxs].copy()
     new_y_train = y_train[idxs].copy()

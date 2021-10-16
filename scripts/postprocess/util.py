@@ -152,6 +152,7 @@ def plot_settings(family='serif', fontsize=11,
     Matplotlib settings.
     """
     plt.rc('font', family=family)
+    plt.rc('font', size=fontsize)
     plt.rc('xtick', labelsize=fontsize)
     plt.rc('ytick', labelsize=fontsize)
     plt.rc('axes', labelsize=fontsize)

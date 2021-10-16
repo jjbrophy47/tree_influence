@@ -20,7 +20,7 @@ def get_general_args(cmd=None):
                      'diabetes', 'energy', 'flight_delays', 'german_credit', 'htru2', 'life',
                      'naval', 'no_show', 'obesity', 'power', 'protein', 'spambase',
                      'surgical', 'twitter', 'vaccine', 'wine'])
-    cmd.add('--tree_type', type=str, nargs='+', default=['lgb', 'xgb', 'sgb'])
+    cmd.add('--tree_type', type=str, nargs='+', default=['lgb', 'sgb', 'xgb', 'cb'])
     return cmd
 
 

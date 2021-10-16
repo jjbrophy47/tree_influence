@@ -204,18 +204,11 @@ def main(args):
     exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac, 'check_frac': args.check_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
-    if len(args.tree_type) == 1:
-        out_dir = os.path.join(args.in_dir,
-                               args.tree_type[0],
-                               f'exp_{exp_hash}',
-                               'summary',
-                               'rank')
-
-    else:
-        assert len(args.tree_type) > 1
-        out_dir = os.path.join(args.in_dir,
-                               'rank',
-                               f'exp_{exp_hash}')
+    assert len(args.tree_type) > 0
+    out_dir = os.path.join(args.in_dir,
+                           'rank',
+                           f'exp_{exp_hash}',
+                           '+'.join(args.tree_type))
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)

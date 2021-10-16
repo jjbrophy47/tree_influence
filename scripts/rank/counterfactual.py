@@ -21,7 +21,7 @@ sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import rank_args
-from rank.roar import get_mean_rank_df
+from rank.roar import get_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -31,6 +31,8 @@ def process(args, exp_hash, out_dir, logger):
 
     df_list = []
     df_li_list = []
+    df2_list = []
+    df2_li_list = []
 
     for tree_type in args.tree_type:
 
@@ -39,6 +41,7 @@ def process(args, exp_hash, out_dir, logger):
                                   f'exp_{exp_hash}',
                                   'summary')
 
+            # ranks
             fp = os.path.join(in_dir, 'frac_edits_rank.csv')
             fp_li = os.path.join(in_dir, 'frac_edits_rank_li.csv')
             assert os.path.exists(fp), f'{fp} does not exist!'
@@ -47,8 +50,34 @@ def process(args, exp_hash, out_dir, logger):
             df_list.append(pd.read_csv(fp))
             df_li_list.append(pd.read_csv(fp_li))
 
+            # absolute numbers
+            fp2 = os.path.join(in_dir, 'frac_edits.csv')
+            fp2_li = os.path.join(in_dir, 'frac_edits.csv')
+            assert os.path.exists(fp2), f'{fp2} does not exist!'
+            assert os.path.exists(fp2_li), f'{fp2_li} does not exist!'
+
+            df2_list.append(pd.read_csv(fp2))
+            df2_li_list.append(pd.read_csv(fp2_li))
+
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
+
+    df2_all = pd.concat(df2_list)  # percent
+    df2_li_all = pd.concat(df2_li_list)
+
+    # filter datasets
+    li_datasets = df_li_all['dataset'].unique()
+    df2_li_all = df2_li_all[df2_li_all['dataset'].isin(li_datasets)]
+
+    print(df2_li_all)
+
+    # convert frac. to %
+    df2_all = df2_all * 100
+    df2_li_all = df2_li_all * 100
+
+    # fill in missing entries with max. edits
+    df2_all = df2_all.fillna(10)
+    df2_li_all = df2_li_all.fillna(10)
 
     # average ranks among different tree types
     group_cols = ['dataset']
@@ -56,14 +85,25 @@ def process(args, exp_hash, out_dir, logger):
     df_all = df_all.groupby(group_cols).mean().reset_index()
     df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
 
+    df2_all = df2_all.groupby(group_cols).mean().reset_index()
+    df2_li_all = df2_li_all.groupby(group_cols).mean().reset_index()
+
     # compute average rankings
     skip_cols = ['dataset', 'tree_type']
 
-    df = get_mean_rank_df(df_all, skip_cols=skip_cols, sort='ascending')
-    df_li = get_mean_rank_df(df_li_all, skip_cols=skip_cols, sort='ascending')
+    df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
+    df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
 
-    logger.info(f'\nFrac. edits:\n{df}')
-    logger.info(f'\nFrac. edits (li):\n{df_li}')
+    df2 = get_mean_df(df2_all, skip_cols=skip_cols, sort='ascending')
+    df2_li = get_mean_df(df2_li_all, skip_cols=skip_cols, sort='ascending')
+
+    print(df2_all)
+
+    logger.info(f'\nFrac. edits:\n{df2}')
+    logger.info(f'\nFrac. edits ranking:\n{df}')
+
+    logger.info(f'\nFrac. edits (li):\n{df2_li}')
+    logger.info(f'\nFrac. edits ranking (li):\n{df_li}')
 
     # plot
     n_datasets = len(df_all['dataset'].unique())
@@ -100,18 +140,11 @@ def main(args):
     exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': args.step_size}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
-    if len(args.tree_type) == 1:
-        out_dir = os.path.join(args.in_dir,
-                               args.tree_type[0],
-                               f'exp_{exp_hash}',
-                               'summary',
-                               'rank')
-
-    else:
-        assert len(args.tree_type) > 1
-        out_dir = os.path.join(args.in_dir,
-                               'rank',
-                               f'exp_{exp_hash}')
+    assert len(args.tree_type) > 1
+    out_dir = os.path.join(args.in_dir,
+                           'rank',
+                           f'exp_{exp_hash}',
+                           '+'.join(args.tree_type))
 
     # create output directory and clear previous contents
     os.makedirs(out_dir, exist_ok=True)

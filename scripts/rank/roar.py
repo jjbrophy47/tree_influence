@@ -23,9 +23,9 @@ from experiments import util as exp_util
 from config import rank_args
 
 
-def get_mean_rank_df(in_df, skip_cols=[], sort=None):
+def get_mean_df(in_df, skip_cols=[], sort=None):
     """
-    Compute mean rank (with sem) for each method.
+    Compute mean (with sem) for each method.
 
     Input
         df: pd.DataFrame, dataframe with values to compute mean over.

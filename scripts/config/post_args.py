@@ -59,7 +59,7 @@ def get_roar_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, nargs='+', default=['temp_influence/', 'temp_reinfluence/'])
+    cmd.add('--in_dir', type=str, default='temp_influence/')
     cmd.add('--out_dir', type=str, default='output/plot/roar/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])

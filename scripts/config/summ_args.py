@@ -75,7 +75,7 @@ def get_correlation_args():
     cmd.add('--out_sub_dir', type=str, default=None)
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
-    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb'])
+    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb', 'xgb', 'sgb', 'cb'])
     return cmd
 
 
@@ -125,5 +125,6 @@ def get_resources_args():
     cmd.add('--in_dir', type=str, default='temp_resources/')
     cmd.add('--out_dir', type=str, default='output/plot/resources/')
     cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb', 'xgb', 'sgb', 'cb'])
+    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb', 'sgb', 'xgb', 'cb'])
+    cmd.add('--use_existing', type=bool, default=True)
     return cmd

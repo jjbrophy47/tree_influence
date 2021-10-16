@@ -151,4 +151,5 @@ def get_reinfluence_args():
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, default=0.02)
     cmd.add('--strategy', type=str, default='reestimate')
+    cmd.add('--n_early_stop', type=int, default=0)
     return cmd

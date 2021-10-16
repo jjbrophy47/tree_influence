@@ -23,6 +23,7 @@ from scipy.stats import sem
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../')
+from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import summ_args
 
@@ -78,6 +79,10 @@ def experiment(args, logger, out_dir):
             else:
                 assert idx_dict == res['idx_dict']
 
+    label_dict = {'target': 'Target', 'leaf_sim': 'TreeSim', 'boostin': 'BoostIn',
+                  'trex': 'TREX', 'leaf_infSP': 'LeafInfSP', 'loo': 'LOO',
+                  'subsample': 'SubSample', 'leaf_inf': 'LeafInfluence', 'leaf_refit': 'LeafRefit'}
+
     inv_idx_dict = {v: k for k, v in idx_dict.items()}
     idxs = np.array([k for k, v in inv_idx_dict.items() if v in args.method_list], dtype=np.int32)
     names = [inv_idx_dict[i] for i in idxs]
@@ -106,8 +111,16 @@ def experiment(args, logger, out_dir):
     j_mean_df.to_csv(os.path.join(out_dir, 'jaccard_10.csv'))
 
     # plot correlations
+    cmap = 'Oranges' if args.out_sub_dir == 'li' else 'Blues'
+    fontsize = 15 if args.out_sub_dir == 'li' else 15
+
+    pp_util.plot_settings(fontsize=fontsize)
+
     # mask = None
     mask = np.triu(np.ones_like(p_mean, dtype=bool))  # uncomment for mask
+
+    labels = [label_dict[name] for name in names]
+    labels_x = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(labels)]
 
     fig, ax = plt.subplots()
     sns.heatmap(p_mean, xticklabels=names, yticklabels=names, ax=ax,
@@ -117,11 +130,12 @@ def experiment(args, logger, out_dir):
     plt.savefig(os.path.join(out_dir, f'pearson.png'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
-    sns.heatmap(s_mean, xticklabels=names, yticklabels=names, ax=ax,
-                cmap='Purples', mask=mask, fmt='.2f', annot=True)
-    ax.set_title('Spearman')
+    sns.heatmap(s_mean, xticklabels=labels, yticklabels=labels, ax=ax,
+                cmap=cmap, mask=mask, fmt='.2f', annot=False)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    plt.savefig(os.path.join(out_dir, f'spearman.png'), bbox_inches='tight')
+
+    suffix = '_li' if args.out_sub_dir == 'li' else ''
+    plt.savefig(os.path.join(out_dir, f'spearman{suffix}.pdf'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
     sns.heatmap(j_mean, xticklabels=names, yticklabels=names, ax=ax,
@@ -136,15 +150,10 @@ def experiment(args, logger, out_dir):
 def main(args):
 
     # create output dir
-    if len(args.tree_type_list) > 1:
-        out_dir = os.path.join(args.out_dir,
-                               'summary')
-
-    else:
-        assert len(args.tree_type_list) == 1
-        out_dir = os.path.join(args.out_dir,
-                               args.tree_type_list[0],
-                               'summary')
+    assert len(args.tree_type_list) > 0
+    out_dir = os.path.join(args.out_dir,
+                           'summary',
+                           '+'.join(args.tree_type_list))
 
     if args.out_sub_dir is not None:
         out_dir = os.path.join(out_dir, args.out_sub_dir)

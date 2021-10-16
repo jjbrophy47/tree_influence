@@ -32,19 +32,17 @@ def process(args, out_dir, logger):
     exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
-    for in_dir in args.in_dir:
+    exp_dir = os.path.join(args.in_dir,
+                           args.dataset,
+                           args.tree_type,
+                           f'exp_{exp_hash}')
 
-        exp_dir = os.path.join(in_dir,
-                               args.dataset,
-                               args.tree_type,
-                               f'exp_{exp_hash}')
-
-        res = util.get_results(args, exp_dir, logger)
-        res = util.filter_results(res, args.skip)
-        results += res
+    res = util.get_results(args, exp_dir, logger)
+    res = util.filter_results(res, args.skip)
+    results += res
 
     color, line, label = util.get_plot_dicts()
-    fig, axs = plt.subplots(1, 2, figsize=(9, 4))
+    fig, ax = plt.subplots()
 
     runtime_list = []
     method_list = []
@@ -65,46 +63,33 @@ def process(args, out_dir, logger):
         y_err = sem(res['loss'], axis=0)
         y_err = y_err if args.std_err else None
 
-        ax = axs[0]
         ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
                     linestyle=line[method], alpha=0.75)
         ax.set_xlabel('Train data removed (%)')
-        ax.set_ylabel(f'Avg. example test loss')
+        ax.set_ylabel(f'Average test example loss')
         ax.legend(fontsize=6)
 
         runtime_list.append(res['fit_time'] + res['inf_time'])
         method_list.append(label[method])
 
-    # plot runtimes
-    ax = axs[1]
-    ax.bar(method_list, runtime_list)
-    ax.set_xlabel('Method')
-    ax.set_ylabel(f'Time (s)')
-    ax.set_yscale('log')
-    plt.setp(ax.get_xticklabels(), ha='right', rotation=45)
-
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
-    exp_hash = exp_util.dict_to_hash(exp_dict)
-
-    plt_dir = os.path.join(args.out_dir,
-                           args.tree_type,
-                           f'exp_{exp_hash}')
-    suffix = f'_{n_test}'
-    os.makedirs(plt_dir, exist_ok=True)
-    fp = os.path.join(plt_dir, f'{args.dataset}')
-
     plt.tight_layout()
-    plt.savefig(fp + suffix + '.png', bbox_inches='tight')
-    plt.show()
+    plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
+
+    logger.info(f'\nSaving results to {out_dir}/...')
 
 
 def main(args):
 
-    out_dir = os.path.join(args.out_dir)
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
+    exp_hash = exp_util.dict_to_hash(exp_dict)
+
+    out_dir = os.path.join(args.out_dir, args.tree_type, f'exp_{exp_hash}')
+    log_dir = os.path.join(out_dir, 'logs')
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)
-    logger = exp_util.get_logger(os.path.join(out_dir, 'log.txt'))
+    os.makedirs(log_dir, exist_ok=True)
+    logger = exp_util.get_logger(os.path.join(log_dir, f'{args.dataset}.txt'))
     logger.info(args)
     logger.info(datetime.now())
 

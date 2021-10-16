@@ -60,9 +60,19 @@ def process(args, exp_hash, out_dir, logger):
         rows_acc.append(row_acc)
         rows_auc.append(row_auc)
 
-    df_loss = pd.DataFrame(rows_loss).replace(-1, np.nan)
-    df_acc = pd.DataFrame(rows_acc).replace(-1, np.nan)
-    df_auc = pd.DataFrame(rows_auc).replace(-1, np.nan)
+    df_loss_raw = pd.DataFrame(rows_loss).replace(-1, np.nan)
+    df_acc_raw = pd.DataFrame(rows_acc).replace(-1, np.nan)
+    df_auc_raw = pd.DataFrame(rows_auc).replace(-1, np.nan)
+
+    # drop rows with missing values
+    skip_cols = ['dataset', 'tree_type', 'poison_frac']
+    remove_cols = ['LeafInfluence', 'LeafRefit']
+
+    cols = [x for x in df_loss_raw.columns if x not in skip_cols + remove_cols]
+
+    df_loss = df_loss_raw.dropna(subset=cols)
+    df_acc = df_acc_raw.dropna(subset=cols)
+    df_auc = df_auc_raw.dropna(subset=cols)
 
     logger.info(f'\nLoss:\n{df_loss}')
     logger.info(f'\nAccuracy:\n{df_acc}')
@@ -91,9 +101,9 @@ def process(args, exp_hash, out_dir, logger):
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    df_loss.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
-    df_acc.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
-    df_auc.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
+    df_loss_raw.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
+    df_acc_raw.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
+    df_auc_raw.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
 
     rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
     rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'), index=None)

@@ -9,6 +9,7 @@ conda activate jbrophy-20210713
 tree_type=$1
 method=$2
 strategy=$3
+n_early_stop=$4
 
 . jobs/config.sh
 
@@ -19,3 +20,4 @@ python3 scripts/experiments/reinfluence.py \
   --tree_type $tree_type \
   --method $method \
   --strategy $strategy \
+  --n_early_stop $n_early_stop \
