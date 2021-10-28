@@ -107,8 +107,8 @@ def process(args, exp_hash, out_dir, logger):
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
 
-    df = get_mean_rank_df(df_all, skip_cols=skip_cols, sort='ascending')
-    df_li = get_mean_rank_df(df_li_all, skip_cols=skip_cols, sort='ascending')
+    df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
+    df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
 
     logger.info(f'\nLoss:\n{df}')
     logger.info(f'\nLoss (li):\n{df_li}')
@@ -140,8 +140,21 @@ def process(args, exp_hash, out_dir, logger):
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())
 
-    df = df.rename(columns={'mean': 'All datasets'}, index={'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.'})
-    df_li = df_li.rename(columns={'mean': 'Subgroup A'}, index={'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.'})
+    label_dict = {'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.', 'Target': 'RandomSL'}
+
+    df = df.rename(columns={'mean': 'All datasets'}, index=label_dict)
+    df_li = df_li.rename(columns={'mean': 'SDS'}, index=label_dict)
+
+    # reorder methods
+    order = ['BoostIn', 'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
+    order_li = ['LeafRefit', 'LeafInf.', 'BoostIn', 'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO',
+                'RandomSL', 'Random']
+
+    # order_li = ['BoostIn', 'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random',
+    #             'LeafRefit', 'LeafInf.']
+
+    df = df.reindex(order)
+    df_li = df_li.reindex(order_li)
 
     labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
     labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
@@ -154,19 +167,21 @@ def process(args, exp_hash, out_dir, logger):
 
     ax = axs[0]
     df.plot(kind='bar', y='All datasets', yerr='sem', ax=ax, title=None, capsize=3,
-            ylabel='Average rank', xlabel=None, legend=True, color='blueviolet')
+            ylabel='Average rank', xlabel=None, legend=True, color='#3e9ccf')
     ax.set_xticklabels(labels, rotation=0)
 
     ax = axs[1]
-    df_li.plot(kind='bar', y='Subgroup A', yerr='sem', ax=ax, title=None, capsize=3,
-               ylabel=None, xlabel=None, legend=True, color='mediumseagreen')
+    df_li.plot(kind='bar', y='SDS', yerr='sem', ax=ax, title=None, capsize=3,
+               ylabel=None, xlabel=None, legend=True, color='#ff7600')
     ax.set_xticklabels(labels_li, rotation=0)
+
+    ax.axvline(1.5, color='gray', linestyle='--')
+    # ax.axvline(7.5, color='gray', linestyle='--')
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'roar.pdf'), bbox_inches='tight')
-    plt.show()
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))

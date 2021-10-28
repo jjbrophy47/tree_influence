@@ -153,3 +153,19 @@ def get_reinfluence_args():
     cmd.add('--strategy', type=str, default='reestimate')
     cmd.add('--n_early_stop', type=int, default=0)
     return cmd
+
+
+def get_label_edit_args():
+    """
+    Add arguments specific to the "Label Edit" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence/')
+    cmd.add('--out_dir', type=str, default='output/label_edit/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--step_size', type=int, default=10)
+    return cmd

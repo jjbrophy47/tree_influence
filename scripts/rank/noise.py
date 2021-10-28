@@ -22,7 +22,7 @@ sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
 from config import rank_args
-from rank.roar import get_mean_rank_df
+from rank.roar import get_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -108,14 +108,14 @@ def process(args, exp_hash, out_dir, logger):
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
 
-    df_fd = get_mean_rank_df(df_fd_all, skip_cols=skip_cols, sort='ascending')
-    df_li_fd = get_mean_rank_df(df_li_fd_all, skip_cols=skip_cols, sort='ascending')
-    df_loss = get_mean_rank_df(df_loss_all, skip_cols=skip_cols, sort='ascending')
-    df_li_loss = get_mean_rank_df(df_li_loss_all, skip_cols=skip_cols, sort='ascending')
-    df_acc = get_mean_rank_df(df_acc_all, skip_cols=skip_cols, sort='ascending')
-    df_li_acc = get_mean_rank_df(df_li_acc_all, skip_cols=skip_cols, sort='ascending')
-    df_auc = get_mean_rank_df(df_auc_all, skip_cols=skip_cols, sort='ascending')
-    df_li_auc = get_mean_rank_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
+    df_fd = get_mean_df(df_fd_all, skip_cols=skip_cols, sort='ascending')
+    df_li_fd = get_mean_df(df_li_fd_all, skip_cols=skip_cols, sort='ascending')
+    df_loss = get_mean_df(df_loss_all, skip_cols=skip_cols, sort='ascending')
+    df_li_loss = get_mean_df(df_li_loss_all, skip_cols=skip_cols, sort='ascending')
+    df_acc = get_mean_df(df_acc_all, skip_cols=skip_cols, sort='ascending')
+    df_li_acc = get_mean_df(df_li_acc_all, skip_cols=skip_cols, sort='ascending')
+    df_auc = get_mean_df(df_auc_all, skip_cols=skip_cols, sort='ascending')
+    df_li_auc = get_mean_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
 
     logger.info(f'\nFrac. detected:\n{df_fd}')
     logger.info(f'\nFrac. detected (li):\n{df_li_fd}')
@@ -185,7 +185,6 @@ def process(args, exp_hash, out_dir, logger):
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
-    plt.show()
 
     df_fd.to_csv(os.path.join(out_dir, 'fd_rank.csv'))
     df_li_fd.to_csv(os.path.join(out_dir, 'fd_rank_li.csv'))

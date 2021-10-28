@@ -28,6 +28,45 @@ from experiments import util as exp_util
 from config import summ_args
 
 
+def reorder_heatmap(arr, idxs):
+    """
+    Reorder heatmap based on the given indices.
+
+    Input
+        arr: 2d Array.
+        idxs: 1d array of indices.
+
+    Return
+        2d array with relevant positions swapped.
+    """
+    assert arr.ndim == 2
+    assert idxs.ndim == 1 and len(idxs) == len(arr)
+
+    idxs = idxs.copy()
+
+    # make sure idxs starts at 0 and increse by 1
+    if np.min(idxs) > 0 or np.max(idxs) >= len(idxs):
+        sorted_positions = np.argsort(idxs)
+        new_idx_vals = np.arange(len(idxs))
+
+        for pos, new_idx_val in zip(sorted_positions, new_idx_vals):
+            idxs[pos] = new_idx_val
+
+    # build pairwise dictionary
+    pw = {}
+    for i in range(len(arr)):
+        for j in range(len(arr)):
+            pw[f'{i}_{j}'] = arr[i, j]
+
+    # rebuild heatmap with specified ordering
+    res = np.zeros(arr.shape)
+    for i1, i2 in zip(np.arange(len(arr)), idxs):
+        for j1, j2 in zip(np.arange(len(arr)), idxs):
+            res[i1, j1] = pw[f'{i2}_{j2}']
+
+    return res
+
+
 def experiment(args, logger, out_dir):
     begin = time.time()
 
@@ -79,7 +118,7 @@ def experiment(args, logger, out_dir):
             else:
                 assert idx_dict == res['idx_dict']
 
-    label_dict = {'target': 'Target', 'leaf_sim': 'TreeSim', 'boostin': 'BoostIn',
+    label_dict = {'target': 'RandomSL', 'leaf_sim': 'TreeSim', 'boostin': 'BoostIn',
                   'trex': 'TREX', 'leaf_infSP': 'LeafInfSP', 'loo': 'LOO',
                   'subsample': 'SubSample', 'leaf_inf': 'LeafInfluence', 'leaf_refit': 'LeafRefit'}
 
@@ -96,9 +135,24 @@ def experiment(args, logger, out_dir):
     s_mean = s_mean[np.ix_(idxs, idxs)]
     j_mean = j_mean[np.ix_(idxs, idxs)]
 
-    p_mean_df = pd.DataFrame(p_mean, columns=names, index=names)
-    s_mean_df = pd.DataFrame(s_mean, columns=names, index=names)
-    j_mean_df = pd.DataFrame(j_mean, columns=names, index=names)
+    # reorder heatmap
+    order = ['boostin', 'leaf_infSP', 'leaf_sim', 'trex', 'subsample', 'loo', 'target']
+
+    if args.out_sub_dir == 'li':
+        order = ['boostin', 'leaf_infSP', 'leaf_sim', 'trex', 'subsample', 'loo', 'target', 'leaf_refit', 'leaf_inf']
+
+    new_idxs = np.array([idx_dict[m] for m in order if m in args.method_list], dtype=np.int32)
+
+    print(new_idxs)
+    print(p_mean)
+
+    p_mean = reorder_heatmap(p_mean, new_idxs)
+    s_mean = reorder_heatmap(s_mean, new_idxs)
+    j_mean = reorder_heatmap(j_mean, new_idxs)
+
+    p_mean_df = pd.DataFrame(p_mean, columns=order, index=order)
+    s_mean_df = pd.DataFrame(s_mean, columns=order, index=order)
+    j_mean_df = pd.DataFrame(j_mean, columns=order, index=order)
 
     logger.info(f'\nPearson results:\n{p_mean_df}')
     logger.info(f'\nSpearman results:\n{s_mean_df}')
@@ -119,11 +173,11 @@ def experiment(args, logger, out_dir):
     # mask = None
     mask = np.triu(np.ones_like(p_mean, dtype=bool))  # uncomment for mask
 
-    labels = [label_dict[name] for name in names]
+    labels = [label_dict[name] for name in order]
     labels_x = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(labels)]
 
     fig, ax = plt.subplots()
-    sns.heatmap(p_mean, xticklabels=names, yticklabels=names, ax=ax,
+    sns.heatmap(p_mean, xticklabels=labels, yticklabels=labels, ax=ax,
                 cmap='Greens', mask=mask, fmt='.2f', cbar=True, annot=True)
     ax.set_title(f'Pearson')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
@@ -138,7 +192,7 @@ def experiment(args, logger, out_dir):
     plt.savefig(os.path.join(out_dir, f'spearman{suffix}.pdf'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
-    sns.heatmap(j_mean, xticklabels=names, yticklabels=names, ax=ax,
+    sns.heatmap(j_mean, xticklabels=labels, yticklabels=labels, ax=ax,
                 cmap='Blues', mask=mask, fmt='.2f', annot=True)
     ax.set_title('Jaccard (first 10% of sorted)')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')

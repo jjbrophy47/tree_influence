@@ -36,28 +36,38 @@ def process(args, exp_hash, out_dir, logger):
 
     for tree_type in args.tree_type:
 
+        if tree_type == 'cb':
+            temp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': 100}
+            temp_hash = exp_util.dict_to_hash(temp_dict)
+
+            in_dir = os.path.join(args.in_dir,
+                                  tree_type,
+                                  f'exp_{temp_hash}',
+                                  'summary')
+
+        else:
             in_dir = os.path.join(args.in_dir,
                                   tree_type,
                                   f'exp_{exp_hash}',
                                   'summary')
 
-            # ranks
-            fp = os.path.join(in_dir, 'frac_edits_rank.csv')
-            fp_li = os.path.join(in_dir, 'frac_edits_rank_li.csv')
-            assert os.path.exists(fp), f'{fp} does not exist!'
-            assert os.path.exists(fp_li), f'{fp_li} does not exist!'
+        # ranks
+        fp = os.path.join(in_dir, 'frac_edits_rank.csv')
+        fp_li = os.path.join(in_dir, 'frac_edits_rank_li.csv')
+        assert os.path.exists(fp), f'{fp} does not exist!'
+        assert os.path.exists(fp_li), f'{fp_li} does not exist!'
 
-            df_list.append(pd.read_csv(fp))
-            df_li_list.append(pd.read_csv(fp_li))
+        df_list.append(pd.read_csv(fp))
+        df_li_list.append(pd.read_csv(fp_li))
 
-            # absolute numbers
-            fp2 = os.path.join(in_dir, 'frac_edits.csv')
-            fp2_li = os.path.join(in_dir, 'frac_edits.csv')
-            assert os.path.exists(fp2), f'{fp2} does not exist!'
-            assert os.path.exists(fp2_li), f'{fp2_li} does not exist!'
+        # absolute numbers
+        fp2 = os.path.join(in_dir, 'frac_edits.csv')
+        fp2_li = os.path.join(in_dir, 'frac_edits.csv')
+        assert os.path.exists(fp2), f'{fp2} does not exist!'
+        assert os.path.exists(fp2_li), f'{fp2_li} does not exist!'
 
-            df2_list.append(pd.read_csv(fp2))
-            df2_li_list.append(pd.read_csv(fp2_li))
+        df2_list.append(pd.read_csv(fp2))
+        df2_li_list.append(pd.read_csv(fp2_li))
 
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
@@ -68,8 +78,6 @@ def process(args, exp_hash, out_dir, logger):
     # filter datasets
     li_datasets = df_li_all['dataset'].unique()
     df2_li_all = df2_li_all[df2_li_all['dataset'].isin(li_datasets)]
-
-    print(df2_li_all)
 
     # convert frac. to %
     df2_all = df2_all * 100
@@ -96,8 +104,6 @@ def process(args, exp_hash, out_dir, logger):
 
     df2 = get_mean_df(df2_all, skip_cols=skip_cols, sort='ascending')
     df2_li = get_mean_df(df2_li_all, skip_cols=skip_cols, sort='ascending')
-
-    print(df2_all)
 
     logger.info(f'\nFrac. edits:\n{df2}')
     logger.info(f'\nFrac. edits ranking:\n{df}')
@@ -140,7 +146,7 @@ def main(args):
     exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': args.step_size}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
-    assert len(args.tree_type) > 1
+    assert len(args.tree_type) > 0
     out_dir = os.path.join(args.in_dir,
                            'rank',
                            f'exp_{exp_hash}',

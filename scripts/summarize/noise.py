@@ -86,10 +86,21 @@ def process(args, exp_hash, out_dir, logger):
         auc_d_list.append(auc_d)
 
     # organize results
-    fd_df = pd.DataFrame(fd_d_list).replace(-1, np.nan)
-    loss_df = pd.DataFrame(loss_d_list).replace(-1, np.nan)
-    acc_df = pd.DataFrame(acc_d_list).replace(-1, np.nan)
-    auc_df = pd.DataFrame(auc_d_list).replace(-1, np.nan)
+    fd_df_raw = pd.DataFrame(fd_d_list).replace(-1, np.nan)
+    loss_df_raw = pd.DataFrame(loss_d_list).replace(-1, np.nan)
+    acc_df_raw = pd.DataFrame(acc_d_list).replace(-1, np.nan)
+    auc_df_raw = pd.DataFrame(auc_d_list).replace(-1, np.nan)
+
+    # drop rows with missing values
+    skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
+    remove_cols = ['LeafInfluence_test_sum', 'LeafRefit_test_sum']
+
+    cols = [x for x in fd_df_raw.columns if x not in skip_cols + remove_cols]
+
+    fd_df = fd_df_raw.dropna(subset=cols)
+    loss_df = loss_df_raw.dropna(subset=cols)
+    acc_df = acc_df_raw.dropna(subset=cols)
+    auc_df = auc_df_raw.dropna(subset=cols)
 
     logger.info(f'\n\nFrac. detected:\n{fd_df}')
     logger.info(f'\n\nLoss:\n{loss_df}')
@@ -124,10 +135,10 @@ def process(args, exp_hash, out_dir, logger):
     # save results
     logger.info(f'\nSaving results to {out_dir}...')
 
-    fd_df.to_csv(os.path.join(out_dir, 'frac_detected.csv'), index=None)
-    loss_df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
-    acc_df.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
-    auc_df.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
+    fd_df_raw.to_csv(os.path.join(out_dir, 'frac_detected.csv'), index=None)
+    loss_df_raw.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
+    acc_df_raw.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
+    auc_df_raw.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
 
     rank_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank.csv'), index=None)
     rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)

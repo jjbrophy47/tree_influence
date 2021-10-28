@@ -37,35 +37,36 @@ def experiment(args, exp_dir, out_dir, logger):
     method, res = res_list[0]
     aff = res['affinity']
 
-    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+    # plot
+    util.plot_settings(fontsize=14)
+    legend_fs = 11.5
+
+    fig, axs = plt.subplots(1, 2, figsize=(9, 3))
 
     # plot 1
     test_idx = 1  # pick a test instance
 
     ax = axs[0]
-    sns.histplot(aff[:, 0, test_idx], ax=ax, label='initial', element='step', fill=True, color='black')
+    sns.histplot(aff[:, 0, test_idx], ax=ax, label='Initial', element='step', fill=True, color='black')
     sns.histplot(aff[:, 1, test_idx], ax=ax, label='1 removal', element='step', fill=True)
-    ax.set_xlabel('No. times train and test in same leaf')
-    ax.set_ylabel('No. train examples')
-    ax.set_title(f'Test Index: {test_idx} ({args.dataset})')
-    ax.legend(fontsize=6)
+    ax.set_xlabel(r'Affinity $\left(\sum_{t=1}^T 1[R_t(x_i) = R_t(x_e)] \right)$')
+    ax.set_ylabel('No. train')
+    ax.legend(fontsize=legend_fs)
 
     # plot 2
     abs_diff = np.abs(aff[:, 0, :] - aff[:, 1, :])  # shape=(no. train, no. test)
     avg_abs_diff = np.mean(abs_diff, axis=1)  # shape=(no. train,)
 
     ax = axs[1]
-    sns.histplot(avg_abs_diff, ax=ax, label='|1 removal - initial|', element='step')
-    ax.set_xlabel('Avg. abs. diff. in no. times train/test in same leaf')
-    ax.set_ylabel('No. train examples')
-    ax.set_title(f'{aff.shape[2]} test examples')
-    ax.legend(fontsize=6)
+    sns.histplot(avg_abs_diff, ax=ax, label='|Initial - 1 removal|', element='step', color='brown')
+    ax.set_xlabel('Average difference in affinity')
+    ax.set_ylabel('')
+    ax.legend(fontsize=legend_fs)
 
     logger.info(f'\nsaving results to {out_dir}/...')
 
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
-    plt.show()
+    plt.savefig(os.path.join(out_dir, f'structure_{args.tree_type}_{args.dataset}.pdf'), bbox_inches='tight')
 
     logger.info(f'\ntotal time: {time.time() - begin:.3f}s')
 

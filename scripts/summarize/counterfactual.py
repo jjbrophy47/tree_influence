@@ -72,6 +72,14 @@ def process(args, exp_hash, out_dir, logger):
 
     df = pd.DataFrame(rows)
     df2 = pd.DataFrame(rows2)
+
+    # drop rows in which CB did not finish ROAR experiment
+    remove_datasets = ['adult', 'bank_marketing', 'diabetes', 'flight_delays', 'htru2',
+                       'no_show', 'obesity', 'protein', 'twitter', 'vaccine']
+
+    df = df[~df['dataset'].isin(remove_datasets)]
+    df2 = df2[~df2['dataset'].isin(remove_datasets)]
+
     logger.info(f'\nFrac. edit results:\n{df}')
 
     # compute ranks
@@ -94,6 +102,9 @@ def process(args, exp_hash, out_dir, logger):
 
 
 def main(args):
+
+    if args.tree_type == 'cb':
+        args.step_size = 100
 
     exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac, 'step_size': args.step_size}
     exp_hash = exp_util.dict_to_hash(exp_dict)

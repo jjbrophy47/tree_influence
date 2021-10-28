@@ -120,6 +120,16 @@ def process(args, out_dir, exp_hash, logger):
     df2 = pd.DataFrame(rows2)
     df3 = pd.DataFrame(rows3)
 
+    # drop rows with missing values
+    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    remove_cols = ['LeafInfluence', 'LeafRefit']
+
+    cols = [x for x in df.columns if x not in skip_cols + remove_cols]
+
+    df = df.dropna(subset=cols)
+    df2 = df2.dropna(subset=cols)
+    df3 = df3.dropna(subset=cols)
+
     logger.info(f'\nLoss:\n{df}')
     logger.info(f'\nRuntime:\n{df2}')
     logger.info(f'\nMemory:\n{df3}')

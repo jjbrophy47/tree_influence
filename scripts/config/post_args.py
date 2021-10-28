@@ -181,4 +181,7 @@ def get_reinfluence_args():
     cmd.add('--remove_frac', type=float, default=0.02)
     cmd.add('--strategy', type=str, nargs='+', default=['fixed', 'reestimate'])
     cmd.add('--std_err', type=int, default=0)
+    cmd.add('--ylabel', type=int, default=1)
+    cmd.add('--legend1', type=int, default=1)
+    cmd.add('--legend2', type=int, default=1)
     return cmd

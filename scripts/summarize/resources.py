@@ -21,7 +21,8 @@ from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import summ_args
 from summarize.roar import get_rank_df
-from rank.roar import get_mean_rank_df
+from rank.roar import get_mean_df
+from scipy.stats import gmean
 
 
 def process(args, out_dir, logger):
@@ -120,11 +121,14 @@ def process(args, out_dir, logger):
 
     t_rank_df = get_rank_df(t_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)  # get ranks
     t_avg_rank_df = t_rank_df.groupby(group_cols).mean().reset_index()  # average over tree types
-    t_mean_rank_df = get_mean_rank_df(t_avg_rank_df, skip_cols=skip_cols)  # average over datasets
+    t_mean_rank_df = get_mean_df(t_avg_rank_df, skip_cols=skip_cols)  # average over datasets
 
     # average over tree types
-    t_df = t_df.groupby(['dataset']).mean().reset_index()
-    m_df = m_df.groupby(['dataset']).mean().reset_index()
+    del t_df['tree_type']
+    del m_df['tree_type']
+
+    t_df = t_df.groupby(['dataset']).agg(gmean).reset_index()
+    m_df = m_df.groupby(['dataset']).agg(gmean).reset_index()
 
     # get relevant columns
     cols = [x for x in t_df.columns if x not in ['dataset', 'tree_type', 'Random', 'Target', 'Input Sim.']]
@@ -147,21 +151,26 @@ def process(args, out_dir, logger):
     del m_df[base_method]
     cols = [x for x in cols if x != base_method]
 
-    # compute mean/s.d. over datasets
-    t_mean, t_sd = np.mean(t_df[cols].values, axis=0), np.std(t_df[cols].values, axis=0)
-    m_mean, m_sd = np.mean(m_df[cols].values, axis=0), np.std(m_df[cols].values, axis=0)
+    # specify ordering
+    order = ['BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafRefit', 'LeafInfluence']
+    t_df = t_df[order]
+    m_df = m_df[order]
+
+    # compute geo. mean/s.d. over datasets
+    t_mean, t_sd = gmean(t_df[order].values, axis=0), np.std(t_df[order].values, axis=0)
+    m_mean, m_sd = gmean(m_df[order].values, axis=0), np.std(m_df[order].values, axis=0)
 
     # plot
     pp_util.plot_settings(fontsize=18)
     width = 10
-    height = pp_util.get_height(width * 0.75)
+    height = pp_util.get_height(width * 0.8)
 
     fig, ax = plt.subplots(figsize=(width, height))
 
     # alternate above and below for labels
-    labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(cols)]
+    labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(order)]
 
-    ax.bar(labels, t_mean, color='mediumseagreen', label='Subgroup A')
+    ax.bar(labels, t_mean, color='#ff7600', label='SDS')
     ax.set_ylabel('Slowdown relative to TreeSim')
     ax.set_yscale('log')
     ax.set_ylim(1, None)
@@ -171,7 +180,6 @@ def process(args, out_dir, logger):
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'resources.pdf'), bbox_inches='tight')
-    plt.show()
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

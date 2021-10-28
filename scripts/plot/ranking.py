@@ -50,20 +50,31 @@ def process(args, fp_list, out_dir, logger):
     mean_df = pd.DataFrame(mean_dict, index=df['index']).transpose()
     sem_df = pd.DataFrame(sem_dict, index=df['index']).transpose()
 
+    # rename columns
+    mean_df = mean_df.rename(columns={'Target': 'RandomSL'})
+    sem_df = sem_df.rename(columns={'Target': 'RandomSL'})
+
     # plot
     pp_util.plot_settings(fontsize=13)
 
     fig, ax = plt.subplots(figsize=(9, 2.5))
 
-    mean_df.plot(kind='bar', yerr=sem_df, ax=ax, rot=0, width=0.75, colormap='tab10',
+    mean_df.plot(kind='bar', yerr=sem_df, ax=ax, rot=0, width=0.75, colormap='gnuplot2',
                  capsize=3, ylabel='Average rank', xlabel='Evaluation Setting')
 
     # hatches
-    # bars = ax.patches
-    # patterns = ('o', '', 'O', '', '.', '', '*', '')
-    # hatches = [p for p in patterns for i in range(4)]
-    # for bar, hatch in zip(bars, hatches):
-    #     bar.set_hatch(hatch)
+    h1 = '/' * 5
+    h2 = '.' * 3
+
+    bars = ax.patches
+    patterns = (h1, h2, h1, h2, h1, h2, h1, h2)
+    hatches = [p for p in patterns for i in range(4)]
+    for bar, hatch in zip(bars, hatches):
+        bar.set_edgecolor('k')
+        bar.set_linewidth(0.75)
+        bar.set_alpha(0.75)
+
+    plt.rcParams.update({'hatch.color': 'k'})
 
     # legend
     ax.legend(bbox_to_anchor=(0.44, 1.2275), loc='upper center',
