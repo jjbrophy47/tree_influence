@@ -103,7 +103,7 @@ class LeafSim(Explainer):
 
         return influence
 
-    def _get_leaf_weights(self, idxs):
+    def _get_leaf_weights(self, leaf_idxs):
         """
         Retrieve leaf weights given the leaf indices.
 
@@ -117,7 +117,7 @@ class LeafSim(Explainer):
         leaf_weights = self.leaf_weights_  # shape=(no. leaves across all trees,)
 
         # result container
-        weights = np.zeros(idxs.shape, dtype=util.dtype_t)  # shape=(no. examples, no. boost, no. class)
+        weights = np.zeros(leaf_idxs.shape, dtype=util.dtype_t)  # shape=(no. examples, no. boost, no. class)
 
         n_prev_leaves = 0
 
@@ -126,7 +126,7 @@ class LeafSim(Explainer):
             for c_idx in range(self.n_class_):
                 leaf_count = leaf_counts[b_idx, c_idx]
 
-                weights[:, b_idx, c_idx] = leaf_weights[n_prev_leaves:][idxs[:, b_idx, c_idx]]
+                weights[:, b_idx, c_idx] = leaf_weights[n_prev_leaves:][leaf_idxs[:, b_idx, c_idx]]
 
                 n_prev_leaves += leaf_count
 

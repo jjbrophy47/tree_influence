@@ -25,7 +25,7 @@ from config import exp_args
 def compute_affinity(tree, X_train, X_test):
     """
     Compute no. times a train example ends in the
-    same leaf as the test example
+    same leaf as the test example.
 
     Input
         tree: Tree model; must have `apply` method.
@@ -46,6 +46,73 @@ def compute_affinity(tree, X_train, X_test):
     affinity = np.sum(co_leaf, axis=(1, 2))  # sum over boosts and classes
 
     return affinity
+
+
+def compute_weighted_affinity(tree, X_train, X_test):
+    """
+    Compute no. times a train example ends in the
+    same leaf as the test example, weighted by
+    1/ni in which ni is the no. examples at leaf i.
+
+    Input
+        tree: Tree model; must have `apply` method.
+        X_train: 2d array of train data.
+        X_test: 2d array of test data.
+
+    Return
+        1d array of counts of shape=(X_train.shape[0],).
+
+    Note
+        - Make sure `update_node_count` is called before this method.
+    """
+    assert X_train.ndim == X_test.ndim == 2
+    assert X_test.shape[0] == 1
+    assert hasattr(tree, 'apply')
+    assert hasattr(tree, 'get_leaf_counts')
+    assert hasattr(tree, 'get_leaf_weights')
+    assert hasattr(tree, 'n_boost_')
+    assert hasattr(tree, 'n_class_')
+
+    train_leaves = tree.apply(X_train)  # shape=(no. train, no. boost, no. class)
+    test_leaves = tree.apply(X_test)  # shape=(no. test, no. boost, no. class)
+
+    train_weights = get_leaf_weights(tree, train_leaves)
+
+    co_leaf = np.where(train_leaves == test_leaves, 1, 0)  # shape=(no. train, no. boost, no. class)
+    affinity = np.sum(co_leaf * train_weights, axis=(1, 2))  # sum over boosts and classes
+
+    return affinity
+
+
+def get_leaf_weights(model, leaf_idxs):
+    """
+    Retrieve leaf weights given the leaf indices.
+
+    Input
+        model: TreeEnsemble object.
+        leaf_idxs: Leaf indices, shape=(no. examples, no. boost, no. class)
+
+    Return
+        - 3d array of shape=(no. examples, no. boost, no. class)
+    """
+    leaf_counts = model.get_leaf_counts()  # shape=(no. boost, no. class)
+    leaf_weights = model.get_leaf_weights(-1)  # shape=(total no. leaves,)
+
+    # result container
+    weights = np.zeros(leaf_idxs.shape, dtype=util.dtype_t)  # shape=(no. examples, no. boost, no. class)
+
+    n_prev_leaves = 0
+
+    for b_idx in range(model.n_boost_):
+
+        for c_idx in range(model.n_class_):
+            leaf_count = leaf_counts[b_idx, c_idx]
+
+            weights[:, b_idx, c_idx] = leaf_weights[n_prev_leaves:][leaf_idxs[:, b_idx, c_idx]]
+
+            n_prev_leaves += leaf_count
+
+    return weights
 
 
 def remove_and_evaluate(test_idx, objective, ranking, tree,

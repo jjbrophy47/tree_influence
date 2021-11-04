@@ -31,22 +31,47 @@ def experiment(args, exp_dir, out_dir, logger):
 
     color, line, label = util.get_plot_dicts()
 
-    fig, ax = plt.subplots()
+    fig, axs = plt.subplots(1, 3, figsize=(12, 4))
     
     for method, res in res_list:
 
+        # extract results
         edit_frac = res['edit_frac']  # shape=(no. ckpts.)
         loss = res['loss']  # shape=(no. test, no. ckpts.)
+        affinity = res['affinity']  # shape=(2, no. train, no. test)
 
         # take per-example avg.
         avg_loss = np.mean(loss, axis=0)  # shape=(no. ckpts.)
 
+        ax = axs[0]
         ax.plot(edit_frac * 100, avg_loss, label=label[method], color=color[method],
                 linestyle=line[method], alpha=0.75)
         ax.set_xlabel('% train targets edited')
         ax.set_ylabel('Per-example test loss')
+        ax.legend(fontsize=6)
 
-    ax.legend(fontsize=6)
+        # plot initial affinity
+        ax = axs[1]
+
+        avg_affinity = np.mean(affinity, axis=2)
+
+        if 'boostin' in method or 'leaf_sim' in method:
+            sns.histplot(avg_affinity[0], ax=ax, label=label[method], element='step', fill=True, color=color[method])
+            ax.set_xlabel('Avg. Affinity')
+            ax.set_ylabel('No. train')
+            ax.set_title(f'Affinity - Initial')
+            ax.legend(fontsize=6)
+
+        # plot affinity after 1% label edits
+        ax = axs[2]
+
+        avg_affinity = np.mean(affinity, axis=2)
+
+        if 'boostin' in method or 'leaf_sim' in method:
+            sns.histplot(avg_affinity[1], ax=ax, label=label[method], element='step', fill=True, color=color[method])
+            ax.set_xlabel('Avg. Affinity')
+            ax.set_ylabel('No. train')
+            ax.set_title(f'Affinity - After {res["affinity_edit_frac"][1] * 100:.0f}% Edits')
 
     logger.info(f'\nsaving results to {out_dir}/...')
 
