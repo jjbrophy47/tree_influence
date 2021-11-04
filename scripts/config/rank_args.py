@@ -83,3 +83,19 @@ def get_poison_args():
     cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4, 5])
     return cmd
+
+
+def get_removal_set_args():
+    """
+    Add arguments specific to the "Removal Set" rank.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/plot/removal_set/')
+    cmd.add('--remove_frac', type=float,
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    return cmd

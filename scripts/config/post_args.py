@@ -201,3 +201,19 @@ def get_label_edit_args():
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--step_size', type=int, default=10)
     return cmd
+
+
+def get_removal_set_args():
+    """
+    Add arguments specific to the "Removal Set" postprsocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_removal_set/')
+    cmd.add('--out_dir', type=str, default='output/plot/removal_set/')
+    cmd.add('--remove_frac', type=float, nargs='+',
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    cmd.add('--val_frac', type=float, default=0.1)
+    return cmd

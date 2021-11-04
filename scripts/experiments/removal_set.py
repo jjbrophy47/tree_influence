@@ -22,56 +22,6 @@ from config import exp_args
 from influence import get_special_case_tol
 
 
-# def remove_and_evaluate(inf_obj, objective, ranking, tree,
-#                         X_train, y_train, X_test, y_test,
-#                         remove_frac, n_ckpt, logger):
-
-#     # get appropriate evaluation function
-#     eval_fn = util.eval_pred
-
-#     # get list of remove fractions
-#     remove_frac_arr = np.linspace(0, remove_frac, n_ckpt + 1)[1:]
-
-#     # result container
-#     result = {}
-#     result['remove_frac'] = remove_frac_arr
-#     result['loss'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
-#     result['acc'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
-#     result['auc'] = np.full(remove_frac_arr.shape[0], np.nan, dtype=np.float32)
-
-#     res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'Ckpt. {0:>5}: {0:>5.2f}%')
-#     result['loss'][0] = res['loss']
-#     result['acc'][0] = res['acc']
-#     result['auc'][0] = res['auc']
-
-#     for i in range(n_ckpt):
-
-#         remove_frac = remove_frac_arr[i]
-#         n_remove = int(X_train.shape[0] * remove_frac)
-
-#         new_X_train = np.delete(X_train, ranking[:n_remove], axis=0)
-#         new_y_train = np.delete(y_train, ranking[:n_remove])
-
-#         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
-#             logger.info('Only samples from one class remain!')
-#             break
-
-#         elif objective == 'multiclass' and len(np.unique(new_y_train)) < len(np.unique(y_train)):
-#             logger.info('At least 1 sample is not present for all classes!')
-#             break
-
-#         else:
-#             new_tree = clone(tree).fit(new_X_train, new_y_train)
-
-#             prefix = f'Ckpt. {i + 1:>5}: {remove_frac * 100:>5.2f}%'
-#             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
-#             result['loss'][i] = res['loss']
-#             result['acc'][i] = res['acc']
-#             result['auc'][i] = res['auc']
-
-#     return result
-
-
 def experiment(args, logger, params, out_dir):
 
     # initialize experiment
