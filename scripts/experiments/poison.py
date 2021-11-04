@@ -72,6 +72,7 @@ def experiment(args, logger, params, random_state, out_dir):
     start = time.time()
     explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
     fit_time = time.time() - start - explainer.parse_time_
+
     logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s')
 
     # compute influence
@@ -118,8 +119,10 @@ def experiment(args, logger, params, random_state, out_dir):
     result['inf_time'] = inf_time
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
+
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))
+
     np.save(os.path.join(out_dir, 'results.npy'), result)
 
 
@@ -152,6 +155,7 @@ def main(args):
 
     experiment(args, logger, params, args.random_state, out_dir)
 
+    # clean up
     util.remove_logger(logger)
 
 

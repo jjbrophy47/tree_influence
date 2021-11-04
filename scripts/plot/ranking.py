@@ -42,6 +42,8 @@ def process(args, fp_list, out_dir, logger):
 
         df['index'] = df['index'].apply(lambda x: 'SubSample' if x == 'SubS.' else x)
         df.index = df['index']
+
+        df = df.rename(index={'RandomSL': 'Target'})
         df = df.loc[order2]
 
         mean_dict[name] = df['mean'].values
@@ -62,6 +64,10 @@ def process(args, fp_list, out_dir, logger):
     mean_df.plot(kind='bar', yerr=sem_df, ax=ax, rot=0, width=0.75, colormap='gnuplot2',
                  capsize=3, ylabel='Average rank', xlabel='Evaluation Setting')
 
+    ax.axvline(1.5, color='k', linestyle='--')
+
+    ax.set_title('  Single Test Instance                         Multiple Test Instances')
+
     # hatches
     h1 = '/' * 5
     h2 = '.' * 3
@@ -76,8 +82,12 @@ def process(args, fp_list, out_dir, logger):
 
     plt.rcParams.update({'hatch.color': 'k'})
 
+    # # legend
+    # ax.legend(bbox_to_anchor=(0.44, 1.2275), loc='upper center',
+    #           ncol=int(len(order2) / 2), framealpha=1.0, fontsize=11)
+
     # legend
-    ax.legend(bbox_to_anchor=(0.44, 1.2275), loc='upper center',
+    ax.legend(bbox_to_anchor=(0.5, 1.5), loc='upper center',
               ncol=int(len(order2) / 2), framealpha=1.0, fontsize=11)
 
     logger.info(f'\nSaving results to {out_dir}/...')

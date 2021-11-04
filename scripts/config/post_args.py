@@ -185,3 +185,19 @@ def get_reinfluence_args():
     cmd.add('--legend1', type=int, default=1)
     cmd.add('--legend2', type=int, default=1)
     return cmd
+
+
+def get_label_edit_args():
+    """
+    Add arguments specific to the "Label Edit" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_label_edit/')
+    cmd.add('--out_dir', type=str, default='output/plot/label_edit/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--step_size', type=int, default=10)
+    return cmd
