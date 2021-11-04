@@ -21,6 +21,7 @@ import intent
 import util
 from config import exp_args
 from influence import get_special_case_tol
+from structure import compute_affinity
 
 
 def edit_labels(y, flip_idxs, objective, adv_label, y_median=None):
@@ -87,9 +88,9 @@ def get_label(y, pred, objective, y_median=False):
     return pred_label, pred_val, target_label, adv_label, is_correct
 
 
-def remove_and_evaluate(test_idx, objective, ranking, tree,
-                        X_train, y_train, X_test, y_test,
-                        remove_frac, step_size, logger):
+def relabel_and_evaluate(test_idx, objective, ranking, tree,
+                         X_train, y_train, X_test, y_test,
+                         remove_frac, step_size, logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
@@ -117,12 +118,12 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
         logger.info('Incorrect prediction, skipping...')
         return None
 
+    computed_affinity = False
+
     for i in range(step_size, X_train.shape[0], step_size):
 
         flip_idxs = ranking[:i]
         new_y_train = edit_labels(y_train, flip_idxs, objective, adv_lbl, y_train_median)
-
-        # print(flip_idxs, y_train[flip_idxs], new_y_train[flip_idxs])
 
         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')
@@ -134,11 +135,27 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
 
         else:
             edit_frac = i / X_train.shape[0]
+
             if edit_frac * 100 > 2.0:
                 logger.info('Reached more than 2% of train, stopping...')
                 break
 
             new_tree = clone(tree).fit(X_train, new_y_train)
+
+            if edit_frac * 100 >= 1.0 and not computed_affinity:
+                logger.info('Reached 1% of train')
+
+                logger.info('\tcomputing train affinity for initial model...')
+                new_explainer = intent.TreeExplainer('boostin', {}, logger).fit(tree, X_train, y_train)
+                result['affinity'] = [compute_affinity(new_explainer.model_, X_train[flip_idxs], X_test)]
+                result['affinity_edit_frac'] = [0]
+
+                logger.info('\tcomputing train affinity for 1% edited model...')
+                new_explainer = intent.TreeExplainer('boostin', {}, logger).fit(new_tree, X_train, new_y_train)
+                result['affinity'].append(compute_affinity(new_explainer.model_, X_train[flip_idxs], X_test))
+                result['affinity_edit_frac'].append(edit_frac)
+
+                computed_affinity = True
 
             prefix = f'Labels flipped: {i:>5} ({edit_frac * 100:>5.3f}%)'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
@@ -148,6 +165,8 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
 
     result['loss'] = np.array(result['loss'], dtype=np.float32)
     result['edit_frac'] = np.array(result['edit_frac'], dtype=np.float32)
+
+    print(result['affinity'])
 
     return result
 
@@ -199,7 +218,7 @@ def experiment(args, logger, in_dir, out_dir):
         while n_remain > 0:
             n = min(n_jobs, n_remain)
 
-            results = parallel(joblib.delayed(remove_and_evaluate)
+            results = parallel(joblib.delayed(relabel_and_evaluate)
                                              (idx, objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
                                               args.remove_frac, args.step_size, logger)
@@ -217,15 +236,27 @@ def experiment(args, logger, in_dir, out_dir):
 
     # get edit_frac array
     edit_frac = None
+    affinity_edit_frac = None
+
     for res in res_list:
         if res is not None:
             edit_frac = res['edit_frac']
+            affinity_edit_frac = res['affinity_edit_frac']
             break
+
     assert edit_frac is not None
+    assert affinity_edit_frac is not None
+
+    # filter results
+    res_list = [res for res in res_list if res is not None]
 
     # save results
     result['edit_frac'] = edit_frac  # shape=(no. ckpts,)
-    result['loss'] = np.vstack([res['loss'] for res in res_list if res is not None])  # shape=(no. test, no. ckpts)
+    result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
+    result['affinity'] = np.dstack([res['affinity'] for res in res_list])  # shape=(2, no. train, no. test)
+
+    print(result['affinity'].shape)
+    result['affinity_edit_frac'] = affinity_edit_frac  # shape=(%tr,)
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
