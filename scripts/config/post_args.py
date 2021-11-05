@@ -51,18 +51,55 @@ def get_explainer_args(cmd=None):
     return cmd
 
 
-def get_roar_args():
+# Single test example
+
+
+def get_remove_args():
     """
-    Add arguments specific to "Roar" postprocessing.
+    Add arguments specific to "Remove" postprocessing.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_influence/')
-    cmd.add('--out_dir', type=str, default='output/plot/roar/')
+    cmd.add('--in_dir', type=str, default='temp_remove/')
+    cmd.add('--out_dir', type=str, default='output/plot/remove/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--std_err', type=int, default=0)
+    cmd.add('--custom_dir', type=str, default='')
+    return cmd
+
+
+def get_label_args():
+    """
+    Add arguments specific to "Label" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_label/')
+    cmd.add('--out_dir', type=str, default='output/plot/label/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--edit_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--std_err', type=int, default=0)
+    cmd.add('--custom_dir', type=str, default='')
+    return cmd
+
+
+def get_poison_args():
+    """
+    Add arguments specific to "Label" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_poison/')
+    cmd.add('--out_dir', type=str, default='output/plot/poison/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--poison_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--std_err', type=int, default=0)
     cmd.add('--custom_dir', type=str, default='')
     return cmd
@@ -101,39 +138,6 @@ def get_correlation_args():
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--custom_dir', type=str, default=None)
-    return cmd
-
-
-def get_noise_args():
-    """
-    Add arguments specific to the "Noise" postprocessing.
-
-    Return ArgParser object.
-    """
-    cmd = get_general_args()
-    cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_noise/')
-    cmd.add('--out_dir', type=str, default='output/plot/noise/')
-    cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
-    cmd.add('--noise_frac', type=float, default=0.4)
-    cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--n_repeat', type=int, default=5)
-    return cmd
-
-
-def get_poison_args():
-    """
-    Add arguments specific to the "Poison" postprocessing.
-
-    Return ArgParser object.
-    """
-    cmd = get_general_args()
-    cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_poison/')
-    cmd.add('--out_dir', type=str, default='output/plot/poison/')
-    cmd.add('--poison_frac', type=float, nargs='+', default=[0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--val_frac', type=float, default=0.1)
     return cmd
 
 
@@ -202,6 +206,77 @@ def get_label_edit_args():
     cmd.add('--step_size', type=int, default=10)
     return cmd
 
+
+# Set of test examples
+
+
+def get_remove_set_args():
+    """
+    Add arguments specific to the "Remove Set" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_remove_set/')
+    cmd.add('--out_dir', type=str, default='output/plot/remove_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--remove_frac', type=float, nargs='+',
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    return cmd
+
+
+def get_label_set_args():
+    """
+    Add arguments specific to the "Label Set" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_label_set/')
+    cmd.add('--out_dir', type=str, default='output/plot/label_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--edit_frac', type=float, nargs='+',
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    return cmd
+
+
+def get_poison_set_args():
+    """
+    Add arguments specific to the "Poison Set" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_poison_set/')
+    cmd.add('--out_dir', type=str, default='output/plot/poison_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--poison_frac', type=float, nargs='+',
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    return cmd
+
+
+def get_noise_args():
+    """
+    Add arguments specific to the "Noise" postprocessing.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_noise/')
+    cmd.add('--out_dir', type=str, default='output/plot/noise/')
+    cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
+    cmd.add('--noise_frac', type=float, default=0.4)
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--n_repeat', type=int, default=5)
+    return cmd
+
+
+# deprecated
 
 def get_removal_set_args():
     """

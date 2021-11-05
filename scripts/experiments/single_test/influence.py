@@ -13,11 +13,32 @@ import numpy as np
 from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../')
-sys.path.insert(0, here + '/../')
+sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../')  # config
+sys.path.insert(0, here + '/../')  # util
 import intent
 import util
 from config import exp_args
+
+
+def select_n_jobs(n_jobs):
+    """
+    Select value of n_jobs based on user input and no. available CPUs.
+
+    Input
+        n_jobs: int, desired no. jobs; -1 means use all available CPUs.
+
+    Return
+        - No. jobs to actually run in parallel.
+    """
+    if args.n_jobs == -1:
+        result = joblib.cpu_count()
+
+    else:
+        assert args.n_jobs >= 1
+        result = min(args.n_jobs, joblib.cpu_count())
+
+    return result
 
 
 def get_special_case_tol(dataset, tree_type, method, default_tol=1e-5):
@@ -79,44 +100,6 @@ def select_elements(arr, rng, n):
     return result
 
 
-def remove_and_evaluate(objective, ranking, tree,
-                        X_train, y_train, X_test, y_test,
-                        remove_frac_list, logger):
-
-    # get appropriate evaluation function
-    eval_fn = util.eval_loss
-
-    # result container
-    result = {}
-    result['loss'] = np.full(len(remove_frac_list), np.nan, dtype=np.float32)
-
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.3f}%')
-    result['loss'][0] = res['loss']
-
-    for i, remove_frac in enumerate(remove_frac_list):
-        n_remove = int(X_train.shape[0] * remove_frac)
-
-        new_X_train = np.delete(X_train, ranking[:n_remove], axis=0)
-        new_y_train = np.delete(y_train, ranking[:n_remove])
-
-        if objective == 'binary' and len(np.unique(new_y_train)) == 1:
-            logger.info('Only samples from one class remain!')
-            break
-
-        elif objective == 'multiclass' and len(np.unique(new_y_train)) < len(np.unique(y_train)):
-            logger.info('At least 1 sample is not present for all classes!')
-            break
-
-        else:
-            new_tree = clone(tree).fit(new_X_train, new_y_train)
-
-            prefix = f'{i + 1:>5}: {remove_frac * 100:>5.3f}%'
-            res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
-            result['loss'][i] = res['loss']
-
-    return result
-
-
 def experiment(args, logger, params, out_dir):
 
     # initialize experiment
@@ -157,49 +140,7 @@ def experiment(args, logger, params, out_dir):
     logger.info(f'[INFO] explainer influence time: {inf_time:.5f}s')
     logger.info(f'[INFO] total time: {time.time() - begin:.5f}s')
 
-    # get ranking
-    ranking = np.argsort(influence, axis=0)[::-1]  # shape=(no. train, no. test)
-
-    # get no. jobs to run in parallel
-    if args.n_jobs == -1:
-        n_jobs = joblib.cpu_count()
-
-    else:
-        assert args.n_jobs >= 1
-        n_jobs = min(args.n_jobs, joblib.cpu_count())
-
-    logger.info(f'\n[INFO] no. jobs: {n_jobs:,}')
-
-    with joblib.Parallel(n_jobs=n_jobs) as parallel:
-
-        n_finish = 0
-        n_remain = len(test_idxs)
-
-        res_list = []
-
-        while n_remain > 0:
-            n = min(min(10, n_jobs), n_remain)
-
-            results = parallel(joblib.delayed(remove_and_evaluate)
-                                             (objective, ranking[:, n_finish + i], tree,
-                                              X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.remove_frac, logger)
-                                              for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
-
-            # synchronization barrier
-            res_list += results
-
-            n_finish += n
-            n_remain -= n
-
-            cum_time = time.time() - start
-            logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
-                        f', cum. time: {cum_time:.3f}s')
-
-        # combine results from each test example
-        result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
-
-    # store ALL train and test predictions
+    # generate ALL test predictions, save if necessary
     if objective == 'regression':
         y_train_pred = tree.predict(X_train).reshape(-1, 1)
         y_test_pred = tree.predict(X_test).reshape(-1, 1)
@@ -225,15 +166,17 @@ def experiment(args, logger, params, out_dir):
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
     result['n_jobs'] = n_jobs
+
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))
+
     np.save(os.path.join(out_dir, 'results.npy'), result)
 
 
 def main(args):
 
     # get unique hash for this experiment setting
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
+    exp_dict = {'n_test': args.n_test}
     exp_hash = util.dict_to_hash(exp_dict)
 
     # special cases

@@ -25,18 +25,53 @@ def get_general_args(cmd=None):
     return cmd
 
 
-def get_roar_args():
+# Single test example
+
+
+def get_remove_args():
     """
-    Add arguments specific to "Roar" summarization.
+    Add arguments specific to "Remove" summarization.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = post_args.get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_influence/')
-    cmd.add('--out_dir', type=str, default='output/plot/roar/')
+    cmd.add('--in_dir', type=str, default='temp_remove/')
+    cmd.add('--out_dir', type=str, default='output/plot/remove/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--ckpt', type=int, default=1)
+    return cmd
+
+
+def get_label_args():
+    """
+    Add arguments specific to "Label" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_label/')
+    cmd.add('--out_dir', type=str, default='output/plot/label/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--edit_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--ckpt', type=int, default=1)
+    return cmd
+
+
+def get_poison_args():
+    """
+    Add arguments specific to "Poison" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_poison/')
+    cmd.add('--out_dir', type=str, default='output/plot/poison/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--poison_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--ckpt', type=int, default=1)
     return cmd
 
@@ -79,6 +114,77 @@ def get_correlation_args():
     return cmd
 
 
+def get_resources_args():
+    """
+    Add arguments specific to the "Resources" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_resources/')
+    cmd.add('--out_dir', type=str, default='output/plot/resources/')
+    cmd.add('--n_repeat', type=int, default=5)
+    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb', 'sgb', 'xgb', 'cb'])
+    cmd.add('--use_existing', type=bool, default=True)
+    return cmd
+
+
+# Set of test examples
+
+
+def get_remove_set_args():
+    """
+    Add arguments specific to the "Remove Set" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_remove_set')
+    cmd.add('--out_dir', type=str, default='output/plot/remove_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--remove_frac', type=float,
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    cmd.add('--ckpt', type=int, default=1)
+    return cmd
+
+
+def get_label_set_args():
+    """
+    Add arguments specific to the "Label Set" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_label_set')
+    cmd.add('--out_dir', type=str, default='output/plot/label_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--label_frac', type=float,
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    cmd.add('--ckpt', type=int, default=1)
+    return cmd
+
+
+def get_poison_set_args():
+    """
+    Add arguments specific to the "Poison Set" summarization.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='temp_poison_set')
+    cmd.add('--out_dir', type=str, default='output/plot/poison_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--poison_frac', type=float,
+            default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    cmd.add('--ckpt', type=int, default=1)
+    return cmd
+
+
+
 def get_noise_args():
     """
     Add arguments specific to the "Noise" summarization.
@@ -98,36 +204,7 @@ def get_noise_args():
     return cmd
 
 
-def get_poison_args():
-    """
-    Add arguments specific to the "Poison" summarization.
-
-    Return ArgParser object.
-    """
-    cmd = get_general_args()
-    cmd = post_args.get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_poison')
-    cmd.add('--out_dir', type=str, default='output/plot/poison/')
-    cmd.add('--poison_frac', type=float, default=[0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--ckpt', type=int, default=1)
-    return cmd
-
-
-def get_resources_args():
-    """
-    Add arguments specific to the "Resources" summarization.
-
-    Return ArgParser object.
-    """
-    cmd = get_general_args()
-    cmd = post_args.get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_resources/')
-    cmd.add('--out_dir', type=str, default='output/plot/resources/')
-    cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--tree_type_list', type=str, nargs='+', default=['lgb', 'sgb', 'xgb', 'cb'])
-    cmd.add('--use_existing', type=bool, default=True)
-    return cmd
+# deprecated
 
 
 def get_removal_set_args():

@@ -86,29 +86,7 @@ def experiment(args, exp_dir, out_dir, logger):
             ax.set_title(f'Weighted Affinity')
             ax.legend(fontsize=6)
 
-        # # plot affinity after 1% label edits
-        # ax = axs[0][2]
-
-        # if 'boostin' in method or 'leaf_sim' in method:
-        #     sns.histplot(avg_affinity[1], ax=ax, label=label[method], element='step', fill=True, color=color[method])
-        #     ax.set_xlabel('Avg. Affinity')
-        #     ax.set_ylabel('No. train')
-            # ax.set_title(f'Affinity - After {res["affinity_edit_frac"][1] * 100:.0f}% Edits')
-
-        # plot affinity after 1% label edits
-        # ax = axs[1][1]
-
-        # if 'boostin' in method or 'leaf_sim' in method:
-            # l = '--' if 'boostin' in method else '-'
-        #     sns.histplot(avg_weighted_affinity[1], ax=ax, label=label[method],
-        #                  element='step', fill=False, color='k', linestyle=l)
-        #     ax.set_xlabel('Avg. Weighted Affinity')
-        #     ax.set_ylabel('No. train')
-        #     ax.legend(fontsize=6)
-
     logger.info(f'\nsaving results to {out_dir}/...')
-
-    # fig.delaxes(axs[1][0])
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')

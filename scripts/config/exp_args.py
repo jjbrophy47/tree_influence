@@ -47,6 +47,9 @@ def get_explainer_args(cmd=None):
     return cmd
 
 
+# Single test example experiments
+
+
 def get_influence_args():
     """
     Add arguments specific to the "Influence" experiment.
@@ -57,7 +60,51 @@ def get_influence_args():
     cmd = get_explainer_args(cmd)
     cmd.add('--out_dir', type=str, default='output/influence/')
     cmd.add('--n_test', type=int, default=100)
+    return cmd
+
+
+def get_remove_args():
+    """
+    Add arguments specific to the "Remove" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence/')
+    cmd.add('--out_dir', type=str, default='output/remove/')
+    cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    return cmd
+
+
+def get_label_args():
+    """
+    Add arguments specific to the "Label" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence/')
+    cmd.add('--out_dir', type=str, default='output/label/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--edit_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    return cmd
+
+
+def get_poison_args():
+    """
+    Add arguments specific to the "Poison" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence/')
+    cmd.add('--out_dir', type=str, default='output/label/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--poison_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     return cmd
 
 
@@ -74,38 +121,6 @@ def get_counterfactual_args():
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--step_size', type=int, default=10)
-    return cmd
-
-
-def get_noise_args():
-    """
-    Add arguments specific to the "Noise" experiment.
-
-    Return ArgParser object.
-    """
-    cmd = get_general_args()
-    cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/noise/')
-    cmd.add('--strategy', type=str, default='test_sum')
-    cmd.add('--noise_frac', type=float, default=0.4)
-    cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--seed', type=int, default=-1)
-    return cmd
-
-
-def get_poison_args():
-    """
-    Add arguments specific to the "Poison" experiment.
-
-    Return ArgParser object.
-    """
-    cmd = get_general_args()
-    cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/poison/')
-    cmd.add('--poison_frac', type=float, nargs='+', default=[0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--val_frac', type=float, default=0.1)
     return cmd
 
 
@@ -171,16 +186,83 @@ def get_label_edit_args():
     return cmd
 
 
-def get_removal_set_args():
+# Set of test examples experiments
+
+
+def get_influence_set_args():
     """
-    Add arguments specific to the "Removal Set" experiment.
+    Add arguments specific to the "Influence Set" experiment.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/removal_set/')
+    cmd.add('--out_dir', type=str, default='output/influence_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    return cmd
+
+
+def get_remove_set_args():
+    """
+    Add arguments specific to the "Remove Set" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence_set/')
+    cmd.add('--out_dir', type=str, default='output/remove_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--remove_frac', type=float, nargs='+',
             default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    return cmd
+
+
+def get_label_set_args():
+    """
+    Add arguments specific to the "Label Set" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence_set/')
+    cmd.add('--out_dir', type=str, default='output/label_set/')
     cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--poison_frac', type=float, nargs='+',
+        default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    return cmd
+
+
+def get_poison_set_args():
+    """
+    Add arguments specific to the "Poison" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence_set/')
+    cmd.add('--out_dir', type=str, default='output/poison_set/')
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--poison_frac', type=float, nargs='+',
+        default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
+    return cmd
+
+
+def get_noise_args():
+    """
+    Add arguments specific to the "Noise" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--out_dir', type=str, default='output/noise/')
+    cmd.add('--strategy', type=str, default='test_sum')
+    cmd.add('--noise_frac', type=float, default=0.4)
+    cmd.add('--val_frac', type=float, default=0.1)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--n_repeat', type=int, default=5)
+    cmd.add('--seed', type=int, default=-1)
     return cmd

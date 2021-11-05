@@ -14,8 +14,9 @@ import pandas as pd
 from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../')
-sys.path.insert(0, here + '/../')
+sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../')  # config
+sys.path.insert(0, here + '/../')  # util
 import intent
 import util
 from config import exp_args
@@ -177,6 +178,7 @@ def experiment(args, logger, in_dir, out_dir):
     hp = util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
     tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
     tree.set_params(**hp)
+
     tree = tree.fit(X_train, y_train)
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
 
@@ -245,7 +247,7 @@ def main(args):
     # get unique hash for the explainer
     _, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
+    exp_dict = {'n_test': args.n_test}
 
     # get input dir., get unique hash for the influence experiment setting
     in_exp_hash = util.dict_to_hash(exp_dict)

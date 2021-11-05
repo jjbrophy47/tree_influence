@@ -4,6 +4,7 @@
 **.so
 **.html
 **build
+**.DS_STORE
 
 py39/
 output/
