@@ -305,6 +305,7 @@ def eval_loss(objective, model, X, y, logger=None, prefix='', eps=1e-5):
         y_hat = model.predict(X)  # shape=(X.shape[0],)
         losses = 0.5 * (y - y_hat) ** 2
         result['pred'] = y_hat
+        result['pred_label'] = y_hat[0]
         result['loss'] = losses[0]
         loss_type = 'squared_loss'
 
@@ -313,6 +314,7 @@ def eval_loss(objective, model, X, y, logger=None, prefix='', eps=1e-5):
         y_hat_pos = np.clip(y_hat[:, 1], eps, 1 - eps)  # prevent log(0)
         losses = -(y * np.log(y_hat_pos) + (1 - y) * np.log(1 - y_hat_pos))
         result['pred'] = y_hat
+        result['pred_label'] = np.argmax(y_hat.flatten())
         result['loss'] = losses[0]
         loss_type = 'logloss'
 
@@ -322,6 +324,7 @@ def eval_loss(objective, model, X, y, logger=None, prefix='', eps=1e-5):
         y_hat = model.predict_proba(X)[0]  # shape=(X.shape[0], no. class)
         y_hat = np.clip(y_hat, eps, 1 - eps)
         result['pred'] = y_hat
+        result['pred_label'] = np.argmax(y_hat.flatten())
         result['loss'] = -np.log(y_hat)[target]
         loss_type = 'cross_entropy_loss'
 
@@ -330,6 +333,7 @@ def eval_loss(objective, model, X, y, logger=None, prefix='', eps=1e-5):
     if logger:
         with np.printoptions(formatter={'float': '{:0.5f}'.format}):
             logger.info(f"[{prefix}] prediction: {result['pred']}, "
+                        f"pred. label: {result['pred_label']:>10.3f}, "
                         f"{loss_type}: {result['loss']:>10.3f}, ")
 
     return result

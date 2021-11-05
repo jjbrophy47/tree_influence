@@ -121,8 +121,6 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
         flip_idxs = ranking[:i]
         new_y_train = edit_labels(y_train, flip_idxs, objective, adv_lbl, y_train_median)
 
-        # print(flip_idxs, y_train[flip_idxs], new_y_train[flip_idxs])
-
         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')
             result['status'] = 'fail'
@@ -247,22 +245,22 @@ def main(args):
 
     # get input dir., get unique hash for the influence experiment setting
     exp_dict = {'n_test': args.n_test}
-    in_exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = util.dict_to_hash(exp_dict)
 
     in_dir = os.path.join(args.in_dir,
                           args.dataset,
                           args.tree_type,
-                          f'exp_{in_exp_hash}',
+                          f'exp_{exp_hash}',
                           f'{args.method}_{method_hash}')
 
     # create output dir., get unique hash for the influence experiment setting
     exp_dict['step_size'] = args.step_size
-    out_exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
                            args.tree_type,
-                           f'exp_{out_exp_hash}',
+                           f'exp_{exp_hash}',
                            f'{args.method}_{method_hash}')
 
     # create output directory and clear previous contents
@@ -273,7 +271,7 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    experiment(args, logger, exp_dir, out_dir)
+    experiment(args, logger, in_dir, out_dir)
 
 
 if __name__ == '__main__':

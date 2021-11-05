@@ -13,17 +13,20 @@ import numpy as np
 from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../')
-sys.path.insert(0, here + '/../')
+sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../')  # config
+sys.path.insert(0, here + '/../')  # util
 import intent
 import util
 from config import exp_args
 from poison import poison
+from influence import get_special_case_tol
+from influence import select_n_jobs
 
 
 def relabel_and_evaluate(objective, ranking, tree,
                          X_train, y_train, X_test, y_test,
-                         edit_frac_list, logger):
+                         edit_frac_list, rng, logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
@@ -31,15 +34,13 @@ def relabel_and_evaluate(objective, ranking, tree,
     # result container
     result = {}
     result['loss'] = np.full(len(edit_frac_list), np.nan, dtype=np.float32)
-
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.3f}%')
-    result['loss'][0] = res['loss']
+    result['pred_label'] = np.full(len(remove_frac_list), np.nan, dtype=np.float32)
 
     for i, edit_frac in enumerate(edit_frac_list):
         n_edit = int(X_train.shape[0] * edit_frac)
         edit_idxs = ranking[:n_edit]
 
-        new_X_train, new_y_train = poison(X_train, y_train, objective, rng, edit_idxs)
+        new_X_train, new_y_train = poison(X_train, y_train, objective, rng, edit_idxs, poison_features=False)
 
         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')
@@ -55,6 +56,7 @@ def relabel_and_evaluate(objective, ranking, tree,
             prefix = f'{i + 1:>5}: {edit_frac * 100:>5.3f}%'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
             result['loss'][i] = res['loss']
+            result['pred_label'][i] = res['pred_label']
 
     return result
 
@@ -105,7 +107,7 @@ def experiment(args, logger, in_dir, out_dir):
             results = parallel(joblib.delayed(relabel_and_evaluate)
                                              (objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.edit_frac, logger)
+                                              args.edit_frac, rng, logger)
                                               for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
@@ -118,11 +120,10 @@ def experiment(args, logger, in_dir, out_dir):
             logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
                         f', cum. time: {cum_time:.3f}s')
 
-        # combine results from each test example
-        result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
-
     # save results
-    result['edit_frac'] = np.array(args.edit_frac, dtype=np.float32)
+    result['edit_frac'] = np.array(args.edit_frac, dtype=np.float32)  # shape=(no. ckpts.,)
+    result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts.)
+    result['pred_label'] = np.vstack([res['pred_label'] for res in res_list])  # shape=(no. test, no. ckpts)
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
@@ -142,16 +143,18 @@ def main(args):
 
     # get input dir., get unique hash for the influence experiment setting
     exp_dict = {'n_test': args.n_test}
-    in_exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = util.dict_to_hash(exp_dict)
+
     in_dir = os.path.join(args.in_dir,
                           args.dataset,
                           args.tree_type,
-                          f'exp_{in_exp_hash}',
+                          f'exp_{exp_hash}',
                           f'{args.method}_{method_hash}')
 
     # create output dir., get unique hash for the influence experiment setting
     exp_dict['edit_frac'] = args.edit_frac
-    out_exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = util.dict_to_hash(exp_dict)
+
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
                            args.tree_type,

@@ -31,12 +31,12 @@ def select_n_jobs(n_jobs):
     Return
         - No. jobs to actually run in parallel.
     """
-    if args.n_jobs == -1:
+    if n_jobs == -1:
         result = joblib.cpu_count()
 
     else:
-        assert args.n_jobs >= 1
-        result = min(args.n_jobs, joblib.cpu_count())
+        assert n_jobs >= 1
+        result = min(n_jobs, joblib.cpu_count())
 
     return result
 
@@ -155,7 +155,6 @@ def experiment(args, logger, params, out_dir):
         y_test_pred = tree.predict_proba(X_test)
 
     # save results
-    result['remove_frac'] = np.array(args.remove_frac, dtype=np.float32)
     result['influence'] = influence
     result['test_idxs'] = test_idxs
     result['y_test_pred'] = y_test_pred
@@ -164,7 +163,7 @@ def experiment(args, logger, params, out_dir):
     result['inf_time'] = inf_time
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
-    result['n_jobs'] = n_jobs
+    result['n_jobs'] = args.n_jobs
 
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))

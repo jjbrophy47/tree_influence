@@ -19,6 +19,8 @@ sys.path.insert(0, here + '/../')  # util
 import intent
 import util
 from config import exp_args
+from influence import get_special_case_tol
+from influence import select_n_jobs
 
 
 def poison(X, y, objective, rng, target_idxs, poison_features=False):
@@ -45,7 +47,7 @@ def poison(X, y, objective, rng, target_idxs, poison_features=False):
 
 def poison_and_evaluate(objective, ranking, tree,
                         X_train, y_train, X_test, y_test,
-                        poison_frac_list, logger):
+                        poison_frac_list, rng, logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
@@ -53,9 +55,7 @@ def poison_and_evaluate(objective, ranking, tree,
     # result container
     result = {}
     result['loss'] = np.full(len(poison_frac_list), np.nan, dtype=np.float32)
-
-    res = eval_fn(objective, tree, X_test, y_test, logger, prefix=f'{0:>5}: {0:>5.3f}%')
-    result['loss'][0] = res['loss']
+    result['pred_label'] = np.full(len(remove_frac_list), np.nan, dtype=np.float32)
 
     for i, poison_frac in enumerate(poison_frac_list):
         n_poison = int(X_train.shape[0] * poison_frac)
@@ -77,6 +77,7 @@ def poison_and_evaluate(objective, ranking, tree,
             prefix = f'{i + 1:>5}: {poison_frac * 100:>5.3f}%'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
             result['loss'][i] = res['loss']
+            result['pred_label'][i] = res['pred_label']
 
     return result
 
@@ -127,7 +128,7 @@ def experiment(args, logger, in_dir, out_dir):
             results = parallel(joblib.delayed(poison_and_evaluate)
                                              (objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.poison_frac, logger)
+                                              args.poison_frac, rng, logger)
                                               for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
@@ -140,11 +141,10 @@ def experiment(args, logger, in_dir, out_dir):
             logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
                         f', cum. time: {cum_time:.3f}s')
 
-        # combine results from each test example
-        result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
-
     # save results
     result['poison_frac'] = np.array(args.poison_frac, dtype=np.float32)
+    result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
+    result['pred_label'] = np.vstack([res['pred_label'] for res in res_list])  # shape=(no. test, no. ckpts)
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
@@ -164,16 +164,18 @@ def main(args):
 
     # get input dir., get unique hash for the influence experiment setting
     exp_dict = {'n_test': args.n_test}
-    in_exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = util.dict_to_hash(exp_dict)
+
     in_dir = os.path.join(args.in_dir,
                           args.dataset,
                           args.tree_type,
-                          f'exp_{in_exp_hash}',
+                          f'exp_{exp_hash}',
                           f'{args.method}_{method_hash}')
 
     # create output dir., get unique hash for the influence experiment setting
     exp_dict['poison_frac'] = args.poison_frac
-    out_exp_hash = util.dict_to_hash(exp_dict)
+    exp_hash = util.dict_to_hash(exp_dict)
+
     out_dir = os.path.join(args.out_dir,
                            args.dataset,
                            args.tree_type,
