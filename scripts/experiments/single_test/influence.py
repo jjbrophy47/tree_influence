@@ -157,7 +157,6 @@ def experiment(args, logger, params, out_dir):
     # save results
     result['remove_frac'] = np.array(args.remove_frac, dtype=np.float32)
     result['influence'] = influence
-    result['ranking'] = ranking
     result['test_idxs'] = test_idxs
     result['y_test_pred'] = y_test_pred
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
@@ -179,10 +178,8 @@ def main(args):
     exp_dict = {'n_test': args.n_test}
     exp_hash = util.dict_to_hash(exp_dict)
 
-    # special cases
-    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
-
     # get unique hash for the explainer
+    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
     params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
     # create output dir
@@ -201,6 +198,9 @@ def main(args):
     logger.info(f'\ntimestamp: {datetime.now()}')
 
     experiment(args, logger, params, out_dir)
+
+    # clean up
+    util.remove_logger(logger)
 
 
 if __name__ == '__main__':

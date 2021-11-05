@@ -14,13 +14,13 @@ from sklearn.base import clone
 from sklearn.model_selection import train_test_split
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../')
-sys.path.insert(0, here + '/../')
-from poison import poison
+sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../')  # config
+sys.path.insert(0, here + '/../')  # util
 import intent
 import util
 from config import exp_args
-from influence import get_special_case_tol
+from single_test.influence import get_special_case_tol
 
 
 def add_noise(X, y, objective, rng, frac=0.1):
@@ -178,18 +178,15 @@ def main(args):
         else:
             seed = random_state
 
-        # get unique hash for this experiment setting
+        # get unique hash for the explainer
+        args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
+        params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
+
+        # create output dir., get unique hash for this experiment setting
         exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac,
                     'check_frac': args.check_frac}
         exp_hash = util.dict_to_hash(exp_dict)
 
-        # special cases
-        args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
-
-        # get unique hash for the explainer
-        params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
-
-        # create output dir
         out_dir = os.path.join(args.out_dir,
                                args.dataset,
                                args.tree_type,
@@ -208,6 +205,7 @@ def main(args):
 
         experiment(args, logger, params, seed, out_dir)
 
+        # clean up
         util.remove_logger(logger)
 
 

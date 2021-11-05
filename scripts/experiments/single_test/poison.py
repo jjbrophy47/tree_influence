@@ -37,7 +37,7 @@ def poison(X, y, objective, rng, target_idxs, poison_features=False):
         new_y[target_idxs] = rng.choice(np.unique(y), size=len(target_idxs))
 
     else:
-        assert objective == 'regression':
+        assert objective == 'regression'
         new_y[target_idxs] = rng.uniform(np.min(y), np.max(y), size=len(target_idxs))
 
     return new_X, new_y

@@ -241,22 +241,19 @@ def experiment(args, logger, in_dir, out_dir):
 
 def main(args):
 
-    # special cases
-    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
-
     # get unique hash for the explainer
+    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
     _, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
-    exp_dict = {'n_test': args.n_test}
-
     # get input dir., get unique hash for the influence experiment setting
+    exp_dict = {'n_test': args.n_test}
     in_exp_hash = util.dict_to_hash(exp_dict)
 
-    exp_dir = os.path.join(args.in_dir,
-                           args.dataset,
-                           args.tree_type,
-                           f'exp_{in_exp_hash}',
-                           f'{args.method}_{method_hash}')
+    in_dir = os.path.join(args.in_dir,
+                          args.dataset,
+                          args.tree_type,
+                          f'exp_{in_exp_hash}',
+                          f'{args.method}_{method_hash}')
 
     # create output dir., get unique hash for the influence experiment setting
     exp_dict['step_size'] = args.step_size
