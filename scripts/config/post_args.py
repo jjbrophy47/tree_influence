@@ -36,6 +36,7 @@ def get_explainer_args(cmd=None):
                                                       'leaf_refit'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--leaf_inf_update_set', type=int, default=[-1])  # LeafInfluence
+    cmd.add('--leaf_inf_atol', type=int, default=[1e-5])  # LeafInfluence
     cmd.add('--input_sim_measure', type=str, default=['euclidean'])  # InputSim
     cmd.add('--tree_sim_measure', type=str, default=['dot_prod'])  # TreeSim
     cmd.add('--tree_kernel', type=str, default=['lpw'])  # Trex, TreeSim
