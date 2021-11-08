@@ -34,7 +34,7 @@ def relabel_and_evaluate(objective, ranking, tree,
     # result container
     result = {}
     result['loss'] = np.full(len(edit_frac_list), np.nan, dtype=np.float32)
-    result['pred_label'] = np.full(len(remove_frac_list), np.nan, dtype=np.float32)
+    result['pred_label'] = np.full(len(edit_frac_list), np.nan, dtype=np.float32)
 
     for i, edit_frac in enumerate(edit_frac_list):
         n_edit = int(X_train.shape[0] * edit_frac)

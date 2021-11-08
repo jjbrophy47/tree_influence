@@ -55,7 +55,7 @@ def poison_and_evaluate(objective, ranking, tree,
     # result container
     result = {}
     result['loss'] = np.full(len(poison_frac_list), np.nan, dtype=np.float32)
-    result['pred_label'] = np.full(len(remove_frac_list), np.nan, dtype=np.float32)
+    result['pred_label'] = np.full(len(poison_frac_list), np.nan, dtype=np.float32)
 
     for i, poison_frac in enumerate(poison_frac_list):
         n_poison = int(X_train.shape[0] * poison_frac)
