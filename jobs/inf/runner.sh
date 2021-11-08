@@ -13,7 +13,7 @@ method=$2
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-python3 scripts/experiments/influence.py \
+python3 scripts/experiments/single_test/influence.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
