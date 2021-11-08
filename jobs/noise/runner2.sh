@@ -16,7 +16,7 @@ seed=$5
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-python3 scripts/experiments/noise.py \
+python3 scripts/experiments/multi_test/noise.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \

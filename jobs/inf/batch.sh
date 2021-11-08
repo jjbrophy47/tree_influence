@@ -47,4 +47,4 @@ sbatch -a 1,17             -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out'   
 sbatch -a 2,11,20          -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # scratch pad
-sbatch -a 10               -c 9 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'        $run $t 'trex'
+sbatch -a 10               -c 9  -t 1440  -p 'short' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'

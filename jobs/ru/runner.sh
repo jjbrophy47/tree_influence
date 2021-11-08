@@ -13,7 +13,7 @@ method=$2
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-python3 scripts/experiments/resources.py \
+python3 scripts/experiments/single_test/resources.py \
   --dataset $dataset \
   --method $method \
   --tree_type $tree_type \

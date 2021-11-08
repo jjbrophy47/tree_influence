@@ -14,7 +14,7 @@ step_size=$3
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-python3 scripts/experiments/label_edit.py \
+python3 scripts/experiments/single_test/label_edit.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \

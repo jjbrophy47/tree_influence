@@ -15,7 +15,7 @@ n_early_stop=$4
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-python3 scripts/experiments/reinfluence.py \
+python3 scripts/experiments/single_test/reinfluence.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
