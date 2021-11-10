@@ -20,49 +20,10 @@ sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import summ_args
+from remove import get_rank_df
 
 
-def get_rank_df(df, skip_cols=[], remove_cols=[], ascending=False):
-    """
-    Rank values in dataframe.
-
-    Input
-        df: pd.DataFrame, input dataframe values.
-        skip_cols: list, columns to skip.
-        remove_cols: list, columns to remove from return dataframe (skipped too).
-        ascending: bool, if True, rank 1 has lowest value.
-
-    Return df with values replaced by rankings.
-    """
-    result_df = df.copy()
-
-    cols = [c for c in df.columns if c not in skip_cols + remove_cols]
-    df = df[cols]
-
-    # drop rows in which all values are nan
-    df = df.dropna(axis=0, how='all')
-    result_df = result_df.dropna(axis=0, how='all', subset=cols)
-
-    if ascending:
-        df = df.fillna(1e300)  # missing values get last place ranking
-        vals = df.values
-        ranks = vals.argsort(axis=1).argsort(axis=1) + 1
-
-    else:
-        df = df.fillna(-1e300)
-        vals = df.values
-        ranks = np.flip(vals.argsort(axis=1), axis=1).argsort(axis=1) + 1
-
-    for i, col in enumerate(cols):
-        result_df[col] = ranks[:, i]
-
-    drop_cols = [c for c in result_df.columns if c in remove_cols]
-    result_df = result_df.drop(columns=drop_cols)
-
-    return result_df
-
-
-def process(args, out_dir, exp_hash, logger):
+def process(args, exp_hash, out_dir, logger):
     begin = time.time()
 
     color, line, label = pp_util.get_plot_dicts()
@@ -103,13 +64,13 @@ def process(args, out_dir, exp_hash, logger):
             runtime = res['fit_time'] + res['inf_time']
             mem = res['max_rss_MB']
 
-            row['remove_frac'] = res['remove_frac'][args.ckpt]
+            row['edit_frac'] = res['edit_frac'][args.ckpt]
             row[f'{label[method]}'] = loss_mean
 
-            row2['remove_frac'] = row['remove_frac']
+            row2['edit_frac'] = row['edit_frac']
             row2[f'{label[method]}'] = runtime
 
-            row3['remove_frac'] = row['remove_frac']
+            row3['edit_frac'] = row['edit_frac']
             row3[f'{label[method]}'] = mem
 
         rows.append(row)
@@ -121,7 +82,7 @@ def process(args, out_dir, exp_hash, logger):
     df3 = pd.DataFrame(rows3)
 
     # drop rows with missing values
-    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    skip_cols = ['dataset', 'tree_type', 'edit_frac']
     remove_cols = ['LeafInfluence', 'LeafRefit']
 
     cols = [x for x in df.columns if x not in skip_cols + remove_cols]
@@ -135,7 +96,7 @@ def process(args, out_dir, exp_hash, logger):
     logger.info(f'\nMemory:\n{df3}')
 
     # compute rankings
-    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    skip_cols = ['dataset', 'tree_type', 'edit_frac']
 
     rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['LeafInfluence', 'LeafRefit'])
     rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluence'])], skip_cols=skip_cols)
@@ -156,7 +117,7 @@ def process(args, out_dir, exp_hash, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
+    exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,
@@ -171,8 +132,8 @@ def main(args):
     logger.info(args)
     logger.info(datetime.now())
 
-    process(args, out_dir, exp_hash, logger)
+    process(args, exp_hash, out_dir, logger)
 
 
 if __name__ == '__main__':
-    main(summ_args.get_roar_args().parse_args())
+    main(summ_args.get_label_args().parse_args())

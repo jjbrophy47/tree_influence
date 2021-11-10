@@ -21,34 +21,7 @@ sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import rank_args
-
-
-def get_mean_df(in_df, skip_cols=[], sort=None):
-    """
-    Compute mean (with sem) for each method.
-
-    Input
-        df: pd.DataFrame, dataframe with values to compute mean over.
-        skip_cols: list, list of columns to ignore.
-        sort: str, Sort methods; 'ascending', 'descending', or None.
-
-    Return new pd.DataFrame with the original columns as the index.
-    """
-    cols = [c for c in list(in_df.columns) if c not in skip_cols]
-
-    in_df = in_df[cols]
-
-    # 95% CI
-    df = pd.DataFrame(np.vstack([in_df.mean(axis=0), 1.96 * in_df.sem(axis=0)]).T,
-                      index=cols, columns=['mean', 'sem'])
-
-    if sort == 'ascending':
-        df = df.sort_values('mean')
-
-    elif sort == 'descending':
-        df = df.sort_values('mean', ascending=False)
-
-    return df
+from remove import get_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -105,7 +78,7 @@ def process(args, exp_hash, out_dir, logger):
     df_mem_all = df_mem_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
-    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    skip_cols = ['dataset', 'tree_type', 'edit_frac']
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
@@ -191,7 +164,7 @@ def process(args, exp_hash, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
+    exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     assert len(args.tree_type) > 0
@@ -210,4 +183,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(rank_args.get_roar_args().parse_args())
+    main(rank_args.get_label_args().parse_args())

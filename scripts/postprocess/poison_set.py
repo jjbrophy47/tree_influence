@@ -34,28 +34,28 @@ def process(args, exp_dir, out_dir, logger):
     for method, res in res_list:
 
         ax = axs[0]
-        ax.errorbar(res['remove_frac'] * 100, res['loss'], linestyle=line[method],
+        ax.errorbar(res['poison_frac'] * 100, res['loss'], linestyle=line[method],
                     color=color[method], label=label[method])
         ax.axhline(res['loss'][0], color='k', linestyle='--')
         ax.set_ylabel('Test loss')
-        ax.set_xlabel('% removed')
+        ax.set_xlabel('% poison')
         ax.set_title(f'Loss')
         ax.legend(fontsize=6)
 
         ax = axs[1]
-        ax.errorbar(res['remove_frac'] * 100, res['acc'], linestyle=line[method],
+        ax.errorbar(res['poison_frac'] * 100, res['acc'], linestyle=line[method],
                     color=color[method], label=label[method])
         ax.axhline(res['acc'][0], color='k', linestyle='--')
         ax.set_ylabel('Test accuracy')
-        ax.set_xlabel('% removed')
+        ax.set_xlabel('% poison')
         ax.set_title(f'Accuracy')
 
         ax = axs[2]
-        ax.errorbar(res['remove_frac'] * 100, res['auc'], linestyle=line[method],
+        ax.errorbar(res['poison_frac'] * 100, res['auc'], linestyle=line[method],
                     color=color[method], label=label[method])
         ax.axhline(res['auc'][0], color='k', linestyle='--')
         ax.set_ylabel('Test AUC')
-        ax.set_xlabel('% removed')
+        ax.set_xlabel('% poison')
         ax.set_title(f'AUC')
 
     logger.info(f'\nSaving results to {out_dir}/...')
@@ -66,7 +66,7 @@ def process(args, exp_dir, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'remove_frac': args.remove_frac, 'val_frac': args.val_frac}
+    exp_dict = {'poison_frac': args.poison_frac, 'val_frac': args.val_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     exp_dir = os.path.join(args.in_dir,
@@ -78,7 +78,7 @@ def main(args):
                            args.tree_type,
                            f'exp_{exp_hash}')
 
-    log_dir = os.path.join(out_dir, 'logs')
+    log_dir = os.path.join(out_dir, 'postprocess', 'logs')
 
     # create logger
     os.makedirs(out_dir, exist_ok=True)
@@ -91,4 +91,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(post_args.get_removal_set_args().parse_args())
+    main(post_args.get_poison_set_args().parse_args())

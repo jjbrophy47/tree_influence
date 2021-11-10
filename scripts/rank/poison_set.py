@@ -20,7 +20,7 @@ sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
 from config import rank_args
-from rank.roar import get_mean_df
+from rank.remove import get_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -78,6 +78,8 @@ def process(args, exp_hash, out_dir, logger):
     df_auc_all = pd.concat(df_auc_list)
     df_li_auc_all = pd.concat(df_li_auc_list)
 
+    print(df_loss_all)
+
     # average ranks among different checkpoints
     group_cols = ['dataset']
 
@@ -89,7 +91,7 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc_all = df_li_auc_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
-    skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    skip_cols = ['dataset', 'tree_type', 'poison_frac']
 
     df_loss = get_mean_df(df_loss_all, skip_cols=skip_cols, sort='ascending')
     df_li_loss = get_mean_df(df_li_loss_all, skip_cols=skip_cols, sort='ascending')
@@ -164,7 +166,7 @@ def process(args, exp_hash, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'remove_frac': args.remove_frac, 'val_frac': args.val_frac}
+    exp_dict = {'poison_frac': args.poison_frac, 'val_frac': args.val_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     assert len(args.tree_type) > 0
@@ -183,4 +185,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(rank_args.get_removal_set_args().parse_args())
+    main(rank_args.get_poison_set_args().parse_args())

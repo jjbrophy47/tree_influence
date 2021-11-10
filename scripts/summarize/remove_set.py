@@ -137,4 +137,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(summ_args.get_removal_set_args().parse_args())
+    main(summ_args.get_remove_set_args().parse_args())

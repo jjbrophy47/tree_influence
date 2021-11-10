@@ -20,7 +20,7 @@ from experiments import util as exp_util
 from config import post_args
 
 
-def process(args, out_dir, logger):
+def process(args, exp_hash, out_dir, logger):
 
     n_test = None
     results = []
@@ -29,9 +29,6 @@ def process(args, out_dir, logger):
     X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, args.dataset)
 
     # get results
-    exp_dict = {'n_test': args.n_test, 'poison_frac': args.poison_frac}
-    exp_hash = exp_util.dict_to_hash(exp_dict)
-
     exp_dir = os.path.join(args.in_dir,
                            args.dataset,
                            args.tree_type,
@@ -57,14 +54,14 @@ def process(args, out_dir, logger):
             assert n_test == temp, f'Inconsistent no. test: {temp:,} != {n_test:,}'
 
         # plot loss
-        x = res['poison_frac'] * 100
+        x = res['remove_frac'] * 100
         y = res['loss'].mean(axis=0)
         y_err = sem(res['loss'], axis=0)
         y_err = y_err if args.std_err else None
 
         ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
                     linestyle=line[method], alpha=0.75)
-        ax.set_xlabel('Train data poisoned (%)')
+        ax.set_xlabel('Train data removed (%)')
         ax.set_ylabel(f'Average test example loss')
         ax.legend(fontsize=6)
 
@@ -78,7 +75,7 @@ def process(args, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'poison_frac': args.poison_frac}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir, args.tree_type, f'exp_{exp_hash}', 'postprocess')
@@ -91,8 +88,8 @@ def main(args):
     logger.info(args)
     logger.info(datetime.now())
 
-    process(args, out_dir, logger)
+    process(args, exp_hash, out_dir, logger)
 
 
 if __name__ == '__main__':
-    main(post_args.get_poison_args().parse_args())
+    main(post_args.get_remove_args().parse_args())

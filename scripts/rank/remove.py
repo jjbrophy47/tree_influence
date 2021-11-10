@@ -21,7 +21,34 @@ sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import rank_args
-from remove import get_mean_df
+
+
+def get_mean_df(in_df, skip_cols=[], sort=None):
+    """
+    Compute mean (with sem) for each method.
+
+    Input
+        df: pd.DataFrame, dataframe with values to compute mean over.
+        skip_cols: list, list of columns to ignore.
+        sort: str, Sort methods; 'ascending', 'descending', or None.
+
+    Return new pd.DataFrame with the original columns as the index.
+    """
+    cols = [c for c in list(in_df.columns) if c not in skip_cols]
+
+    in_df = in_df[cols]
+
+    # 95% CI
+    df = pd.DataFrame(np.vstack([in_df.mean(axis=0), 1.96 * in_df.sem(axis=0)]).T,
+                      index=cols, columns=['mean', 'sem'])
+
+    if sort == 'ascending':
+        df = df.sort_values('mean')
+
+    elif sort == 'descending':
+        df = df.sort_values('mean', ascending=False)
+
+    return df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -31,8 +58,6 @@ def process(args, exp_hash, out_dir, logger):
 
     df_list = []
     df_li_list = []
-    df_time_list = []
-    df_mem_list = []
 
     for tree_type in args.tree_type:
 
@@ -43,14 +68,6 @@ def process(args, exp_hash, out_dir, logger):
 
         # get resource usage
         ckpt_dir = os.path.join(in_dir, f'ckpt_{args.ckpt[0]}')
-
-        fp_time = os.path.join(ckpt_dir, 'runtime.csv')
-        fp_mem = os.path.join(ckpt_dir, 'mem.csv')
-        assert os.path.exists(fp_time), f'{fp_time} does not exist!'
-        assert os.path.exists(fp_mem), f'{fp_mem} does not exist!'
-
-        df_time_list.append(pd.read_csv(fp_time))
-        df_mem_list.append(pd.read_csv(fp_mem))
 
         # get loss
         for ckpt in args.ckpt:
@@ -66,19 +83,15 @@ def process(args, exp_hash, out_dir, logger):
 
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
-    df_time_all = pd.concat(df_time_list)
-    df_mem_all = pd.concat(df_mem_list)
 
     # average ranks among different checkpoints and/or tree types
     group_cols = ['dataset']
 
     df_all = df_all.groupby(group_cols).mean().reset_index()
     df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
-    df_time_all = df_time_all.groupby(group_cols).mean().reset_index()
-    df_mem_all = df_mem_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
-    skip_cols = ['dataset', 'tree_type', 'poison_frac']
+    skip_cols = ['dataset', 'tree_type', 'remove_frac']
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
@@ -164,7 +177,7 @@ def process(args, exp_hash, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'poison_frac': args.poison_frac}
+    exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     assert len(args.tree_type) > 0
@@ -183,4 +196,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(rank_args.get_poison_args().parse_args())
+    main(rank_args.get_remove_args().parse_args())

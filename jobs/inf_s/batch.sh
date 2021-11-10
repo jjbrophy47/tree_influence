@@ -26,12 +26,11 @@ sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $t 's
 sbatch -a 22 -c 28 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # xgb only
-sbatch -a 7  -c 20 -t 1440 -p 'short'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 9  -c 28 -t 2880 -p 'long'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 22 -c 28 -t 4320 -p 'long'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 7,9 -c 28 -t 2880 -p 'long'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 22  -c 28 -t 4320 -p 'long'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # sgb only
-sbatch -a 7 -c 28 -t 1440  -p 'short'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 7 -c 28 -t 2880  -p 'long'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 sbatch -a 9 -c 28 -t 7200  -p 'long'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # cb only
@@ -43,7 +42,5 @@ sbatch -a 6,18,21          -c 28 -t 1440  -p 'short' -o ${o}${t}'_loo-%a.out'   
 sbatch -a 3,13,15,19       -c 28 -t 2880  -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # scratch pad
-sbatch -a 1,17                 -c 28 -t 10080 -p 'long' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 2,11,20              -c 28 -t 7200  -p 'long' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
-sbatch -a 3                    -c 28 -t 10080 -p 'long' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'
-sbatch -a 3                    -c 28 -t 10080 -p 'long' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit'
+sbatch -a 7 -c 28 -t 2880  -p 'preempt'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 9 -c 28 -t 7200  -p 'preempt'   -o ${o}${t}'_loo-%a.out'        $run $t 'loo'

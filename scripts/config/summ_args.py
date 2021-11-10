@@ -184,7 +184,6 @@ def get_poison_set_args():
     return cmd
 
 
-
 def get_noise_args():
     """
     Add arguments specific to the "Noise" summarization.
