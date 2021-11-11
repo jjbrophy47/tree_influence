@@ -1,4 +1,9 @@
 from .explainers import BoostIn
+from .explainers import BoostInW1
+from .explainers import BoostInW2
+from .explainers import BoostInLE
+from .explainers import BoostInLEW1
+from .explainers import BoostInLEW2
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LeafInfluenceSP
@@ -31,6 +36,11 @@ class TreeExplainer(object):
 
     Currently supported explainers:
         - BoostIn (adapted TracIn)
+        - BoostInW1 (adapted TracIn w/ leaf weight)
+        - BoostInW2 (adapted TracIn, squared leaf weight)
+        - BoostInLE (adapted TracIn w/ label estimate)
+        - BoostInLEW1 (adapted TracIn w/ label estimate and leaf weight)
+        - BoostInLEW2 (adapted TracIn w/ label estimate and squared leaf weight)
         - TREX (adapted representer-point)
         - LeafInfluenceSP (efficient version of LeafInfluence: single point)
         - LeafInfluence (adapted influence functions)
@@ -52,6 +62,21 @@ class TreeExplainer(object):
 
         if method == 'boostin':
             self.explainer = BoostIn(**params, logger=logger)
+
+        elif method == 'boostinW1':
+            self.explainer = BoostInW1(**params, logger=logger)
+
+        elif method == 'boostinW2':
+            self.explainer = BoostInW2(**params, logger=logger)
+
+        elif method == 'boostinLE':
+            self.explainer = BoostInLE(**params, logger=logger)
+
+        elif method == 'boostinLEW1':
+            self.explainer = BoostInLE(**params, logger=logger)
+
+        elif method == 'boostinLEW2':
+            self.explainer = BoostInLE(**params, logger=logger)
 
         elif method == 'trex':
             self.explainer = Trex(**params, logger=logger)
@@ -98,7 +123,7 @@ class TreeExplainer(object):
         else:
             raise ValueError(f'Unknown method {method}')
 
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, new_y=None):
         """
         - Convert model to internal standardized tree structures.
         - Perform any initialization necessary for the chosen explainer.
@@ -107,8 +132,15 @@ class TreeExplainer(object):
             model: tree ensemble.
             X: 2d array of train data.
             y: 1d array of train targets.
+            new_y: 1d array of new train targets (BoostInLE only).
         """
-        return self.explainer.fit(model, X, y)
+        if new_y is None:
+            result = self.explainer.fit(model, X, y)
+
+        else:
+            result = self.explainer.fit(model, X, y, new_y=new_y)
+
+        return result
 
     def get_self_influence(self, X, y):
         """

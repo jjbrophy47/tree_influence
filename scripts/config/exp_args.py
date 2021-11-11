@@ -186,6 +186,22 @@ def get_label_edit_args():
     return cmd
 
 
+def get_targeted_edit_args():
+    """
+    Add arguments specific to the "Targeted Edit" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence/')
+    cmd.add('--out_dir', type=str, default='output/targeted_edit/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--step_size', type=int, default=10)
+    return cmd
+
+
 # Set of test examples experiments
 
 

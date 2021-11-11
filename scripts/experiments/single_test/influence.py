@@ -134,7 +134,7 @@ def experiment(args, logger, params, out_dir):
 
     # compute influence
     start2 = time.time()
-    influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])
+    influence = explainer.get_local_influence(X_test[test_idxs], y_test[test_idxs])  # shape=(no. train, no. test)
     inf_time = time.time() - start2
 
     logger.info(f'[INFO] explainer influence time: {inf_time:.5f}s')

@@ -15,15 +15,16 @@ class Explainer(object):
         pass
 
     @abstractmethod
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, new_y=None):
         """
         - Convert model to internal standardized tree structures.
         - Perform any initialization necessary for the chosen method.
 
         Input
             model: tree ensemble.
-            X: training data.
-            y: training targets.
+            X: 2d array of training data.
+            y: 1d array of training targets.
+            new_y: 1d array of new training targets (BoostInLE only).
         """
         start = time.time()
         self.model_ = parse_model(model, X, y)

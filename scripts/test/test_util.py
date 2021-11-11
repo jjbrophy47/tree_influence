@@ -185,6 +185,117 @@ def test_local_influence_multiclass(args, explainer_cls, explainer_str, kwargs):
     print(f'\n{status}')
 
 
+# new label tests
+
+def test_local_influence_regression_new_label(args, explainer_cls, explainer_str, kwargs, logger=None):
+    print(f'\n***** test_{explainer_str}_local_influence_regression *****')
+    args.model_type = 'regressor'
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=-1)
+    test_ids = np.array([0, 1])[:args.n_local]
+
+    # shuffle training labels
+    rng = np.random.default_rng(args.rs)
+    new_y_train = y_train.copy()
+    rng.shuffle(new_y_train)
+
+    tree = _get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train, new_y=new_y_train)
+    influences = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])  # shape=(no. train, no. test)
+
+    for i, test_idx in enumerate(test_ids):
+
+        influence = influences[:, i]
+        s_ids = np.argsort(influence)[::-1]
+
+        test_pred = tree.predict(X_train[[test_idx]])[0]
+        test_label = y_train[test_idx]
+
+        print(f'\nexplain y_train, index: {test_idx}, pred: {test_pred}, target: {test_label}')
+
+        print('sorted indices    (head):', s_ids[:5])
+        print('y_train     (head, sorted):', y_train[s_ids][:5])
+        print('new_y_train (head, sorted):', new_y_train[s_ids][:5])
+        print('influence   (head, sorted):', influence[s_ids][:5])
+
+    status = 'passed' if influences.shape == (X_train.shape[0], test_ids.shape[0]) else 'failed'
+    print(f'\n{status}')
+
+
+def test_local_influence_binary_new_label(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_local_influence_binary *****')
+    args.model_type = 'binary'
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=2)
+    test_ids = np.array([0, 1])[:args.n_local]
+
+    # shuffle training labels
+    rng = np.random.default_rng(args.rs)
+    new_y_train = y_train.copy()
+    rng.shuffle(new_y_train)
+
+    tree = _get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train, new_y=new_y_train)
+    influences = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])   # shape=(no. train, no. test)
+
+    for i, test_idx in enumerate(test_ids):
+
+        influence = influences[:, i]
+        s_ids = np.argsort(influence)[::-1]
+
+        test_pred = tree.predict_proba(X_train[[test_idx]])[0]
+        test_label = y_train[test_idx]
+
+        print(f'\nexplain y_train {test_idx}, pred: {test_pred}, target: {test_label}\n')
+
+        print('sorted indices    (head):', s_ids[:10])
+        print('y_train     (head, sorted):', y_train[s_ids][:10])
+        print('new_y_train (head, sorted):', new_y_train[s_ids][:10])
+        print('influence   (head, sorted):', influence[s_ids][:10])
+
+    status = 'passed' if influences.shape == (X_train.shape[0], test_ids.shape[0]) else 'failed'
+    print(f'\n{status}')
+
+
+def test_local_influence_multiclass_new_label(args, explainer_cls, explainer_str, kwargs):
+    print(f'\n***** test_{explainer_str}_local_influence_multiclass *****')
+    args.model_type = 'multiclass'
+    X_train, X_test, y_train, y_test = _get_test_data(args, n_class=args.n_class)
+    test_ids = np.array([0, 1])[:args.n_local]
+
+    tree = _get_model(args)
+    tree = tree.fit(X_train, y_train)
+
+    # shuffle training labels
+    rng = np.random.default_rng(args.rs)
+    new_y_train = y_train.copy()
+    rng.shuffle(new_y_train)
+
+    # local influence shape=(no. test, no. train, no. class)
+    explainer = explainer_cls(**kwargs).fit(tree, X_train, y_train, new_y=new_y_train)
+    influences = explainer.get_local_influence(X_train[test_ids], y_train[test_ids])
+
+    for i, test_idx in enumerate(test_ids):
+
+        influence = influences[:, i]
+        s_ids = np.argsort(influence)[::-1]
+
+        test_pred = tree.predict_proba(X_train[[test_idx]])[0]
+        test_label = y_train[test_idx]
+
+        print(f'\nexplain y_train {test_idx}, pred: {test_pred}, target: {test_label}\n')
+
+        print('sorted indices    (head):', s_ids[:5])
+        print('y_train     (head, sorted):', y_train[s_ids][:5])
+        print('new_y_train (head, sorted):', new_y_train[s_ids][:5])
+        print('influence   (head, sorted):', influence[s_ids][:5])
+
+    status = 'passed' if influences.shape == (X_train.shape[0], test_ids.shape[0]) else 'failed'
+    print(f'\n{status}')
+
+
 # private
 def get_logger(filename=''):
     """

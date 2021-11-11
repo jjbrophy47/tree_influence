@@ -15,6 +15,8 @@ sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $e
 sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $exp $t 'loo'
 sbatch -a 3-6,8,10-13,16,18-19,21 -c 3 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $exp $t 'leaf_inf'
 sbatch -a 3-6,8,10-13,16,18-19,21 -c 3 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $exp $t 'leaf_refit'
+sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $exp $t 'boostinW1'
+sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $exp $t 'boostinW2'
 
 sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $exp $t 'random'
 sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_target-%a.out'     $run $exp $t 'target'
@@ -25,6 +27,8 @@ sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_leaf_infSP-%a.out' $run $exp 
 sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out'       $run $exp $t 'trex'
 sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $exp $t 'subsample'
 sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $exp $t 'loo'
+sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $exp $t 'boostinW1'
+sbatch -a 22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $exp $t 'boostinW2'
 
 # cb only
 sbatch -a 1-21  -c 11  -t 1440 -p 'short' -o ${o}${t}'_random-%a.out'     $run $exp $t 'random'
@@ -38,14 +42,16 @@ sbatch -a 1-21  -c 11  -t 1440 -p 'short' -o ${o}${t}'_subsample-%a.out'  $run $
 sbatch -a 1-21  -c 11  -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $exp $t 'loo'
 sbatch -a 3-6,8,10-13,16,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $exp $t 'leaf_inf'
 sbatch -a 3-6,8,10-13,16,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $exp $t 'leaf_refit'
+sbatch -a 1-21  -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $exp $t 'boostinW1'
+sbatch -a 1-21  -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $exp $t 'boostinW2'
 
 # scratch pad
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_random-%a.out'     $run $t 'random'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_target-%a.out'     $run $t 'target'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_input_sim-%a.out'  $run $t 'input_sim'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_leaf_sim-%a.out'   $run $t 'leaf_sim'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_boostin-%a.out'    $run $t 'boostin'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_leaf_infSP-%a.out' $run $t 'leaf_infSP'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_trex-%a.out'       $run $t 'trex'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_subsample-%a.out'  $run $t 'subsample'
-sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_random-%a.out'     $run $exp $t 'random'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_target-%a.out'     $run $exp $t 'target'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_input_sim-%a.out'  $run $exp $t 'input_sim'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_leaf_sim-%a.out'   $run $exp $t 'leaf_sim'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_boostin-%a.out'    $run $exp $t 'boostin'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_leaf_infSP-%a.out' $run $exp $t 'leaf_infSP'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_trex-%a.out'       $run $exp $t 'trex'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_subsample-%a.out'  $run $exp $t 'subsample'
+sbatch -a 4  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_loo-%a.out'        $run $exp $t 'loo'
