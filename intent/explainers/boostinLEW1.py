@@ -184,7 +184,7 @@ class BoostInLEW1(Explainer):
 
                 for leaf_idx in range(leaf_count):
                     leaf_docs = np.where(leaf_idx == leaf_idxs[:, boost_idx, class_idx])[0]
-                    leaf_weight = 1.0 / len(leaf_docs)
+                    leaf_weight = 1.0 / len(leaf_docs) if len(leaf_docs) > 0 else 1.0
 
                     # compute leaf derivative w.r.t. each train example in `leaf_docs` with OLD label
                     num1 = g[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h[leaf_docs, class_idx]  # (no. docs,)

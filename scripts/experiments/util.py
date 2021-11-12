@@ -367,7 +367,7 @@ def explainer_params_to_dict(explainer, exp_params):
     if explainer in ['boostin', 'boostinW1', 'boostinW2']:
         pass
 
-    if explainer == 'boostinLE':
+    elif explainer in ['boostinLE', 'boostinLEW1', 'boostinLEW2']:
         pass
 
     elif explainer == 'leaf_inf':

@@ -16,7 +16,7 @@ def get_experiments_args():
 
     cmd.add('--method_list', type=str, nargs='+', default=['random', 'target', 'leaf_sim', 'boostin',
                                                            'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
-                                                           'leaf_refit'])
+                                                           'leaf_refit', 'boostinW1', 'boostinW2'])
 
     cmd.add('--exp', type=str, default='influence/')
     cmd.add('--in_dir', type=str, default='temp_influence/')
