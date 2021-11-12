@@ -110,8 +110,18 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
 
     # fit explainer
     if 'boostinLE' in args.method:
-        # TODO: need more code to cover regression
-        new_y_train = np.full(y_train.shape, adv_lbl, dtype=y_train.dtype)
+
+        if objective == 'regression':
+
+            if adv_label == 1:
+                fill_val = y_train_median - (y_train_median / 2)
+            else:
+                fill_val = y_train_median + (y_train_median / 2)
+
+        else:
+            fill_val = adv_label
+
+        new_y_train = np.full(y_train.shape, fill_val, dtype=y_train.dtype)
 
     else:
         new_y_train = None
