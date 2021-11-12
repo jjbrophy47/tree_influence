@@ -2,8 +2,8 @@ from .boostin import BoostIn
 from .boostinW1 import BoostInW1
 from .boostinW2 import BoostInW2
 from .boostinLE import BoostInLE
-from .boostinLE import BoostInLEW1
-from .boostinLE import BoostInLEW2
+from .boostinLEW1 import BoostInLEW1
+from .boostinLEW2 import BoostInLEW2
 from .trex import Trex
 from .leaf_inf import LeafInfluence
 from .leaf_infSP import LeafInfluenceSP
