@@ -6,7 +6,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class BoostInLE(Explainer):
+class BoostInLEW2(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles, and
     approximates removing an example AND adding that same example with
