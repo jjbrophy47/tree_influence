@@ -21,6 +21,9 @@ for tree_type in ${tree_type_list[@]}; do
         elif [[ $exp = 'poison' ]]; then
             python3 scripts/postprocess/poison.py --tree_type $tree_type --dataset $dataset
 
+        elif [[ $exp = 'targeted_edit' ]]; then
+            python3 scripts/postprocess/targeted_edit.py --tree_type $tree_type --dataset $dataset
+
         # multi test
         elif [[ $exp = 'remove_set' ]]; then
             python3 scripts/postprocess/remove_set.py --tree_type $tree_type --dataset $dataset

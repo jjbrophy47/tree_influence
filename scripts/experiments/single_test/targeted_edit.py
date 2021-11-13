@@ -113,13 +113,13 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
 
         if objective == 'regression':
 
-            if adv_label == 1:
+            if adv_lbl == 1:
                 fill_val = y_train_median - (y_train_median / 2)
             else:
                 fill_val = y_train_median + (y_train_median / 2)
 
         else:
-            fill_val = adv_label
+            fill_val = adv_lbl
 
         new_y_train = np.full(y_train.shape, fill_val, dtype=y_train.dtype)
 

@@ -110,6 +110,8 @@ def get_plot_dicts():
     color['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'magenta'
     color['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = 'brown'
     color['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'purple'
+    color['boostinW1_'] = 'orange'
+    color['boostinW2_'] = 'orange'
 
     line = {}
     line['random_'] = '-'
@@ -126,6 +128,8 @@ def get_plot_dicts():
     line['subsample_2b793a1ebcb67340112cf064fbf171cf'] = '-'
     line['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
     line['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
+    line['boostinW1_'] = '--'
+    line['boostinW2_'] = '-.'
 
     label = {}
     label['random_'] = 'Random'
@@ -142,6 +146,8 @@ def get_plot_dicts():
     label['subsample_2b793a1ebcb67340112cf064fbf171cf'] = 'SubSample'
     label['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafInfluence'
     label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafRefit'
+    label['boostinW1_'] = 'BoostInW1'
+    label['boostinW2_'] = 'BoostInW2'
 
     return color, line, label
 

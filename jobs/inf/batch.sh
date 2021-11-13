@@ -51,7 +51,7 @@ sbatch -a 1,17             -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out'   
 sbatch -a 2,11,20          -c 28 -t 10080 -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'
 
 # scratch pad
-sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $t 'boostinW1'
-sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $t 'boostinW2'
-sbatch -a 22    -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $t 'boostinW1'
-sbatch -a 22    -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $t 'boostinW2'
+sbatch -a 1-21  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_boostinW1-%a.out'    $run $t 'boostinW1'
+sbatch -a 1-21  -c 3  -t 1440 -p 'preempt' -o ${o}${t}'_boostinW2-%a.out'    $run $t 'boostinW2'
+sbatch -a 22    -c 11 -t 1440 -p 'preempt' -o ${o}${t}'_boostinW1-%a.out'    $run $t 'boostinW1'
+sbatch -a 22    -c 11 -t 1440 -p 'preempt' -o ${o}${t}'_boostinW2-%a.out'    $run $t 'boostinW2'

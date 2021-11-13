@@ -87,6 +87,21 @@ def get_counterfactual_args():
     return cmd
 
 
+def get_targeted_edit_args():
+    """
+    Add arguments specific to the "Targeted Edit" rank.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = post_args.get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/plot/targeted_edit/')
+    cmd.add('--n_test', type=int, default=100)
+    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--step_size', type=int, default=10)
+    return cmd
+
+
 # multi test
 
 

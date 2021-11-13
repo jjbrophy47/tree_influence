@@ -35,6 +35,9 @@ def get_experiment_hash(args):
     elif args.exp == 'counterfactual':
         exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
 
+    elif args.exp == 'targeted_edit':
+        exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
+
     # multi test
     elif args.exp == 'influence_set':
         exp_dict = {'val_frac': args.val_frac}
