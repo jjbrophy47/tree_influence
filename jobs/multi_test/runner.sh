@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Single_Test
+#SBATCH --job-name=Multi_Test
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=uoml
@@ -14,20 +14,20 @@ method=$3
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-if [[ $exp = 'remove' ]]; then
-    python3 scripts/experiments/single_test/remove.py \
+if [[ $exp = 'remove_set' ]]; then
+    python3 scripts/experiments/single_test/remove_set.py \
       --dataset $dataset \
       --tree_type $tree_type \
       --method $method
 
-elif [[ $exp = 'label' ]]; then
-    python3 scripts/experiments/single_test/label.py \
+elif [[ $exp = 'label_set' ]]; then
+    python3 scripts/experiments/single_test/label_set.py \
       --dataset $dataset \
       --tree_type $tree_type \
       --method $method
 
-elif [[ $exp = 'poison' ]]; then
-    python3 scripts/experiments/single_test/poison.py \
+elif [[ $exp = 'poison_set' ]]; then
+    python3 scripts/experiments/single_test/poison_set.py \
       --dataset $dataset \
       --tree_type $tree_type \
       --method $method
