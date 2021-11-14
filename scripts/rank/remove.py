@@ -23,7 +23,7 @@ from experiments import util as exp_util
 from config import rank_args
 
 
-def get_mean_df(in_df, skip_cols=[], sort=None):
+def get_mean_df(in_df, skip_cols=[], sort=None, geo_mean=False):
     """
     Compute mean (with sem) for each method.
 
@@ -36,11 +36,15 @@ def get_mean_df(in_df, skip_cols=[], sort=None):
     """
     cols = [c for c in list(in_df.columns) if c not in skip_cols]
 
-    in_df = in_df[cols]
+    in_df = in_df[cols].dropna()
 
-    # 95% CI
-    df = pd.DataFrame(np.vstack([in_df.mean(axis=0), 1.96 * in_df.sem(axis=0)]).T,
-                      index=cols, columns=['mean', 'sem'])
+    if geo_mean:
+        means = gmean(in_df.values, axis=0)
+    else:
+        means = np.mean(in_df.values, axis=0)
+    sems = 1.96 * in_df.sem(axis=0)  # 95% CI
+
+    df = pd.DataFrame(np.vstack([means, sems]).T, index=cols, columns=['mean', 'sem'])
 
     if sort == 'ascending':
         df = df.sort_values('mean')
@@ -58,6 +62,7 @@ def process(args, exp_hash, out_dir, logger):
 
     df_list = []
     df_li_list = []
+    df_rel_list = []
 
     for tree_type in args.tree_type:
 
@@ -73,6 +78,7 @@ def process(args, exp_hash, out_dir, logger):
         for ckpt in args.ckpt:
             ckpt_dir = os.path.join(in_dir, f'ckpt_{ckpt}')
 
+            # ranking
             fp = os.path.join(ckpt_dir, 'loss_rank.csv')
             fp_li = os.path.join(ckpt_dir, 'loss_rank_li.csv')
             assert os.path.exists(fp), f'{fp} does not exist!'
@@ -81,46 +87,35 @@ def process(args, exp_hash, out_dir, logger):
             df_list.append(pd.read_csv(fp))
             df_li_list.append(pd.read_csv(fp_li))
 
+            # relative increase
+            fp_rel = os.path.join(ckpt_dir, 'loss_rel.csv')
+            assert os.path.exists(fp_rel), f'{fp_rel} does not exist!'
+
+            df_rel_list.append(pd.read_csv(fp_rel))
+
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
+    df_rel_all = pd.concat(df_rel_list)
 
-    # average ranks among different checkpoints and/or tree types
+    # average among different checkpoints and/or tree types
     group_cols = ['dataset']
 
     df_all = df_all.groupby(group_cols).mean().reset_index()
     df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
+    df_rel_all = df_rel_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
+    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'], sort='descending')
+    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols, sort='descending')
 
-    logger.info(f'\nLoss:\n{df}')
-    logger.info(f'\nLoss (li):\n{df_li}')
-
-    # # combine dataframes
-    # index = df_li.index
-    # df = df_li.reset_index().merge(df.reset_index(), on='index', how='left')
-    # means_df = df[['index', 'mean_x', 'mean_y']].copy()
-    # sems_df = df[['index', 'sem_x', 'sem_y']].copy()
-
-    # # rename and clean up
-    # means_df.index = means_df['index']
-    # sems_df.index = means_df['index']
-    # del means_df['index']
-    # del sems_df['index']
-    # means_df.columns = ['Subgroup A', 'All datasets']
-    # sems_df.columns = ['Subgroup A', 'All datasets']
-
-    # print(means_df)
-    # print(sems_df)
-
-    # # plot
-    # fig, ax = plt.subplots(figsize=(4, 4))
-    # means_df.plot.bar(yerr=sems_df, ax=ax, rot=45,
-    #                   title=f'Loss ({len(means_df)} datasets)', capsize=3,
-    #                   ylabel='Avg. rank', xlabel='Method')
+    logger.info(f'\nLoss (ranking):\n{df}')
+    logger.info(f'\nLoss (ranking-LI):\n{df_li}')
+    logger.info(f'\nLoss (relative):\n{df_rel}')
+    logger.info(f'\nLoss (relative-LI):\n{df_rel_li}')
 
     # plot
     n_datasets = len(df_all['dataset'].unique())
@@ -131,16 +126,19 @@ def process(args, exp_hash, out_dir, logger):
     df = df.rename(columns={'mean': 'All datasets'}, index=label_dict)
     df_li = df_li.rename(columns={'mean': 'SDS'}, index=label_dict)
 
-    # reorder methods
-    order = ['BoostIn', 'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
-    order_li = ['LeafRefit', 'LeafInf.', 'BoostIn', 'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO',
-                'RandomSL', 'Random']
+    df_rel = df_rel.rename(index=label_dict)
+    df_rel_li = df_rel_li.rename(index=label_dict)
 
-    # order_li = ['BoostIn', 'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random',
-    #             'LeafRefit', 'LeafInf.']
+    # reorder methods
+    order = ['BoostIn', 'BoostInW1', 'BoostInW2', 'LeafInfSP', 'TreeSim',
+             'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
+    order_li = ['LeafRefit', 'LeafInf.', 'BoostIn', 'BoostInW1', 'BoostInW2',
+                'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
 
     df = df.reindex(order)
     df_li = df_li.reindex(order_li)
+    df_rel = df_rel.reindex(order)
+    df_rel_li = df_rel_li.reindex(order_li)
 
     labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
     labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
@@ -167,10 +165,13 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nSaving results to {out_dir}/...')
 
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'roar.pdf'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, 'remove.pdf'), bbox_inches='tight')
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
+
+    df_rel.to_csv(os.path.join(out_dir, 'loss_rel.csv'))
+    df_rel_li.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'))
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

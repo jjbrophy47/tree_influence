@@ -22,6 +22,26 @@ from experiments import util as exp_util
 from config import summ_args
 
 
+def get_relative_df(df, ref_col, skip_cols=[]):
+    """
+    Compute relative values based on a reference column.
+
+    Input
+        df: pd.DataFrame, input dataframe values.
+        ref_col: str, reference column.
+        skip_cols: list, columns to skip.
+
+    Return
+        - New dataframe with relative values.
+    """
+    result_df = df.copy()
+
+    cols = [c for c in df.columns if c not in skip_cols]
+    result_df.loc[:, cols] = result_df.loc[:, cols].div(result_df[ref_col], axis=0)
+
+    return result_df
+
+
 def get_rank_df(df, skip_cols=[], remove_cols=[], ascending=False):
     """
     Rank values in dataframe.
@@ -114,9 +134,14 @@ def process(args, exp_hash, out_dir, logger):
 
     logger.info(f'\nLoss:\n{df}')
 
-    # compute rankings
+    # compute relative performance and rankings
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
 
+    # relative performance
+    df_rel = get_relative_df(df, ref_col='Random', skip_cols=skip_cols)
+    logger.info(f'\nLoss (relative increase):\n{df_rel}')
+
+    # rank
     rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['LeafInfluence', 'LeafRefit'])
     rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluence'])], skip_cols=skip_cols)
     logger.info(f'\nLoss ranking:\n{rank_df}')
@@ -125,6 +150,8 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nSaving results to {out_dir}...')
 
     df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
+
+    df_rel.to_csv(os.path.join(out_dir, 'loss_rel.csv'), index=None)
 
     rank_df.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
     rank_li_df.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'), index=None)
