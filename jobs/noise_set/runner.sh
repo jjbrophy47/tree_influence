@@ -15,7 +15,7 @@ noise_frac=$4
 
 dataset=${datasets[${SLURM_ARRAY_TASK_ID}]}
 
-python3 scripts/experiments/multi_test/noise.py \
+python3 scripts/experiments/multi_test/noise_set.py \
   --dataset $dataset \
   --tree_type $tree_type \
   --method $method \
