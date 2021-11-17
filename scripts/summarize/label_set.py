@@ -20,7 +20,8 @@ sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
 from config import summ_args
-from summarize.roar import get_rank_df
+from remove import get_rank_df
+from remove import get_relative_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -47,13 +48,13 @@ def process(args, exp_hash, out_dir, logger):
 
         for method, res in res_list:
 
-            row_loss['label_frac'] = res['label_frac'][args.ckpt]
+            row_loss['edit_frac'] = res['edit_frac'][args.ckpt]
             row_loss[f'{label[method]}'] = res['loss'][args.ckpt]
 
-            row_acc['label_frac'] = res['label_frac'][args.ckpt]
+            row_acc['edit_frac'] = res['edit_frac'][args.ckpt]
             row_acc[f'{label[method]}'] = res['acc'][args.ckpt]
 
-            row_auc['label_frac'] = res['label_frac'][args.ckpt]
+            row_auc['edit_frac'] = res['edit_frac'][args.ckpt]
             row_auc[f'{label[method]}'] = res['auc'][args.ckpt]
 
         rows_loss.append(row_loss)
@@ -65,7 +66,7 @@ def process(args, exp_hash, out_dir, logger):
     df_auc_raw = pd.DataFrame(rows_auc).replace(-1, np.nan)
 
     # drop rows with missing values
-    skip_cols = ['dataset', 'tree_type', 'label_frac']
+    skip_cols = ['dataset', 'tree_type', 'edit_frac']
     remove_cols = ['LeafInfluence', 'LeafRefit']
 
     cols = [x for x in df_loss_raw.columns if x not in skip_cols + remove_cols]
@@ -78,10 +79,29 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nAccuracy:\n{df_acc}')
     logger.info(f'\nAUC:\n{df_auc}')
 
-    # compute rankings
-    skip_cols = ['dataset', 'tree_type', 'label_frac']
+    # compute relative performance and rankings
+    skip_cols = ['dataset', 'tree_type', 'edit_frac']
     remove_cols = ['LeafInfluence', 'LeafRefit']
 
+    # relative performance
+    rel_df_loss = get_relative_df(df_loss, ref_col='Random', skip_cols=skip_cols + remove_cols)
+    rel_df_acc = get_relative_df(df_acc, ref_col='Random', skip_cols=skip_cols + remove_cols)
+    rel_df_auc = get_relative_df(df_auc, ref_col='Random', skip_cols=skip_cols + remove_cols)
+
+    rel_li_df_loss = get_relative_df(df_loss, ref_col='Random', skip_cols=skip_cols)
+    rel_li_df_acc = get_relative_df(df_acc, ref_col='Random', skip_cols=skip_cols)
+    rel_li_df_auc = get_relative_df(df_auc, ref_col='Random', skip_cols=skip_cols)
+
+    logger.info(f'\nLoss (relative):\n{rel_df_loss}')
+    logger.info(f'\nLoss (LI-relative):\n{rel_li_df_loss}')
+
+    logger.info(f'\nAccuracy (relative):\n{rel_df_acc}')
+    logger.info(f'\nAccuracy (LI-relative):\n{rel_li_df_acc}')
+
+    logger.info(f'\nAUC (relative):\n{rel_df_auc}')
+    logger.info(f'\nAUC (LI-relative):\n{rel_li_df_auc}')
+
+    # rankings
     rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols)
     rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
     rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
@@ -105,6 +125,14 @@ def process(args, exp_hash, out_dir, logger):
     df_acc_raw.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
     df_auc_raw.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
 
+    rel_df_loss.to_csv(os.path.join(out_dir, 'loss_rel.csv'), index=None)
+    rel_df_acc.to_csv(os.path.join(out_dir, 'acc_rel.csv'), index=None)
+    rel_df_auc.to_csv(os.path.join(out_dir, 'auc_rel.csv'), index=None)
+
+    rel_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'), index=None)
+    rel_li_df_acc.to_csv(os.path.join(out_dir, 'acc_rel_li.csv'), index=None)
+    rel_li_df_auc.to_csv(os.path.join(out_dir, 'auc_rel_li.csv'), index=None)
+
     rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
     rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'), index=None)
     rank_df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'), index=None)
@@ -118,7 +146,7 @@ def process(args, exp_hash, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'label_frac': args.label_frac, 'val_frac': args.val_frac}
+    exp_dict = {'edit_frac': args.edit_frac, 'val_frac': args.val_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,
@@ -137,4 +165,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(summ_args.get_label_args().parse_args())
+    main(summ_args.get_label_set_args().parse_args())

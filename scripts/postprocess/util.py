@@ -112,6 +112,9 @@ def get_plot_dicts():
     color['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'purple'
     color['boostinW1_'] = 'orange'
     color['boostinW2_'] = 'orange'
+    color['boostinLE_'] = 'gold'
+    color['boostinLEW1_'] = 'gold'
+    color['boostinLEW2_'] = 'gold'
 
     line = {}
     line['random_'] = '-'
@@ -130,6 +133,9 @@ def get_plot_dicts():
     line['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
     line['boostinW1_'] = '--'
     line['boostinW2_'] = '-.'
+    line['boostinLE_'] = '-'
+    line['boostinLEW1_'] = '--'
+    line['boostinLEW2_'] = '-.'
 
     label = {}
     label['random_'] = 'Random'
@@ -148,6 +154,9 @@ def get_plot_dicts():
     label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafRefit'
     label['boostinW1_'] = 'BoostInW1'
     label['boostinW2_'] = 'BoostInW2'
+    label['boostinLE_'] = 'BoostInLE'
+    label['boostinLEW1_'] = 'BoostInLEW1'
+    label['boostinLEW2_'] = 'BoostInLEW2'
 
     return color, line, label
 

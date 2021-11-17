@@ -46,7 +46,6 @@ sbatch -a 1-21  -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run 
 sbatch -a 1-21  -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $exp $t 'boostinW2'
 
 # scratch pad
-sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $exp $t 'boostinW1'
-sbatch -a 1-21  -c 3  -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $exp $t 'boostinW2'
-sbatch -a 22    -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'    $run $exp $t 'boostinW1'
-sbatch -a 22    -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'    $run $exp $t 'boostinW2'
+sbatch -a 17-18,21   -c 11 -t 1440 -p 'short' -o ${o}${t}'_loo-%a.out'        $run $exp $t 'loo'
+sbatch -a 5,12,19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $exp $t 'leaf_inf'
+sbatch -a 3,5,18-19,21 -c 11 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $exp $t 'leaf_refit'

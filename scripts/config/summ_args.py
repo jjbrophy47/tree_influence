@@ -177,7 +177,7 @@ def get_label_set_args():
     cmd.add('--in_dir', type=str, default='temp_label_set')
     cmd.add('--out_dir', type=str, default='output/plot/label_set/')
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--label_frac', type=float,
+    cmd.add('--edit_frac', type=float,
             default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
     cmd.add('--ckpt', type=int, default=1)
     return cmd

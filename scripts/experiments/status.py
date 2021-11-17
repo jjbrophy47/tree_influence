@@ -52,7 +52,7 @@ def get_experiment_hash(args):
         exp_dict = {'poison_frac': args.poison_frac_set, 'val_frac': args.val_frac}
 
     elif args.exp == 'noise':
-        exp_dict = {'noise_frac': args.noie_frac, 'check_frac': args.check_frac,
+        exp_dict = {'noise_frac': args.noise_frac, 'check_frac': args.check_frac,
                     'val_frac': args.val_frac}
 
     exp_hash = util.dict_to_hash(exp_dict)
@@ -66,6 +66,63 @@ def get_method_hash(args, method):
     """
     _, method_hash = util.explainer_params_to_dict(method, vars(args))
     return method_hash
+
+
+def get_noise_status(args, logger, out_dir, exp_hash):
+    """
+    Construct pd.FataFrame with completion status of each experiment.
+
+    Note
+        - Custom method for the "Noise" experiment.
+    """
+    results = []
+    
+    for dataset in args.dataset_list:
+        logger.info(f'{dataset}')
+
+        for tree_type in args.tree_type:
+            logger.info(f'\t{tree_type}')
+
+            method_results = {'dataset': dataset, 'tree_type': tree_type}
+
+            for agg_type in args.agg_type:
+
+                for method in args.method_list:
+
+                    for random_state in args.random_state_list:
+
+                        method_hash = get_method_hash(args, method)
+
+                        result_dir = os.path.join(args.in_dir,
+                                                  dataset,
+                                                  tree_type,
+                                                  f'exp_{exp_hash}',
+                                                  agg_type,
+                                                  f'random_state_{random_state}',
+                                                  f'{method}_{method_hash}')
+
+                        result_fp = os.path.join(result_dir, 'results.npy')
+
+                        if os.path.exists(result_fp):
+
+                            if method in method_results:
+                                method_results[method] += 2 ** (random_state - 1)
+
+                            else:
+
+                                if random_state <= 1:
+                                    method_results[method] = 2 ** 0
+
+                                else:
+                                    method_results[method] = 2 ** (random_state - 1)
+
+            results.append(method_results)
+
+    df = pd.DataFrame(results).sort_values(['tree_type', 'dataset'])
+    df = df.fillna(0)
+
+    logger.info(f'\nCompleted status (5-bit sum corresponding to completion for 5 random states):\n{df}')
+    df.to_csv(os.path.join(out_dir, f'status.csv'), index=None)
 
 
 def get_result_status(args, logger, out_dir, exp_hash):
@@ -131,7 +188,11 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    get_result_status(args, logger, out_dir, exp_hash)
+    if args.exp == 'noise':
+        get_noise_status(args, logger, out_dir, exp_hash)
+
+    else:
+        get_result_status(args, logger, out_dir, exp_hash)
 
     # clean up
     util.remove_logger(logger)

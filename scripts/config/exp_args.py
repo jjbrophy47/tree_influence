@@ -252,7 +252,7 @@ def get_label_set_args():
 
 def get_poison_set_args():
     """
-    Add arguments specific to the "Poison" experiment.
+    Add arguments specific to the "Poison Set" experiment.
 
     Return ArgParser object.
     """
@@ -266,19 +266,17 @@ def get_poison_set_args():
     return cmd
 
 
-def get_noise_args():
+def get_noise_set_args():
     """
-    Add arguments specific to the "Noise" experiment.
+    Add arguments specific to the "Noise Set" experiment.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--out_dir', type=str, default='output/noise/')
+    cmd.add('--out_dir', type=str, default='output/noise_set/')
     cmd.add('--strategy', type=str, default='test_sum')
     cmd.add('--noise_frac', type=float, default=0.4)
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--n_repeat', type=int, default=5)
-    cmd.add('--seed', type=int, default=-1)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3])
     return cmd

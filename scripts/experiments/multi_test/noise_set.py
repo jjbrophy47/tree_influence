@@ -23,19 +23,16 @@ from config import exp_args
 from single_test.influence import get_special_case_tol
 
 
-def add_noise(X, y, objective, rng, frac=0.1):
+def add_noise(X, y, objective, rng, target_idxs):
     """
     Add noise to a random subset of examples.
     """
     new_X = X
     new_y = y.copy()
 
-    # select examples to add noise to
-    target_idxs = rng.choice(np.arange(len(y)), size=int(len(y) * frac))
-
     # flip selected targets
     if objective == 'regression':
-        new_y[target_idxs] = -y[target_idxs]
+        new_y[target_idxs] = rng.uniform(np.min(y), np.max(y), size=len(target_idxs))
 
     # flip selected targets
     elif objective == 'binary':
@@ -50,25 +47,26 @@ def add_noise(X, y, objective, rng, frac=0.1):
             remain_labels = np.setdiff1d(labels, y[target_idx])
             new_y[target_idx] = rng.choice(remain_labels, size=1)
 
-    return new_X, new_y, target_idxs
+    return new_X, new_y
 
 
-def experiment(args, logger, params, random_state, out_dir):
+def experiment(args, logger, params, out_dir):
 
     # initialize experiment
     begin = time.time()
-    rng = np.random.default_rng(random_state)
+    rng = np.random.default_rng(args.random_state)
 
     # data
     X_train, X_test, y_train, y_test, objective = util.get_data(args.data_dir, args.dataset)
 
-    # add noise to a subset of the train examples
-    X_train_noise, y_train_noise, noise_idxs = add_noise(X_train, y_train, objective, rng, frac=args.noise_frac)
+    # mislabl a random subset of the train instances
+    noise_idxs = rng.choice(np.arange(len(y_train)), size=int(len(y_train) * args.noise_frac))
+    X_train_noise, y_train_noise = add_noise(X_train, y_train, objective, rng, noise_idxs)
 
     # use a fraction of the test data for validation
     stratify = None if objective == 'regression' else y_test
     X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=1.0 - args.val_frac,
-                                                    stratify=stratify, random_state=random_state)
+                                                    stratify=stratify, random_state=args.random_state)
 
     # display dataset statistics
     logger.info(f'\nno. train: {X_train.shape[0]:,}, no. noisy: {len(noise_idxs):,}')
@@ -78,7 +76,7 @@ def experiment(args, logger, params, random_state, out_dir):
 
     # train two ensembles: one with clean data and one with noisy data
     hp = util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
-    tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=random_state)
+    tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
     tree.set_params(**hp)
 
     tree = tree.fit(X_train, y_train)
@@ -154,60 +152,50 @@ def experiment(args, logger, params, random_state, out_dir):
     # save results
     result['influence'] = influence
     result['noise_idxs'] = noise_idxs
-    result['ranking'] = ranking
     result['res_clean'] = res_clean
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['fit_time'] = fit_time
     result['inf_time'] = inf_time
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
+
     logger.info('\nResults:\n{}'.format(result))
     logger.info('\nsaving results to {}...'.format(os.path.join(out_dir, 'results.npy')))
+
     np.save(os.path.join(out_dir, 'results.npy'), result)
 
 
 def main(args):
 
-    for random_state in range(1, args.n_repeat + 1):
+    # get unique hash for the explainer
+    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
+    params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
-        # select seed
-        if args.seed > 0:
-            assert args.n_repeat == 1
-            seed = args.seed
+    # create output dir., get unique hash for this experiment setting
+    exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac,
+                'check_frac': args.check_frac}
+    exp_hash = util.dict_to_hash(exp_dict)
 
-        else:
-            seed = random_state
+    out_dir = os.path.join(args.out_dir,
+                           args.dataset,
+                           args.tree_type,
+                           f'exp_{exp_hash}',
+                           args.strategy,
+                           f'{args.method}_{method_hash}')
 
-        # get unique hash for the explainer
-        args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
-        params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
+    # create output directory and clear previous contents
+    os.makedirs(out_dir, exist_ok=True)
+    util.clear_dir(out_dir)
 
-        # create output dir., get unique hash for this experiment setting
-        exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac,
-                    'check_frac': args.check_frac}
-        exp_hash = util.dict_to_hash(exp_dict)
+    logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
+    logger.info(args)
+    logger.info(f'\ntimestamp: {datetime.now()}')
 
-        out_dir = os.path.join(args.out_dir,
-                               args.dataset,
-                               args.tree_type,
-                               f'exp_{exp_hash}',
-                               args.strategy,
-                               f'random_state_{seed}',
-                               f'{args.method}_{method_hash}')
+    experiment(args, logger, params, out_dir)
 
-        # create output directory and clear previous contents
-        os.makedirs(out_dir, exist_ok=True)
-        util.clear_dir(out_dir)
-
-        logger = util.get_logger(os.path.join(out_dir, 'log.txt'))
-        logger.info(args)
-        logger.info(f'\ntimestamp: {datetime.now()}')
-
-        experiment(args, logger, params, seed, out_dir)
-
-        # clean up
-        util.remove_logger(logger)
+    # clean up
+    util.remove_logger(logger)
 
 
 if __name__ == '__main__':
-    main(exp_args.get_noise_args().parse_args())
+    main(exp_args.get_noise_set_args().parse_args())

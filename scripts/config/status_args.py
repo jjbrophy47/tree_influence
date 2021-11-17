@@ -18,6 +18,11 @@ def get_experiments_args():
                                                            'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
                                                            'leaf_refit', 'boostinW1', 'boostinW2'])
 
+    # targeted edit
+    # cmd.add('--method_list', type=str, nargs='+', default=['random', 'leaf_sim', 'boostin',
+    #                                                        'trex', 'boostinW1', 'boostinW2',
+    #                                                        'boostinLE', 'boostinLEW1', 'boostinLEW2'])
+
     cmd.add('--exp', type=str, default='influence/')
     cmd.add('--in_dir', type=str, default='temp_influence/')
     cmd.add('--out_dir', type=str, default='output/status/')
@@ -37,8 +42,12 @@ def get_experiments_args():
     cmd.add('--poison_frac_set', type=float, nargs='+',
             default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])
     cmd.add('--step_size', type=int, default=10)
+
+    # noise only
     cmd.add('--noise_frac', type=float, default=0.4)
     cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--agg_type', type=int, nargs='+', default=['self', 'test_sum'])
+    cmd.add('--random_state_list', type=int, nargs='+', default=[1, 2, 3, 4, 5])
 
     # other
     cmd.add('--status_type', type=str, default='time')

@@ -21,28 +21,7 @@ import intent
 import util
 from config import exp_args
 from single_test.influence import get_special_case_tol
-
-
-def poison(X, y, objective, rng, target_idxs, poison_features=False):
-    """
-    Add poison to training examples.
-    """
-    new_X = X.copy()
-    new_y = y.copy()
-
-    # replace feature values with mean values
-    if poison_features:
-        new_X[target_idxs] = np.mean(X, axis=0)
-
-    # replace labels with random labels
-    if objective in ['binary', 'multiclass']:
-        new_y[target_idxs] = rng.choice(np.unique(y), size=len(target_idxs))
-
-    else:
-        assert objective == 'regression'
-        new_y[target_idxs] = rng.uniform(np.min(y), np.max(y), size=len(target_idxs))
-
-    return new_X, new_y
+from poison_set import poison
 
 
 def experiment(args, logger, in_dir, out_dir):

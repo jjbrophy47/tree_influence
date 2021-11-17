@@ -27,7 +27,6 @@ def experiment(args, exp_dir, out_dir, logger):
 
     # get results
     args.method = args.method_list
-    print(args.method)
     res_list = util.get_results(args, exp_dir, logger=logger)
     res_list = util.filter_results(res_list, args.skip)
 

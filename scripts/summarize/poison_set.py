@@ -78,10 +78,29 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nAccuracy:\n{df_acc}')
     logger.info(f'\nAUC:\n{df_auc}')
 
-    # compute rankings
+    # compute relative performance and rankings
     skip_cols = ['dataset', 'tree_type', 'poison_frac']
     remove_cols = ['LeafInfluence', 'LeafRefit']
 
+    # relative performance
+    rel_df_loss = get_relative_df(df_loss, ref_col='Random', skip_cols=skip_cols + remove_cols)
+    rel_df_acc = get_relative_df(df_acc, ref_col='Random', skip_cols=skip_cols + remove_cols)
+    rel_df_auc = get_relative_df(df_auc, ref_col='Random', skip_cols=skip_cols + remove_cols)
+
+    rel_li_df_loss = get_relative_df(df_loss, ref_col='Random', skip_cols=skip_cols)
+    rel_li_df_acc = get_relative_df(df_acc, ref_col='Random', skip_cols=skip_cols)
+    rel_li_df_auc = get_relative_df(df_auc, ref_col='Random', skip_cols=skip_cols)
+
+    logger.info(f'\nLoss (relative):\n{rel_df_loss}')
+    logger.info(f'\nLoss (LI-relative):\n{rel_li_df_loss}')
+
+    logger.info(f'\nAccuracy (relative):\n{rel_df_acc}')
+    logger.info(f'\nAccuracy (LI-relative):\n{rel_li_df_acc}')
+
+    logger.info(f'\nAUC (relative):\n{rel_df_auc}')
+    logger.info(f'\nAUC (LI-relative):\n{rel_li_df_auc}')
+
+    # rankings
     rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols)
     rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
     rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
@@ -104,6 +123,14 @@ def process(args, exp_hash, out_dir, logger):
     df_loss_raw.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
     df_acc_raw.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
     df_auc_raw.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
+
+    rel_df_loss.to_csv(os.path.join(out_dir, 'loss_rel.csv'), index=None)
+    rel_df_acc.to_csv(os.path.join(out_dir, 'acc_rel.csv'), index=None)
+    rel_df_auc.to_csv(os.path.join(out_dir, 'auc_rel.csv'), index=None)
+
+    rel_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'), index=None)
+    rel_li_df_acc.to_csv(os.path.join(out_dir, 'acc_rel_li.csv'), index=None)
+    rel_li_df_auc.to_csv(os.path.join(out_dir, 'auc_rel_li.csv'), index=None)
 
     rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
     rank_df_acc.to_csv(os.path.join(out_dir, 'acc_rank.csv'), index=None)

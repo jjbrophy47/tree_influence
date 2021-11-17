@@ -14,6 +14,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import sem
 from scipy.stats import gmean
+from scipy.stats import gstd
 from tqdm import tqdm
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -38,11 +39,16 @@ def get_mean_df(in_df, skip_cols=[], sort=None, geo_mean=False):
 
     in_df = in_df[cols].dropna()
 
-    if geo_mean:
-        means = gmean(in_df.values, axis=0)
-    else:
+    if geo_mean:  # geometric mean and geometric std. dev.
+        vals = np.log(in_df.values)
+        means = np.exp(np.mean(vals, axis=0))
+        sems = np.exp(1.96 * sem(vals, axis=0))  # 95% CI
+        # means = gmean(in_df.values, axis=0)
+        # sems = gstd(in_df.values, axis=0)
+
+    else:  # arithmetic mean and 95% CI
         means = np.mean(in_df.values, axis=0)
-    sems = 1.96 * in_df.sem(axis=0)  # 95% CI
+        sems = 1.96 * in_df.sem(axis=0)  # 95% CI
 
     df = pd.DataFrame(np.vstack([means, sems]).T, index=cols, columns=['mean', 'sem'])
 
@@ -104,13 +110,15 @@ def process(args, exp_hash, out_dir, logger):
     df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
     df_rel_all = df_rel_all.groupby(group_cols).mean().reset_index()
 
-    # compute average ranks
+    # compute average ranks and relative performances
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
-    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'], sort='descending')
-    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols, sort='descending')
+    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
+                         sort='descending', geo_mean=True)
+    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols,
+                            sort='descending', geo_mean=True)
 
     logger.info(f'\nLoss (ranking):\n{df}')
     logger.info(f'\nLoss (ranking-LI):\n{df_li}')

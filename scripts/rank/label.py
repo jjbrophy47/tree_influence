@@ -78,11 +78,13 @@ def process(args, exp_hash, out_dir, logger):
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
-    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'], sort='descending')
-    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols, sort='descending')
+    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
+                         sort='descending', geo_mean=True)
+    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols,
+                            sort='descending', geo_mean=True)
 
-    logger.info(f'\nLoss:\n{df}')
-    logger.info(f'\nLoss (li):\n{df_li}')
+    logger.info(f'\nLoss (ranking):\n{df}')
+    logger.info(f'\nLoss (ranking-LI):\n{df_li}')
     logger.info(f'\nLoss (relative):\n{df_rel}')
     logger.info(f'\nLoss (relative-LI):\n{df_rel_li}')
 
