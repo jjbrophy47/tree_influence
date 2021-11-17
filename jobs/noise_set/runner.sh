@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Noise
+#SBATCH --job-name=Noise_Set
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=uoml
