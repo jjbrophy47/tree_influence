@@ -91,8 +91,7 @@ def get_label(y, pred, objective, y_median=False):
 
 
 def relabel_and_evaluate(test_idx, args, params, objective, tree,
-                         X_train, y_train, X_test, y_test,
-                         remove_frac, step_size, logger):
+                         X_train, y_train, X_test, y_test, logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
@@ -110,19 +109,15 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
 
     # fit explainer
     if 'boostinLE' in args.method:
-
         if objective == 'regression':
-
             if adv_lbl == 1:
                 fill_val = y_train_median - (y_train_median / 2)
             else:
                 fill_val = y_train_median + (y_train_median / 2)
-
         else:
             fill_val = adv_lbl
 
         new_y_train = np.full(y_train.shape, fill_val, dtype=y_train.dtype)
-
     else:
         new_y_train = None
 
@@ -136,26 +131,21 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
     logger.info(f'\n[INFO] influence time: {time.time() - start:.5f}s')
 
     # get ranking
-    ranking = np.argsort(influence[:, 0])[::-1]  # shape=(no. train,)
+    if is_correct:  # train examples that decrease lost most are ordered first
+        ranking = np.argsort(influence[:, 0])[::-1]  # shape=(no. train,)
+    else:  # train examples that increase lost most are ordered first
+        ranking = np.argsort(influence[:, 0])  # shape=(no. train,)
 
     # result container
     result = {}
-    result['test_idx'] = test_idx
-    result['start_pred'] = pred_val
-    result['start_pred_label'] = pred_lbl
-    result['loss'] = [res['loss']]
-    result['edit_frac'] = [0]
+    result['loss'] = np.full(len(args.edit_frac), np.nan, dtype=np.float32)
+    result['pred_label'] = np.full(len(args.edit_frac), np.nan, dtype=np.float32)
 
-    if not is_correct:  # only try to flip correct predictions
-        logger.info('Incorrect prediction, skipping...')
-        return None
+    for i, edit_frac in enumerate(args.edit_frac):
+        n_edit = int(len(X_train) * edit_frac)
 
-    # computed_affinity = False
-
-    for i in range(step_size, X_train.shape[0], step_size):
-
-        flip_idxs = ranking[:i]
-        new_y_train = edit_labels(y_train, flip_idxs, objective, adv_lbl, y_train_median)
+        edit_idxs = ranking[:n_edit]
+        new_y_train = edit_labels(y_train, edit_idxs, objective, adv_lbl, y_train_median)
 
         if objective == 'binary' and len(np.unique(new_y_train)) == 1:
             logger.info('Only samples from one class remain!')
@@ -166,22 +156,13 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
             break
 
         else:
-            edit_frac = i / X_train.shape[0]
-
-            if edit_frac * 100 > 2.0:
-                logger.info('Reached more than 2% of train, stopping...')
-                break
-
             new_tree = clone(tree).fit(X_train, new_y_train)
 
-            prefix = f'Labels flipped: {i:>5} ({edit_frac * 100:>5.3f}%)'
+            prefix = f'Labels flipped: {n_edit:>5} ({edit_frac * 100:>5.3f}%)'
             res = eval_fn(objective, new_tree, X_test, y_test, logger, prefix=prefix)
 
-            result['loss'].append(res['loss'])
-            result['edit_frac'].append(edit_frac)
-
-    result['loss'] = np.array(result['loss'], dtype=np.float32)
-    result['edit_frac'] = np.array(result['edit_frac'], dtype=np.float32)
+            result['loss'][i] = res['loss']
+            result['pred_label'][i] = res['pred_label']
 
     return result
 
@@ -227,8 +208,7 @@ def experiment(args, logger, out_dir, params):
 
             results = parallel(joblib.delayed(relabel_and_evaluate)
                                              (idx, args, params, objective, tree,
-                                              X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.remove_frac, args.step_size, logger)
+                                              X_train, y_train, X_test[[idx]], y_test[[idx]], logger)
                                               for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
@@ -241,23 +221,10 @@ def experiment(args, logger, out_dir, params):
             logger.info(f'[INFO] test instances finished: {n_finish:,} / {test_idxs.shape[0]:,}'
                         f', cum. time: {cum_time:.3f}s')
 
-    # get edit_frac array
-    edit_frac = None
-    # affinity_edit_frac = None
-
-    for res in res_list:
-        if res is not None:
-            edit_frac = res['edit_frac']
-            break
-
-    assert edit_frac is not None
-
-    # filter results
-    res_list = [res for res in res_list if res is not None]
-
     # save results
-    result['edit_frac'] = edit_frac  # shape=(no. ckpts,)
+    result['edit_frac'] = np.array(args.edit_frac, dtype=np.float32)  # shape=(no. ckpts.,)
     result['loss'] = np.vstack([res['loss'] for res in res_list])  # shape=(no. test, no. ckpts)
+    result['pred_label'] = np.vstack([res['pred_label'] for res in res_list])  # shape=(no. test, no. ckpts)
     result['max_rss_MB'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6  # MB if OSX, GB if Linux
     result['total_time'] = time.time() - begin
     result['tree_params'] = tree.get_params()
@@ -269,14 +236,12 @@ def experiment(args, logger, out_dir, params):
 
 def main(args):
 
-    # special cases
-    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
-
     # get unique hash for the explainer
+    args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
     params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
     # create output dir., get unique hash for the influence experiment setting
-    exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
+    exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
     exp_hash = util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,

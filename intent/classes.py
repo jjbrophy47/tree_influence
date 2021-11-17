@@ -73,10 +73,10 @@ class TreeExplainer(object):
             self.explainer = BoostInLE(**params, logger=logger)
 
         elif method == 'boostinLEW1':
-            self.explainer = BoostInLE(**params, logger=logger)
+            self.explainer = BoostInLEW1(**params, logger=logger)
 
         elif method == 'boostinLEW2':
-            self.explainer = BoostInLE(**params, logger=logger)
+            self.explainer = BoostInLEW2(**params, logger=logger)
 
         elif method == 'trex':
             self.explainer = Trex(**params, logger=logger)

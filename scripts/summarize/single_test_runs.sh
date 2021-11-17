@@ -17,6 +17,9 @@ for tree_type in ${tree_type_list[@]}; do
         elif [[ $exp = 'poison' ]]; then
             python3 scripts/summarize/poison.py --tree_type $tree_type --ckpt $ckpt
 
+        elif [[ $exp = 'targeted_edit' ]]; then
+            python3 scripts/summarize/targeted_edit.py --tree_type $tree_type --ckpt $ckpt
+
         fi
 
     done
