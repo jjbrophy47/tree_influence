@@ -79,7 +79,8 @@ def process(args, out_dir, logger):
         temp_label = f'{label[method]}' if strategy == 'fixed' else ''
 
         ax.errorbar(x, y, yerr=y_err, label=temp_label, linestyle=linestyle,
-                    color=color[method], marker=marker[method], alpha=0.75)
+                    color=color[method], marker=marker[method],
+                    alpha=0.75, markevery=args.markevery)
 
         # add rectangle around the first deletion of LOO
         if method == 'loo_' and strategy == 'fixed':

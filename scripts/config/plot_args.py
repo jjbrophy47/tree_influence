@@ -47,6 +47,11 @@ def get_ranking_args():
     cmd.add('--noise_frac', type=float, default=0.4)
     cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
 
+    # miscellaneous
+    cmd.add('--metric', type=str, default='loss')
+    cmd.add('--test', type=str, default='single')
+    cmd.add('--li', action='store_true')
+
     return cmd
 
 

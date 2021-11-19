@@ -111,9 +111,9 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
     if 'boostinLE' in args.method:
         if objective == 'regression':
             if adv_lbl == 1:
-                fill_val = y_train_median - (y_train_median / 2)
-            else:
                 fill_val = y_train_median + (y_train_median / 2)
+            else:
+                fill_val = y_train_median - (y_train_median / 2)
         else:
             fill_val = adv_lbl
 

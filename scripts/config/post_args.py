@@ -189,6 +189,7 @@ def get_reinfluence_args():
     cmd.add('--ylabel', type=int, default=1)
     cmd.add('--legend1', type=int, default=1)
     cmd.add('--legend2', type=int, default=1)
+    cmd.add('--markevery', type=int, default=1)
     return cmd
 
 
@@ -222,8 +223,8 @@ def get_targeted_edit_args():
     cmd.add('--in_dir', type=str, default='temp_targeted_edit/')
     cmd.add('--out_dir', type=str, default='output/plot/targeted_edit/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
-    cmd.add('--step_size', type=int, default=10)
+    cmd.add('--edit_frac', type=float, nargs='+',
+            default=[0.0, 0.002, 0.004, 0.006, 0.008, 0.01, 0.012, 0.014, 0.016, 0.018, 0.02])
     return cmd
 
 

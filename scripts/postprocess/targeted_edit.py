@@ -1,5 +1,5 @@
 """
-Targeted label edit.
+Targeted label postprocessing.
 """
 import os
 import sys
@@ -61,13 +61,15 @@ def experiment(args, exp_dir, out_dir, logger):
 def main(args):
 
     # get experiment directory
-    exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
+    exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     in_dir = os.path.join(args.in_dir,
                           args.dataset,
                           args.tree_type,
                           f'exp_{exp_hash}')
+
+    print(in_dir)
 
     # create output dir
     out_dir = os.path.join(args.out_dir,

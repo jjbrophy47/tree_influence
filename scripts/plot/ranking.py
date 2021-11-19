@@ -48,6 +48,7 @@ def get_results(in_dir_list, order, fn='loss_rank.csv'):
             df['index'] = df['index'].apply(lambda x: x.replace('_test_sum', ''))
 
         df['index'] = df['index'].apply(lambda x: 'SubSample' if x == 'SubS.' else x)
+        df['index'] = df['index'].apply(lambda x: 'LeafInfluence' if x == 'LeafInf.' else x)
         df.index = df['index']
 
         df = df.rename(index={'RandomSL': 'Target'})
@@ -90,44 +91,23 @@ def process(args, in_dir_list, out_dir, logger):
 
     color, line, label = pp_util.get_plot_dicts()
 
-    order1 = ['Random', 'Target', 'TreeSim', 'BoostIn', 'BoostInW1', 'BoostInW2'
-              'LeafInfSP', 'TREX', 'SubSample', 'LOO']
-    order2 = ['BoostIn', 'BoostInW1', 'BoostInW2', 'LeafInfSP', 'TreeSim',
-              'TREX', 'SubSample', 'LOO', 'Target', 'Random']
+    if args.li:
+        suffix = '_li'
+        order = ['LeafRefit', 'LeafInfluence', 'BoostIn', 'BoostInW1',
+                 'BoostInW2', 'LeafInfSP', 'TreeSim', 'TREX', 'SubSample',
+                 'LOO', 'Target', 'Random']
 
-    rank_mean_df, rank_sem_df = get_results(in_dir_list, order2, fn='loss_rank.csv')
-    rel_mean_df, rel_sem_df = get_results(in_dir_list, order2, fn='loss_rel.csv')
+    else:
+        pass
+        suffix = ''
+        order = ['BoostIn', 'BoostInW1', 'BoostInW2', 'LeafInfSP', 'TreeSim',
+                 'TREX', 'SubSample', 'LOO', 'Target', 'Random']
 
-    # rel_mean_df = rel_mean_df.drop('Random', axis=1)
-    # rel_sem_df = rel_sem_df.drop('Random', axis=1)
+    rank_mean_df, rank_sem_df = get_results(in_dir_list, order, fn=f'{args.metric}_rank{suffix}.csv')
+    rel_mean_df, rel_sem_df = get_results(in_dir_list, order, fn=f'{args.metric}_rel{suffix}.csv')
 
-    # # get average rankings and relative performances from each scenario
-    # for name, in_dir in in_dir_list:
-    #     fp = os.path.join(in_dir, 'loss_rank.csv')
-    #     assert os.path.exists(fp), f'{fp} does not exist!'
-
-    #     df = pd.read_csv(fp, header=0, names=['index', 'mean', 'sem'])
-    #     df = df.sort_values('index')
-
-    #     if name == 'Fix mislabeled':
-    #         df = df[df['index'] != 'Loss_self'].copy()
-    #         df['index'] = df['index'].apply(lambda x: x.replace('_test_sum', ''))
-
-    #     df['index'] = df['index'].apply(lambda x: 'SubSample' if x == 'SubS.' else x)
-    #     df.index = df['index']
-
-    #     df = df.rename(index={'RandomSL': 'Target'})
-    #     df = df.loc[order2]
-
-    #     mean_dict[name] = df['mean'].values
-    #     sem_dict[name] = df['sem'].values
-
-    # mean_df = pd.DataFrame(mean_dict, index=df['index']).transpose()
-    # sem_df = pd.DataFrame(sem_dict, index=df['index']).transpose()
-
-    # # rename columns
-    # mean_df = mean_df.rename(columns={'Target': 'RandomSL'})
-    # sem_df = sem_df.rename(columns={'Target': 'RandomSL'})
+    if args.metric in ['acc', 'auc']:
+        rel_mean_df = 1 / rel_mean_df
 
     # plot
     pp_util.plot_settings(fontsize=13)
@@ -143,49 +123,24 @@ def process(args, in_dir_list, out_dir, logger):
                       capsize=3, ylabel='Average rank', xlabel=None)
     set_bars(ax)
     ax.set_xticklabels([])
-    # ax.axvline(1.5, color='k', linestyle='--')
-    # ax.set_title('  Single Test Instance                         Multiple Test Instances')
 
     # relative performance
     ax = axs[1]
     rel_mean_df.plot(kind='bar', yerr=None, ax=ax, rot=0, width=0.75, colormap='gnuplot2',
-                     capsize=3, ylabel='Geo. avg. loss increase\n(relative to Random)',
+                     capsize=3, ylabel=f'Geo. avg. {args.metric} increase\n(relative to Random)',
                      xlabel='Evaluation Setting', legend=None)
     set_bars(ax)
     ax.set_ylim(1.0, None)
-    # print(dir(ax.get_yticklabels()[0]))
-    # ax.set_yticklabels([y._text + 'x' for y in ax.get_yticklabels()])
-    # ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
     ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x}x')
     ax.yaxis.set_major_formatter(ticks_y)
-    # ax.axvline(1.5, color='k', linestyle='--')
-    # ax.set_title('  Single Test Instance                         Multiple Test Instances')
-
-    # hatches
-    # h1 = '/' * 5
-    # h2 = '.' * 3
-
-    # bars = ax.patches
-    # patterns = (h1, h2, h1, h2, h1, h2, h1, h2, h1, h2)
-    # hatches = [p for p in patterns for i in range(4)]
-    # for bar, hatch in zip(bars, hatches):
-    #     bar.set_edgecolor('k')
-    #     bar.set_linewidth(0.75)
-    #     bar.set_alpha(0.75)
-
-    # plt.rcParams.update({'hatch.color': 'k'})
-
-    # # legend
-    # ax.legend(bbox_to_anchor=(0.44, 1.2275), loc='upper center',
-    #           ncol=int(len(order2) / 2), framealpha=1.0, fontsize=11)
 
     # legend
     axs[0].legend(bbox_to_anchor=(0.5, 1.5), loc='upper center',
-                  ncol=int(len(order2) / 2), framealpha=1.0, fontsize=11)
+                  ncol=int(len(order) / 2), framealpha=1.0, fontsize=11)
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    plt.savefig(os.path.join(out_dir, 'rank.pdf'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, f'{args.metric}_{args.test}{suffix}.pdf'), bbox_inches='tight')
     plt.tight_layout()
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
@@ -215,8 +170,16 @@ def main(args):
     single_list = [('Remove', remove_dir), ('Relabel', label_dir)]
     multi_list = [('Remove (set)', remove_set_dir), ('Relabel (set)', label_set_dir)]
 
-    in_dir_list = single_list
-    in_dir_list = multi_list
+    if args.test == 'single':
+        assert args.metric == 'loss'
+        in_dir_list = single_list
+
+    elif args.test == 'multi':
+        assert args.metric in ['loss', 'acc', 'auc']
+        in_dir_list = multi_list
+
+    else:
+        raise ValueError(f'Unknown test {args.test}')
 
     out_dir = os.path.join(args.in_dir, 'ranking', tree_types)
 
