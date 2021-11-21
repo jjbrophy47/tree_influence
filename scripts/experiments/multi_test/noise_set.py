@@ -169,6 +169,16 @@ def main(args):
 
     # get unique hash for the explainer
     args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
+
+    # custom tol. for nosie_set experiment
+    if args.tree_type == 'cb':
+
+        if args.dataset == 'htru2':
+            args.leaf_inf_atol = 1e-3
+
+        elif args.dataset == 'naval':
+            args.leaf_inf_atol = 1e-2
+
     params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
     # create output dir., get unique hash for this experiment setting
