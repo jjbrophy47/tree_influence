@@ -14,3 +14,6 @@ sbatch -a 1-22  -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLEW1-%a.out'  $run 
 sbatch -a 1-22  -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLEW2-%a.out'  $run $t 'boostinLEW2'
 
 # scratch pad
+sbatch -a 5,8,12-13,15-17,21  -c 20 -t 1440 -p 'preempt' -o ${o}${t}'_boostinLE-%a.out'    $run $t 'boostinLE'
+sbatch -a 5,8,12-13,15-17,21  -c 20 -t 1440 -p 'preempt' -o ${o}${t}'_boostinLEW1-%a.out'  $run $t 'boostinLEW1'
+sbatch -a 5,8,12-13,15-17,21  -c 20 -t 1440 -p 'preempt' -o ${o}${t}'_boostinLEW2-%a.out'  $run $t 'boostinLEW2'

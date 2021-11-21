@@ -106,8 +106,8 @@ def get_targeted_edit_args():
     cmd.add('--in_dir', type=str, default='temp_targeted_edit/')
     cmd.add('--out_dir', type=str, default='output/plot/targeted_edit/')
     cmd.add('--n_test', type=int, default=100)
-    cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
-    cmd.add('--step_size', type=int, default=10)
+    cmd.add('--edit_frac', type=float, nargs='+',
+            default=[0.0, 0.002, 0.004, 0.006, 0.008, 0.01, 0.012, 0.014, 0.016, 0.018, 0.02])
     cmd.add('--ckpt', type=int, default=1)
     return cmd
 
@@ -204,21 +204,20 @@ def get_poison_set_args():
     return cmd
 
 
-def get_noise_args():
+def get_noise_set_args():
     """
-    Add arguments specific to the "Noise" summarization.
+    Add arguments specific to the "Noise Set" summarization.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = post_args.get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_noise/')
-    cmd.add('--out_dir', type=str, default='output/plot/noise/')
+    cmd.add('--in_dir', type=str, default='temp_noise_set/')
+    cmd.add('--out_dir', type=str, default='output/plot/noise_set/')
     cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
     cmd.add('--noise_frac', type=float, default=0.4)
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--n_repeat', type=int, default=5)
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3])
     cmd.add('--ckpt', type=int, default=1)
     return cmd
 

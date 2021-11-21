@@ -45,9 +45,8 @@ def get_experiments_args():
 
     # noise only
     cmd.add('--noise_frac', type=float, default=0.4)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3])
     cmd.add('--agg_type', type=int, nargs='+', default=['self', 'test_sum'])
-    cmd.add('--random_state_list', type=int, nargs='+', default=[1, 2, 3, 4, 5])
 
     # other
     cmd.add('--status_type', type=str, default='time')

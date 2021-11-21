@@ -34,6 +34,9 @@ for tree_type in ${tree_type_list[@]}; do
         elif [[ $exp = 'poison_set' ]]; then
             python3 scripts/postprocess/poison_set.py --tree_type $tree_type --dataset $dataset
 
+        elif [[ $exp = 'noise_set' ]]; then
+            python3 scripts/postprocess/noise_set.py --tree_type $tree_type --dataset $dataset
+
         # miscellaneous
         elif [[ $exp = 'structure' ]]; then
             python3 scripts/postprocess/structure.py --tree_type $tree_type --dataset $dataset

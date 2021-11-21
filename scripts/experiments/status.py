@@ -51,7 +51,7 @@ def get_experiment_hash(args):
     elif args.exp == 'poison_set':
         exp_dict = {'poison_frac': args.poison_frac_set, 'val_frac': args.val_frac}
 
-    elif args.exp == 'noise':
+    elif args.exp == 'noise_set':
         exp_dict = {'noise_frac': args.noise_frac, 'check_frac': args.check_frac,
                     'val_frac': args.val_frac}
 
@@ -68,7 +68,7 @@ def get_method_hash(args, method):
     return method_hash
 
 
-def get_noise_status(args, logger, out_dir, exp_hash):
+def get_noise_set_status(args, logger, out_dir, exp_hash):
     """
     Construct pd.FataFrame with completion status of each experiment.
 
@@ -89,40 +89,32 @@ def get_noise_status(args, logger, out_dir, exp_hash):
 
                 for method in args.method_list:
 
-                    for random_state in args.random_state_list:
+                    method_hash = get_method_hash(args, method)
 
-                        method_hash = get_method_hash(args, method)
+                    result_dir = os.path.join(args.in_dir,
+                                              dataset,
+                                              tree_type,
+                                              f'exp_{exp_hash}',
+                                              agg_type,
+                                              f'{method}_{method_hash}')
 
-                        result_dir = os.path.join(args.in_dir,
-                                                  dataset,
-                                                  tree_type,
-                                                  f'exp_{exp_hash}',
-                                                  agg_type,
-                                                  f'random_state_{random_state}',
-                                                  f'{method}_{method_hash}')
+                    result_fp = os.path.join(result_dir, 'results.npy')
 
-                        result_fp = os.path.join(result_dir, 'results.npy')
+                    if os.path.exists(result_fp):
 
-                        if os.path.exists(result_fp):
+                        if args.status_type == 'time':
+                            result = np.load(result_fp, allow_pickle=True)[()]
+                            assert 'total_time' in result
+                            method_results[f'{method}_{agg_type}'] = result['total_time']
 
-                            if method in method_results:
-                                method_results[method] += 2 ** (random_state - 1)
-
-                            else:
-
-                                if random_state <= 1:
-                                    method_results[method] = 2 ** 0
-
-                                else:
-                                    method_results[method] = 2 ** (random_state - 1)
+                        elif args.status_type == 'completion':
+                            method_results[f'{method}_{agg_type}'] = 1
 
             results.append(method_results)
 
     df = pd.DataFrame(results).sort_values(['tree_type', 'dataset'])
-    df = df.fillna(0)
-
-    logger.info(f'\nCompleted status (5-bit sum corresponding to completion for 5 random states):\n{df}')
-    df.to_csv(os.path.join(out_dir, f'status.csv'), index=None)
+    logger.info(f'\nCompleted status:\n{df}')
+    df.to_csv(os.path.join(out_dir, f'{args.status_type}.csv'), index=None)
 
 
 def get_result_status(args, logger, out_dir, exp_hash):
@@ -167,13 +159,18 @@ def get_result_status(args, logger, out_dir, exp_hash):
             results.append(method_results)
 
     df = pd.DataFrame(results).sort_values(['tree_type', 'dataset'])
-    logger.info(f'\nCompleted status (1 = completed, NaN otherwise):\n{df}')
+    logger.info(f'\nCompleted status:\n{df}')
     df.to_csv(os.path.join(out_dir, f'{args.status_type}.csv'), index=None)
 
 
 def main(args):
 
     exp_hash = get_experiment_hash(args)
+
+    # get status for specific methods
+    args.method_list = ['random', 'target', 'loss', 'leaf_sim', 'boostin',
+                        'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
+                        'leaf_refit', 'boostinW1', 'boostinW2']
 
     # create output dir.
     out_dir = os.path.join(args.out_dir,
@@ -188,8 +185,8 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    if args.exp == 'noise':
-        get_noise_status(args, logger, out_dir, exp_hash)
+    if args.exp == 'noise_set':
+        get_noise_set_status(args, logger, out_dir, exp_hash)
 
     else:
         get_result_status(args, logger, out_dir, exp_hash)

@@ -98,7 +98,7 @@ def process(args, exp_hash, out_dir, logger):
 
 def main(args):
 
-    exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
+    exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,
