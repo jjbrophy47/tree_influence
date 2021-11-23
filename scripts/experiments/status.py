@@ -36,7 +36,7 @@ def get_experiment_hash(args):
         exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
 
     elif args.exp == 'targeted_edit':
-        exp_dict = {'n_test': args.n_test, 'step_size': args.step_size}
+        exp_dict = {'n_test': args.n_test, 'edit_frac': args.targeted_edit_frac}
 
     # multi test
     elif args.exp == 'influence_set':
@@ -168,9 +168,15 @@ def main(args):
     exp_hash = get_experiment_hash(args)
 
     # get status for specific methods
-    args.method_list = ['random', 'target', 'loss', 'leaf_sim', 'boostin',
-                        'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
-                        'leaf_refit', 'boostinW1', 'boostinW2']
+    if args.exp == 'noise_set':
+        args.method_list = ['random', 'target', 'loss', 'leaf_sim', 'boostin',
+                            'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
+                            'leaf_refit', 'boostinW1', 'boostinW2']
+
+    elif args.exp == 'targeted_edit':
+        args.method_list = ['random', 'leaf_sim', 'trex',
+                            'boostin', 'boostinW1', 'boostinW2',
+                            'boostinLE', 'boostinLEW1', 'boostinLEW2']
 
     # create output dir.
     out_dir = os.path.join(args.out_dir,

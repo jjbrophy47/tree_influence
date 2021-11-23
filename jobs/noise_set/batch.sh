@@ -57,3 +57,5 @@ sbatch -a 6,18,21          -c 28 -t 1440  -p 'short' -o ${o}${t}'_loo-%a.out'   
 sbatch -a 3,13,15,19       -c 28 -t 2880  -p 'long'  -o ${o}${t}'_loo-%a.out'        $run $t 'loo'        $st $nf
 
 # scratch pad
+sbatch -a 11,13               -c 28 -t 1440  -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'   $st $nf
+sbatch -a 11,13               -c 28 -t 1440  -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit' $st $nf

@@ -13,7 +13,22 @@ sbatch -a 1-22  -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLE-%a.out'    $run 
 sbatch -a 1-22  -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLEW1-%a.out'  $run $t 'boostinLEW1'
 sbatch -a 1-22  -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLEW2-%a.out'  $run $t 'boostinLEW2'
 
+# LGB only
+sbatch -a 7,9,17,22          -c 1 --mem=60GB -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 15                 -c 1 --mem=60GB -t 2880 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+
+# SGB only
+sbatch -a 7,17,22            -c 1 --mem=60GB -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 9                  -c 1 --mem=60GB -t 2880 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 15                 -c 1 --mem=60GB -t 4320 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+
+# XGB only
+sbatch -a 9,17,22            -c 1 --mem=60GB -t 1440 -p 'short' -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 15                 -c 1 --mem=60GB -t 4320 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+
+# CB only
+sbatch -a 2,17               -c 1 --mem=60GB -t 2880 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 7,9,14-15          -c 1 --mem=60GB -t 4320 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 22                 -c 1 --mem=60GB -t 7200 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+
 # scratch pad
-sbatch -a 5,8,12-13,15-17,21  -c 20 -t 1440 -p 'preempt' -o ${o}${t}'_boostinLE-%a.out'    $run $t 'boostinLE'
-sbatch -a 5,8,12-13,15-17,21  -c 20 -t 1440 -p 'preempt' -o ${o}${t}'_boostinLEW1-%a.out'  $run $t 'boostinLEW1'
-sbatch -a 5,8,12-13,15-17,21  -c 20 -t 1440 -p 'preempt' -o ${o}${t}'_boostinLEW2-%a.out'  $run $t 'boostinLEW2'
