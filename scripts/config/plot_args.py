@@ -45,7 +45,7 @@ def get_ranking_args():
 
     # noise only
     cmd.add('--noise_frac', type=float, default=0.4)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3])
 
     # miscellaneous
     cmd.add('--metric', type=str, default='loss')

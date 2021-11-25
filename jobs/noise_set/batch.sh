@@ -38,6 +38,7 @@ sbatch -a 22 -c 11 -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'  $run $t 'b
 
 # lgb only
 sbatch -a 22 -c 28 -t 4320  -p 'long'   -o ${o}${t}'_subsample-%a.out' $run $t 'subsample'  $st $nf
+sbatch -a 6  -c 20 -t 1440  -p 'short' -o ${o}${t}'_leaf_inf-%a.out'   $run $t 'leaf_inf'   $st $nf
 
 # xgb only
 sbatch -a 7,9 -c 28 -t 2880 -p 'long'   -o ${o}${t}'_loo-%a.out'      $run $t 'loo' $st $nf

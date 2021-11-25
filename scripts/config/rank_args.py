@@ -154,19 +154,19 @@ def get_label_set_args():
     return cmd
 
 
-def get_noise_args():
+def get_noise_set_args():
     """
-    Add arguments specific to the "Noise" rank.
+    Add arguments specific to the "Noise Set" rank.
 
     Return ArgParser object.
     """
     cmd = get_general_args()
     cmd = post_args.get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='output/plot/noise/')
-    cmd.add('--noise_frac', type=float, default=0.4)  # TODO: average over multiple fracs.?
+    cmd.add('--in_dir', type=str, default='output/plot/noise_set/')
+    cmd.add('--noise_frac', type=float, default=0.4)
     cmd.add('--val_frac', type=float, default=0.1)
-    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.01, 0.05, 0.1, 0.2, 0.3])
-    cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4, 5])
+    cmd.add('--check_frac', type=float, nargs='+', default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3])
+    cmd.add('--ckpt', type=int, nargs='+', default=[1, 2, 3, 4, 5, 6])
     return cmd
 
 

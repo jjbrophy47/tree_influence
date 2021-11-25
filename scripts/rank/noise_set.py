@@ -1,7 +1,5 @@
 """
 Aggregate results.
-
-TODO: Average over multiple noise fracs.?
 """
 import os
 import sys
@@ -22,7 +20,7 @@ sys.path.insert(0, here + '/../')
 from experiments import util as exp_util
 from postprocess import util as pp_util
 from config import rank_args
-from rank.roar import get_mean_df
+from rank.remove import get_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -43,6 +41,18 @@ def process(args, exp_hash, out_dir, logger):
     df_auc_list = []
     df_li_auc_list = []
 
+    df_fd_rel_list = []
+    df_li_fd_rel_list = []
+
+    df_loss_rel_list = []
+    df_li_loss_rel_list = []
+
+    df_acc_rel_list = []
+    df_li_acc_rel_list = []
+
+    df_auc_rel_list = []
+    df_li_auc_rel_list = []
+
     for tree_type in args.tree_type:
 
         in_dir = os.path.join(args.in_dir,
@@ -53,7 +63,7 @@ def process(args, exp_hash, out_dir, logger):
         for ckpt in args.ckpt:
             ckpt_dir = os.path.join(in_dir, f'ckpt_{ckpt}')
 
-            # define paths
+            # rankings
             fp_fd = os.path.join(ckpt_dir, 'frac_detected_rank.csv')
             fp_li_fd = os.path.join(ckpt_dir, 'frac_detected_rank_li.csv')
             fp_loss = os.path.join(ckpt_dir, 'loss_rank.csv')
@@ -63,7 +73,6 @@ def process(args, exp_hash, out_dir, logger):
             fp_auc = os.path.join(ckpt_dir, 'auc_rank.csv')
             fp_li_auc = os.path.join(ckpt_dir, 'auc_rank_li.csv')
 
-            # check paths
             assert os.path.exists(fp_fd), f'{fp_fd} does not exist!'
             assert os.path.exists(fp_li_fd), f'{fp_li_fd} does not exist!'
             assert os.path.exists(fp_loss), f'{fp_loss} does not exist!'
@@ -73,7 +82,6 @@ def process(args, exp_hash, out_dir, logger):
             assert os.path.exists(fp_auc), f'{fp_auc} does not exist!'
             assert os.path.exists(fp_auc), f'{fp_auc} doess not exist!'
 
-            # read results
             df_fd_list.append(pd.read_csv(fp_fd))
             df_li_fd_list.append(pd.read_csv(fp_li_fd))
             df_loss_list.append(pd.read_csv(fp_loss))
@@ -82,6 +90,34 @@ def process(args, exp_hash, out_dir, logger):
             df_li_acc_list.append(pd.read_csv(fp_li_acc))
             df_auc_list.append(pd.read_csv(fp_auc))
             df_li_auc_list.append(pd.read_csv(fp_li_auc))
+
+            # relative performance
+            fp_fd_rel = os.path.join(ckpt_dir, 'fd_rel.csv')
+            fp_li_fd_rel = os.path.join(ckpt_dir, 'fd_rel_li.csv')
+            fp_loss_rel = os.path.join(ckpt_dir, 'loss_rel.csv')
+            fp_li_loss_rel = os.path.join(ckpt_dir, 'loss_rel_li.csv')
+            fp_acc_rel = os.path.join(ckpt_dir, 'acc_rel.csv')
+            fp_li_acc_rel = os.path.join(ckpt_dir, 'acc_rel_li.csv')
+            fp_auc_rel = os.path.join(ckpt_dir, 'auc_rel.csv')
+            fp_li_auc_rel = os.path.join(ckpt_dir, 'auc_rel_li.csv')
+
+            assert os.path.exists(fp_fd_rel), f'{fp_fd_rel} does not exist!'
+            assert os.path.exists(fp_li_fd_rel), f'{fp_li_fd_rel} does not exist!'
+            assert os.path.exists(fp_loss_rel), f'{fp_loss_rel} does not exist!'
+            assert os.path.exists(fp_li_loss_rel), f'{fp_li_loss_rel} does not exist!'
+            assert os.path.exists(fp_acc_rel), f'{fp_acc_rel} does not exist!'
+            assert os.path.exists(fp_li_acc_rel), f'{fp_li_acc_rel} does not exist!'
+            assert os.path.exists(fp_auc_rel), f'{fp_auc_rel} does not exist!'
+            assert os.path.exists(fp_auc_rel), f'{fp_auc_rel} doess not exist!'
+
+            df_fd_rel_list.append(pd.read_csv(fp_fd_rel))
+            df_li_fd_rel_list.append(pd.read_csv(fp_li_fd_rel))
+            df_loss_rel_list.append(pd.read_csv(fp_loss_rel))
+            df_li_loss_rel_list.append(pd.read_csv(fp_li_loss_rel))
+            df_acc_rel_list.append(pd.read_csv(fp_acc_rel))
+            df_li_acc_rel_list.append(pd.read_csv(fp_li_acc_rel))
+            df_auc_rel_list.append(pd.read_csv(fp_auc_rel))
+            df_li_auc_rel_list.append(pd.read_csv(fp_li_auc_rel))
 
     # compile results
     df_fd_all = pd.concat(df_fd_list)
@@ -92,6 +128,15 @@ def process(args, exp_hash, out_dir, logger):
     df_li_acc_all = pd.concat(df_li_acc_list)
     df_auc_all = pd.concat(df_auc_list)
     df_li_auc_all = pd.concat(df_li_auc_list)
+
+    df_fd_rel_all = pd.concat(df_fd_rel_list)
+    df_li_fd_rel_all = pd.concat(df_li_fd_rel_list)
+    df_loss_rel_all = pd.concat(df_loss_rel_list)
+    df_li_loss_rel_all = pd.concat(df_li_loss_rel_list)
+    df_acc_rel_all = pd.concat(df_acc_rel_list)
+    df_li_acc_rel_all = pd.concat(df_li_acc_rel_list)
+    df_auc_rel_all = pd.concat(df_auc_rel_list)
+    df_li_auc_rel_all = pd.concat(df_li_auc_rel_list)
 
     # average ranks among different checkpoints, noise fractions, and tree types
     group_cols = ['dataset']
@@ -105,6 +150,15 @@ def process(args, exp_hash, out_dir, logger):
     df_auc_all = df_auc_all.groupby(group_cols).mean().reset_index()
     df_li_auc_all = df_li_auc_all.groupby(group_cols).mean().reset_index()
 
+    df_fd_rel_all = df_fd_rel_all.groupby(group_cols).mean().reset_index()
+    df_li_fd_rel_all = df_li_fd_rel_all.groupby(group_cols).mean().reset_index()
+    df_loss_rel_all = df_loss_rel_all.groupby(group_cols).mean().reset_index()
+    df_li_loss_rel_all = df_li_loss_rel_all.groupby(group_cols).mean().reset_index()
+    df_acc_rel_all = df_acc_rel_all.groupby(group_cols).mean().reset_index()
+    df_li_acc_rel_all = df_li_acc_rel_all.groupby(group_cols).mean().reset_index()
+    df_auc_rel_all = df_auc_rel_all.groupby(group_cols).mean().reset_index()
+    df_li_auc_rel_all = df_li_auc_rel_all.groupby(group_cols).mean().reset_index()
+
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
 
@@ -117,17 +171,40 @@ def process(args, exp_hash, out_dir, logger):
     df_auc = get_mean_df(df_auc_all, skip_cols=skip_cols, sort='ascending')
     df_li_auc = get_mean_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
 
-    logger.info(f'\nFrac. detected:\n{df_fd}')
-    logger.info(f'\nFrac. detected (li):\n{df_li_fd}')
+    df_fd_rel = get_mean_df(df_fd_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
+                            sort='descending', geo_mean=True)
+    df_li_fd_rel = get_mean_df(df_li_fd_rel_all, skip_cols=skip_cols,
+                               sort='descending', geo_mean=True)
+    df_loss_rel = get_mean_df(df_loss_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
+                              sort='ascending', geo_mean=True)
+    df_li_loss_rel = get_mean_df(df_li_loss_rel_all, skip_cols=skip_cols,
+                                 sort='ascending', geo_mean=True)
+    df_acc_rel = get_mean_df(df_acc_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
+                             sort='descending', geo_mean=True)
+    df_li_acc_rel = get_mean_df(df_li_acc_rel_all, skip_cols=skip_cols,
+                                sort='descending', geo_mean=True)
+    df_auc_rel = get_mean_df(df_auc_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
+                             sort='descending', geo_mean=True)
+    df_li_auc_rel = get_mean_df(df_li_auc_rel_all, skip_cols=skip_cols,
+                                sort='descending', geo_mean=True)
 
-    logger.info(f'\nLoss:\n{df_loss}')
-    logger.info(f'\nLoss (li):\n{df_li_loss}')
+    logger.info(f'\nFrac. detected (ranking):\n{df_fd}')
+    logger.info(f'\nFrac. detected (ranking-LI):\n{df_li_fd}')
+    logger.info(f'\nLoss (ranking):\n{df_loss}')
+    logger.info(f'\nLoss (ranking-LI):\n{df_li_loss}')
+    logger.info(f'\nAcc. (ranking):\n{df_acc}')
+    logger.info(f'\nAcc. (ranking-LI):\n{df_li_acc}')
+    logger.info(f'\nAUC (ranking):\n{df_auc}')
+    logger.info(f'\nAUC (ranking-LI):\n{df_li_auc}')
 
-    logger.info(f'\nAcc.:\n{df_acc}')
-    logger.info(f'\nAcc. (li):\n{df_li_acc}')
-
-    logger.info(f'\nAUC:\n{df_auc}')
-    logger.info(f'\nAUC (li):\n{df_li_auc}')
+    logger.info(f'\nFrac. detected (relative):\n{df_fd_rel}')
+    logger.info(f'\nFrac. detected (relative-LI):\n{df_li_fd_rel}')
+    logger.info(f'\nLoss (relative):\n{df_loss_rel}')
+    logger.info(f'\nLoss (relative-LI):\n{df_li_loss_rel}')
+    logger.info(f'\nAcc. (relative):\n{df_acc_rel}')
+    logger.info(f'\nAcc. (relative-LI):\n{df_li_acc_rel}')
+    logger.info(f'\nAUC (relative):\n{df_auc_rel}')
+    logger.info(f'\nAUC (relative-LI):\n{df_li_auc_rel}')
 
     # plot
     n_fd_datasets = len(df_fd_all['dataset'].unique())
@@ -195,12 +272,22 @@ def process(args, exp_hash, out_dir, logger):
     df_auc.to_csv(os.path.join(out_dir, 'auc_rank.csv'))
     df_li_auc.to_csv(os.path.join(out_dir, 'auc_rank_li.csv'))
 
+    df_fd_rel.to_csv(os.path.join(out_dir, 'fd_rel.csv'))
+    df_li_fd_rel.to_csv(os.path.join(out_dir, 'fd_rel_li.csv'))
+    df_loss_rel.to_csv(os.path.join(out_dir, 'loss_rel.csv'))
+    df_li_loss_rel.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'))
+    df_acc_rel.to_csv(os.path.join(out_dir, 'acc_rel.csv'))
+    df_li_acc_rel.to_csv(os.path.join(out_dir, 'acc_rel_li.csv'))
+    df_auc_rel.to_csv(os.path.join(out_dir, 'auc_rel.csv'))
+    df_li_auc_rel.to_csv(os.path.join(out_dir, 'auc_rel_li.csv'))
+
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
 
 def main(args):
 
-    exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac, 'check_frac': args.check_frac}
+    exp_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac,
+                'check_frac': args.check_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)
 
     assert len(args.tree_type) > 0
@@ -219,4 +306,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(rank_args.get_noise_args().parse_args())
+    main(rank_args.get_noise_set_args().parse_args())

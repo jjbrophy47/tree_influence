@@ -27,7 +27,7 @@ sbatch -a 9,17,22            -c 1 --mem=60GB -t 1440 -p 'short' -o ${o}${t}'_tre
 sbatch -a 15                 -c 1 --mem=60GB -t 4320 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
 
 # CB only
-sbatch -a 2,17               -c 1 --mem=60GB -t 2880 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
+sbatch -a 2,17               -c 1 --mem=60GB -t 4320 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
 sbatch -a 7,9,14-15          -c 1 --mem=60GB -t 4320 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
 sbatch -a 22                 -c 1 --mem=60GB -t 7200 -p 'long'  -o ${o}${t}'_trex-%a.out' $run $t 'trex'
 

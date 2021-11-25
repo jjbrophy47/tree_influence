@@ -98,15 +98,17 @@ def process(args, exp_hash, out_dir, logger):
     remove_cols = ['LeafInfluence_test_sum', 'LeafRefit_test_sum']
 
     # relative performance
-    rel_df_fd = get_relative_df(df_fd, ref_col='Random', skip_cols=skip_cols + remove_cols)
-    rel_df_loss = get_relative_df(df_loss, ref_col='Random', skip_cols=skip_cols + remove_cols)
-    rel_df_acc = get_relative_df(df_acc, ref_col='Random', skip_cols=skip_cols + remove_cols)
-    rel_df_auc = get_relative_df(df_auc, ref_col='Random', skip_cols=skip_cols + remove_cols)
+    ref_col = 'Random_test_sum'
 
-    rel_li_df_fd = get_relative_df(df_fd, ref_col='Random', skip_cols=skip_cols)
-    rel_li_df_loss = get_relative_df(df_loss, ref_col='Random', skip_cols=skip_cols)
-    rel_li_df_acc = get_relative_df(df_acc, ref_col='Random', skip_cols=skip_cols)
-    rel_li_df_auc = get_relative_df(df_auc, ref_col='Random', skip_cols=skip_cols)
+    rel_df_fd = get_relative_df(df_fd, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
+    rel_df_loss = get_relative_df(df_loss, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
+    rel_df_acc = get_relative_df(df_acc, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
+    rel_df_auc = get_relative_df(df_auc, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
+
+    rel_li_df_fd = get_relative_df(df_fd, ref_col=ref_col, skip_cols=skip_cols)
+    rel_li_df_loss = get_relative_df(df_loss, ref_col=ref_col, skip_cols=skip_cols)
+    rel_li_df_acc = get_relative_df(df_acc, ref_col=ref_col, skip_cols=skip_cols)
+    rel_li_df_auc = get_relative_df(df_auc, ref_col=ref_col, skip_cols=skip_cols)
 
     logger.info(f'\nFrac. detected (relative):\n{rel_df_fd}')
     logger.info(f'\nFrac. detected (LI-relative):\n{rel_li_df_fd}')
@@ -122,16 +124,15 @@ def process(args, exp_hash, out_dir, logger):
 
     # rankings
     rank_df_fd = get_rank_df(df_fd, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
-    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
+    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
+    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols)
+    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols)
 
     rank_li_df_fd = get_rank_df(df_fd[~pd.isna(df_fd['LeafInfluence_test_sum'])], skip_cols=skip_cols)
-    rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['LeafInfluence_test_sum'])], skip_cols=skip_cols)
-    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['LeafInfluence_test_sum'])],
-                                 skip_cols=skip_cols, ascending=True)
-    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['LeafInfluence_test_sum'])],
-                                 skip_cols=skip_cols, ascending=True)
+    rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['LeafInfluence_test_sum'])],
+                                  skip_cols=skip_cols, ascending=True)
+    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['LeafInfluence_test_sum'])], skip_cols=skip_cols)
+    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['LeafInfluence_test_sum'])], skip_cols=skip_cols)
 
     logger.info(f'\nFrac. detected ranking:\n{rank_df_fd}')
     logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
@@ -148,10 +149,10 @@ def process(args, exp_hash, out_dir, logger):
     # save results
     logger.info(f'\nSaving results to {out_dir}...')
 
-    fd_df_raw.to_csv(os.path.join(out_dir, 'frac_detected.csv'), index=None)
-    loss_df_raw.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
-    acc_df_raw.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
-    auc_df_raw.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
+    df_fd_raw.to_csv(os.path.join(out_dir, 'frac_detected.csv'), index=None)
+    df_loss_raw.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
+    df_acc_raw.to_csv(os.path.join(out_dir, 'acc.csv'), index=None)
+    df_auc_raw.to_csv(os.path.join(out_dir, 'auc.csv'), index=None)
 
     rel_df_fd.to_csv(os.path.join(out_dir, 'fd_rel.csv'), index=None)
     rel_df_loss.to_csv(os.path.join(out_dir, 'loss_rel.csv'), index=None)

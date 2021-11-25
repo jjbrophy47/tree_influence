@@ -35,8 +35,15 @@ def poison(X, y, objective, rng, target_idxs, poison_features=False):
         new_X[target_idxs] = np.mean(X, axis=0)
 
     # replace labels with random labels
-    if objective in ['binary', 'multiclass']:
-        new_y[target_idxs] = rng.choice(np.unique(y), size=len(target_idxs))
+    if objective == 'binary':
+        new_y[target_idxs] = np.where(new_y[target_idxs] == 0, 1, 0)
+
+    elif objective == 'multiclass':
+        labels = np.unique(y)
+
+        for target_idx in target_idxs:
+            avail_labels = np.setdiff1d(labels, y[target_idx])
+            new_y[target_idx] = rng.choice(avail_labels, size=1)
 
     else:
         assert objective == 'regression'

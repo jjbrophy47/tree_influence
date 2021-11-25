@@ -163,12 +163,13 @@ def main(args):
     label_set_hash = exp_util.dict_to_hash({'val_frac': args.val_frac, 'edit_frac': args.edit_set_frac})
     label_set_dir = os.path.join(args.in_dir, 'label_set', 'rank', f'exp_{label_set_hash}', tree_types)
 
-    # noise_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac, 'check_frac': args.check_frac}
-    # noise_hash = exp_util.dict_to_hash(noise_dict)
-    # noise_fp = os.path.join(args.in_dir, 'noise', 'rank', f'exp_{noise_hash}', tree_types, 'loss_rank.csv')
+    # noise_set_dict = {'noise_frac': args.noise_frac, 'val_frac': args.val_frac, 'check_frac': args.check_frac}
+    # noise_set_hash = exp_util.dict_to_hash(noise_set_dict)
+    # noise_set_dir = os.path.join(args.in_dir, 'noise_set', 'rank', f'exp_{noise_set_hash}', tree_types)
 
     single_list = [('Remove', remove_dir), ('Relabel', label_dir)]
     multi_list = [('Remove (set)', remove_set_dir), ('Relabel (set)', label_set_dir)]
+    # ('Fix mislabeled (set)', noise_set_dir)]
 
     if args.test == 'single':
         assert args.metric == 'loss'
