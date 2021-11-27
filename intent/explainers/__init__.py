@@ -7,8 +7,10 @@ from .boostinLEW2 import BoostInLEW2
 from .trex import Trex
 from .leaf_inf import LeafInfluence
 from .leaf_infSP import LeafInfluenceSP
+from .leaf_infSPLE import LeafInfluenceSPLE
 from .leaf_refit import LeafRefit
 from .loo import LOO
+from .looLE import LOOLE
 from .dshap import DShap
 from .random import Random
 from .minority import Minority

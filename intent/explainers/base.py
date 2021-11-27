@@ -15,7 +15,7 @@ class Explainer(object):
         pass
 
     @abstractmethod
-    def fit(self, model, X, y, new_y=None):
+    def fit(self, model, X, y):
         """
         - Convert model to internal standardized tree structures.
         - Perform any initialization necessary for the chosen method.
@@ -24,7 +24,6 @@ class Explainer(object):
             model: tree ensemble.
             X: 2d array of training data.
             y: 1d array of training targets.
-            new_y: 1d array of new training targets (BoostInLE only).
         """
         start = time.time()
         self.model_ = parse_model(model, X, y)
@@ -77,7 +76,7 @@ class Explainer(object):
         return self_influence
 
     @abstractmethod
-    def get_local_influence(self, X, y):
+    def get_local_influence(self, X, y, target_labels=None):
         """
         - Compute influence of each training instance on the test loss.
 
@@ -85,6 +84,7 @@ class Explainer(object):
             X: 2d array of test examples.
             y: 1d array of test targets.
                 * Could be the actual label or the predicted label depending on the explainer.
+            target_labels: 1d array of new training target label (same length as X).
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).

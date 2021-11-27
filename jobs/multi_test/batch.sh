@@ -17,5 +17,3 @@ sbatch -a 3-6,8,10-13,16,18-19,21-22 -c 5 -t 1440 -p 'short' -o ${o}${t}'_leaf_i
 sbatch -a 3-6,8,10-13,16,18-19,21-22 -c 5 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $exp $t 'leaf_refit'
 sbatch -a 1-22  -c 5  -t 1440 -p 'short' -o ${o}${t}'_boostinW1-%a.out'  $run $exp $t 'boostinW1'
 sbatch -a 1-22  -c 5  -t 1440 -p 'short' -o ${o}${t}'_boostinW2-%a.out'  $run $exp $t 'boostinW2'
-
-# scratch pad

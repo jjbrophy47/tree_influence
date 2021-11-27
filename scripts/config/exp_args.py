@@ -63,6 +63,19 @@ def get_influence_args():
     return cmd
 
 
+def get_influenceLE_args():
+    """
+    Add arguments specific to the "InfluenceLE" experiment.
+
+    Return ArgParser object.
+    """
+    cmd = get_general_args()
+    cmd = get_explainer_args(cmd)
+    cmd.add('--out_dir', type=str, default='output/influenceLE/')
+    cmd.add('--n_test', type=int, default=100)
+    return cmd
+
+
 def get_remove_args():
     """
     Add arguments specific to the "Remove" experiment.

@@ -6,16 +6,15 @@ from .base import Explainer
 from .parsers import util
 
 
-class BoostInLE(Explainer):
+class LeafInfluenceSPLE(Explainer):
     """
-    Explainer that adapts the TracIn method to tree ensembles, and
-    approximates removing an example AND adding that same example with
-    a new label.
+    Efficient implementation of LeafInfluence (single point) method
+        w/ label estimation.
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) := sum grad(x_t) * (lr * leaf_der(x_i)_label1 + lr * leaf_der(x_i)_label2) over all boosts.
-        - Pos. value means a decrease in test loss (a.k.a. proponent, helpful).
-        - Neg. value means an increase in test loss (a.k.a. opponent, harmful).
+        - Inf.(x_i, x_t) ~= L(y, F_{w/o x_i w/ y*}(x_t)) - L(y, F(x_t))
+        - Pos. value means removing x_i + adding x_i with label y* increases loss (original x_i helpful).
+        - Neg. value means removing x_i + adding x_i with label y* decreases loss (original x_i harmful).
 
     Reference
         - https://github.com/frederick0329/TracIn
@@ -42,12 +41,11 @@ class BoostInLE(Explainer):
             model: tree ensemble.
             X: 2d array of train examples.
             y: 1d array of train targets.
-            new_y: 1d array of new train targets.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        assert self.model_.tree_type != 'rf', 'RF not supported for BoostIn'
+        assert self.model_.tree_type != 'rf', 'RF not supported for BoostIn2'
 
         self.n_train_ = X.shape[0]
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
@@ -67,7 +65,6 @@ class BoostInLE(Explainer):
         Input
             X: 2d array of test data.
             y: 2d array of test targets.
-            verbose: verbosity.
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).
@@ -81,15 +78,30 @@ class BoostInLE(Explainer):
 
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        # result container, shape=(X.shape[0], no. train, no. class)
+        # result container, shape=(no. train, no. test, no. class)
         influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)
 
         # get change in leaf derivatives and test prediction derivatives
-        test_gradients = self._compute_gradients(X, y)  # shape=(X.shape[0], no. boost, no. class)
+        # train_leaf_dvs = self.train_leaf_dvs_  # (no. train, no. boost, no. class)
+        test_gradients = self._compute_final_gradients(X, y)  # shape=(X.shape[0], no. class)
 
         # get leaf indices each example arrives in
         train_leaf_idxs = self.train_leaf_idxs_  # shape=(no. train, no. boost, no. class)
         test_leaf_idxs = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
+
+        # # compute attributions for each test example
+        # for i in range(X.shape[0]):
+        #     mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
+        #     weighted_train_leaf_dvs = np.sum(train_leaf_dvs * mask, axis=1)  # shape=(no. train, no. class)
+        #     prod = -test_gradients[i] * weighted_train_leaf_dvs  # shape=(no. train, no. class)
+
+        #     # sum over classes
+        #     influence[:, i] = np.sum(prod, axis=1)  # shape=(no. train,)
+
+        #     # progress
+        #     if i > 0 and (i + 1) % 100 == 0 and self.logger and verbose:
+        #         self.logger.info(f'[INFO - LeafInfluenceSP] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+        #                          f'cum. time: {time.time() - start:.3f}s')
 
         # label estimation
         if target_labels is not None:
@@ -105,62 +117,65 @@ class BoostInLE(Explainer):
 
                 for idx in test_idxs:
                     mask = np.where(train_leaf_idxs == test_leaf_idxs[idx], 1, 0)  # shape=(n_train, n_boost, n_class)
-                    prod = train_leaf_dvs * test_gradients[idx] * mask  # shape=(n_train, n_boost, n_class)
-                    influence[:, idx] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
-                    i += 1
+                    weighted_train_leaf_dvs = np.sum(train_leaf_dvs * mask, axis=1)  # shape=(n_train, n_class)
+                    prod = -test_gradients[i] * weighted_train_leaf_dvs  # shape=(n_train, n_boost, n_class)
+
+                    # sum over boosts and classes
+                    influence[:, idx] = np.sum(prod, axis=1)  # shape=(no. train,)
 
                     # progress
+                    i += 1
                     if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
-                        self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                        self.logger.info(f'[INFO - LeafInfluenceSPLE] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                          f'cum. time: {time.time() - start:.3f}s')
 
         # removal estimation
         else:
-            train_leaf_dvs = self.train_leaf_dvs_  # (no. train, no. boost, no. class)
+            train_leaf_dvs = self.train_leaf_dvs_  # (n_train, n_boost, n_class)
 
             # compute attributions for each test example
             for i in range(X.shape[0]):
-                mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
-                prod = train_leaf_dvs * test_gradients[i] * mask  # shape=(no. train, no. boost, no. class)
+                mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(n_train, n_boost, n_class)
+                weighted_train_leaf_dvs = np.sum(train_leaf_dvs * mask, axis=1)  # shape=(n_train, n_class)
+                prod = -test_gradients[i] * weighted_train_leaf_dvs  # shape=(n_train, n_boost, n_class)
 
                 # sum over boosts and classes
-                influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+                influence[:, i] = np.sum(prod, axis=1)  # shape=(n_train,)
 
                 # progress
                 if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
-                    self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                    self.logger.info(f'[INFO - LeafInfluenceSPLE] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                      f'cum. time: {time.time() - start:.3f}s')
 
         return influence
 
     # private
-    def _compute_gradients(self, X, y):
+    def _compute_final_gradients(self, X, y):
         """
-        - Compute gradients for all train instances across all boosting iterations.
+        - Compute gradients for all instances for the final predictions.
 
         Input
             X: 2d array of train examples.
             y: 1d array of train targets.
 
         Return
-            - 3d array of shape=(X.shape[0], no. boost, no. class).
+            - 3d array of shape=(X.shape[0], no. class).
         """
+        n_train = X.shape[0]
+
         trees = self.model_.trees
         n_boost = self.model_.n_boost_
         n_class = self.model_.n_class_
         bias = self.model_.bias
 
-        current_approx = np.tile(bias, (X.shape[0], 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
-        gradients = np.zeros((X.shape[0], n_boost, n_class))  # shape=(X.shape[0], no. boost, no. class)
+        current_approx = np.tile(bias, (n_train, 1)).astype(util.dtype_t)  # shape=(X.shape[0], no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
-
-            gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
-
-            # update approximation
             for class_idx in range(n_class):
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)
+
+        gradients = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
 
         return gradients
 
@@ -197,15 +212,19 @@ class BoostInLE(Explainer):
 
         # result container
         leaf_dvs = np.zeros((n_train, n_boost, n_class), dtype=util.dtype_t)  # shape=(X.shape[0], n_boost, n_class)
+        j = np.zeros((n_train, n_class), dtype=util.dtype_t)  # shape=(X.shape[0], no. class)
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
+
             g = self.loss_fn_.gradient(y, current_approx)  # shape=(no. train, no. class)
             h = self.loss_fn_.hessian(y, current_approx)  # shape=(no. train, no. class)
+            k = self.loss_fn_.third(y, current_approx)  # shape=(no. train, no. class)
 
             if new_y is not None:
                 g2 = self.loss_fn_.gradient(new_y, current_approx)  # shape=(no. train, no. class)
                 h2 = self.loss_fn_.hessian(new_y, current_approx)  # shape=(no. train, no. class)
+                k2 = self.loss_fn_.third(new_y, current_approx)  # shape=(no. train, no. class)
 
             for class_idx in range(n_class):
                 leaf_count = leaf_counts[boost_idx, class_idx]
@@ -213,24 +232,32 @@ class BoostInLE(Explainer):
 
                 for leaf_idx in range(leaf_count):
                     leaf_docs = np.where(leaf_idx == leaf_idxs[:, boost_idx, class_idx])[0]
-                    leaf_weight = 1.0
 
                     # compute leaf derivative w.r.t. each train example in `leaf_docs` with OLD label
-                    num1 = g[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h[leaf_docs, class_idx]  # (no. docs,)
+                    num1a = g[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h[leaf_docs, class_idx] / lr  # (no. docs,)
+                    num1b = h[leaf_docs, class_idx] + leaf_vals[leaf_idx] * k[leaf_docs, class_idx] / lr  # (no. docs,)
+                    num1 = num1a + (num1b * j[leaf_docs, class_idx])  # (no. docs,)
                     denom1 = np.sum(h[leaf_docs, class_idx]) + l2_leaf_reg
-                    leaf_dvs1 = num1 / denom1 * lr  # (no. docs,)
+                    leaf_dvs1 = -num1 / denom1 * lr  # shape=(no. docs,)
 
+                    # label estimation
                     if new_y is not None:
 
                         # compute leaf derivative w.r.t. each train example in `leaf_docs` with NEW label
-                        num2 = g2[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h2[leaf_docs, class_idx]  # (no. docs,)
+                        num2a = g2[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h2[leaf_docs, class_idx] / lr  # (doc,)
+                        num2b = h2[leaf_docs, class_idx] + leaf_vals[leaf_idx] * k2[leaf_docs, class_idx] / lr  # (doc,)
+                        num2 = num2a + (num2b * j[leaf_docs, class_idx])  # (no. docs,)
                         denom2 = denom1 - h[leaf_docs, class_idx] + h2[leaf_docs, class_idx]  # (no. docs,)
                         leaf_dvs2 = num2 / denom2 * lr  # (no. docs,)
 
-                        leaf_dvs[leaf_docs, boost_idx, class_idx] = (leaf_dvs1 - leaf_dvs2) * leaf_weight  # (no. docs,)
+                        leaf_dvs[leaf_docs, boost_idx, class_idx] = (leaf_dvs1 - leaf_dvs2)  # (no. docs,)
 
+                    # removal estimation
                     else:
-                        leaf_dvs[leaf_docs, boost_idx, class_idx] = leaf_dvs1 * leaf_weight  # (no. docs,)
+                        leaf_dvs[leaf_docs, boost_idx, class_idx] = leaf_dvs1  # shape=(no. docs,)
+
+                    # update prediction derivatives
+                    j[leaf_docs, class_idx] += leaf_dvs[leaf_docs, boost_idx, class_idx]  # shape=(no. docs,)
 
                 # update approximation
                 current_approx[:, class_idx] += trees[boost_idx, class_idx].predict(X)

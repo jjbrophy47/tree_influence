@@ -33,7 +33,7 @@ class BoostInLEW2(Explainer):
         """
         self.logger = logger
 
-    def fit(self, model, X, y, new_y=None):
+    def fit(self, model, X, y):
         """
         - Convert model to internal standardized tree structure.
         - Precompute gradients and leaf indices for each x in X.
@@ -52,12 +52,15 @@ class BoostInLEW2(Explainer):
         self.n_train_ = X.shape[0]
         self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
-        self.train_leaf_dvs_ = self._compute_leaf_derivatives(X, y, new_y=new_y)  # (X.shape[0], n_boost, n_class)
+        self.train_leaf_dvs_ = self._compute_leaf_derivatives(X, y)  # (X.shape[0], n_boost, n_class)
         self.train_leaf_idxs_ = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
+
+        self.X_train_ = X.copy()
+        self.y_train_ = y.copy()
 
         return self
 
-    def get_local_influence(self, X, y, verbose=1):
+    def get_local_influence(self, X, y, target_labels=None, verbose=1):
         """
         - Computes effect of each train example on the loss of the test example.
 
@@ -89,18 +92,45 @@ class BoostInLEW2(Explainer):
         train_leaf_idxs = self.train_leaf_idxs_  # shape=(no. train, no. boost, no. class)
         test_leaf_idxs = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
 
-        # compute attributions for each test example
-        for i in range(X.shape[0]):
-            mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
-            prod = train_leaf_dvs * test_gradients[i] * mask  # shape=(no. train, no. boost, no. class)
+        # label estimation
+        if target_labels is not None:
+            assert target_labels.shape == (X.shape[0],)
 
-            # sum over boosts and classes
-            influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+            i = 0
+            for target_label in np.unique(target_labels):
+                test_idxs = np.where(target_labels == target_label)[0]
 
-            # progress
-            if i > 0 and (i + 1) % 100 == 0 and self.logger and verbose:
-                self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
-                                 f'cum. time: {time.time() - start:.3f}s')
+                new_y = np.full(train_leaf_idxs.shape[0], target_label, dtype=util.dtype_t)
+                train_leaf_dvs = self._compute_leaf_derivatives(self.X_train_, self.y_train_,
+                                                                new_y=new_y)  # (n_train, n_boost, n_class)
+
+                for idx in test_idxs:
+                    mask = np.where(train_leaf_idxs == test_leaf_idxs[idx], 1, 0)  # shape=(n_train, n_boost, n_class)
+                    prod = train_leaf_dvs * test_gradients[idx] * mask  # shape=(n_train, n_boost, n_class)
+                    influence[:, idx] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+                    i += 1
+
+                    # progress
+                    if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
+                        self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                                         f'cum. time: {time.time() - start:.3f}s')
+
+        # removal estimation
+        else:
+            train_leaf_dvs = self.train_leaf_dvs_  # (no. train, no. boost, no. class)
+
+            # compute attributions for each test example
+            for i in range(X.shape[0]):
+                mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
+                prod = train_leaf_dvs * test_gradients[i] * mask  # shape=(no. train, no. boost, no. class)
+
+                # sum over boosts and classes
+                influence[:, i] = np.sum(prod, axis=(1, 2))  # shape=(no. train,)
+
+                # progress
+                if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
+                    self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                                     f'cum. time: {time.time() - start:.3f}s')
 
         return influence
 

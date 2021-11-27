@@ -7,8 +7,10 @@ from .explainers import BoostInLEW2
 from .explainers import Trex
 from .explainers import LeafInfluence
 from .explainers import LeafInfluenceSP
+from .explainers import LeafInfluenceSPLE
 from .explainers import LeafRefit
 from .explainers import LOO
+from .explainers import LOOLE
 from .explainers import DShap
 from .explainers import Random
 from .explainers import Minority
@@ -34,13 +36,10 @@ class TreeExplainer(object):
     Semi-supported models:
         - RandomForestRegressor, RandomForestClassifier
 
-    Currently supported explainers:
+    Currently supported removal explainers:
         - BoostIn (adapted TracIn)
         - BoostInW1 (adapted TracIn w/ leaf weight)
         - BoostInW2 (adapted TracIn, squared leaf weight)
-        - BoostInLE (adapted TracIn w/ label estimate)
-        - BoostInLEW1 (adapted TracIn w/ label estimate and leaf weight)
-        - BoostInLEW2 (adapted TracIn w/ label estimate and squared leaf weight)
         - TREX (adapted representer-point)
         - LeafInfluenceSP (efficient version of LeafInfluence: single point)
         - LeafInfluence (adapted influence functions)
@@ -53,6 +52,15 @@ class TreeExplainer(object):
         - LOO (leave-one-out retraining)
         - Target (random from same class as test example)
         - Random
+
+    Currently supported label-estimation explainers:
+        - BoostInLE (adapted TracIn w/ label estimation)
+        - BoostInLEW1 (adapted TracIn w/ label estimation and leaf weight)
+        - BoostInLEW2 (adapted TracIn w/ label estimation and leaf weight, squared)
+        - LeafInfluenceSPLE (efficient LeafInfluence w/ label estimation)
+        - LeafInfluenceLE (adapted influence functions w/ label estimation)
+        - LeafRefitLE (LOO w/ fixed structure and label estimation)
+        - LOOLE (leave-one-out retraining w/ label estimation)
 
     Global-only explainers:
         - Loss (loss of train examples)
@@ -87,11 +95,17 @@ class TreeExplainer(object):
         elif method == 'leaf_infSP':
             self.explainer = LeafInfluenceSP(**params, logger=logger)
 
+        elif method == 'leaf_infSPLE':
+            self.explainer = LeafInfluenceSPLE(**params, logger=logger)
+
         elif method == 'leaf_refit':
             self.explainer = LeafRefit(**params, logger=logger)
 
         elif method == 'loo':
             self.explainer = LOO(**params, logger=logger)
+
+        elif method == 'looLE':
+            self.explainer = LOOLE(**params, logger=logger)
 
         elif method == 'dshap':
             self.explainer = DShap(**params, logger=logger)
