@@ -23,7 +23,7 @@ class LOOLE(Explainer):
         - Supports both GBDTs and RFs.
         - Supports parallelization.
     """
-    def __init__(self, n_jobs=1, logger=None):
+    def __init__(self, n_jobs=-1, logger=None):
         """
         Input
             n_jobs: int, No. processes to run in parallel.

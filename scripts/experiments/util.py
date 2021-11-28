@@ -370,17 +370,17 @@ def explainer_params_to_dict(explainer, exp_params):
     elif explainer in ['boostinLE', 'boostinLEW1', 'boostinLEW2']:
         pass
 
-    elif explainer == 'leaf_inf':
+    elif explainer in ['leaf_inf', 'leaf_infLE']:
         params['update_set'] = exp_params['leaf_inf_update_set']
         params['atol'] = exp_params['leaf_inf_atol']
         params['n_jobs'] = exp_params['n_jobs']
 
-    elif explainer == 'leaf_refit':
+    elif explainer in ['leaf_refit', 'leaf_refitLE']:
         params['update_set'] = exp_params['leaf_inf_update_set']
         params['atol'] = exp_params['leaf_inf_atol']
         params['n_jobs'] = exp_params['n_jobs']
 
-    elif explainer == 'leaf_infSP':
+    elif explainer in ['leaf_infSP', 'leaf_infSPLE']:
         pass
 
     elif explainer == 'trex':
