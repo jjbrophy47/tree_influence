@@ -33,7 +33,7 @@ class BoostInLE(Explainer):
         """
         self.logger = logger
 
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Convert model to internal standardized tree structure.
         - Precompute gradients and leaf indices for each x in X.
@@ -42,7 +42,8 @@ class BoostInLE(Explainer):
             model: tree ensemble.
             X: 2d array of train examples.
             y: 1d array of train targets.
-            new_y: 1d array of new train targets.
+            target_labels: 1d array of new train targets.
+                Unused, for compatibility.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
@@ -111,7 +112,7 @@ class BoostInLE(Explainer):
 
                     # progress
                     if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
-                        self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                        self.logger.info(f'[INFO - BoostInLE] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                          f'cum. time: {time.time() - start:.3f}s')
 
         # removal estimation
@@ -128,7 +129,7 @@ class BoostInLE(Explainer):
 
                 # progress
                 if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
-                    self.logger.info(f'[INFO - BoostIn] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                    self.logger.info(f'[INFO - BoostInLE] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                      f'cum. time: {time.time() - start:.3f}s')
 
         return influence

@@ -15,7 +15,7 @@ class Explainer(object):
         pass
 
     @abstractmethod
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Convert model to internal standardized tree structures.
         - Perform any initialization necessary for the chosen method.
@@ -24,6 +24,8 @@ class Explainer(object):
             model: tree ensemble.
             X: 2d array of training data.
             y: 1d array of training targets.
+            target_labels: 1d array of target labels (len(X) or no. unique labels).
+                Label estimation (LE) methods only!
         """
         start = time.time()
         self.model_ = parse_model(model, X, y)
@@ -42,7 +44,7 @@ class Explainer(object):
 
         Return
             - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
+                Arrays are returned in the same order as the traing data.
         """
         start = time.time()
 
@@ -83,8 +85,9 @@ class Explainer(object):
         Input
             X: 2d array of test examples.
             y: 1d array of test targets.
-                * Could be the actual label or the predicted label depending on the explainer.
+                Could be the actual label or the predicted label depending on the explainer.
             target_labels: 1d array of new training target label (same length as X).
+                Label estimation (LE) methods only!
 
         Return
             - 2d array of shape=(no. train, X.shape[0]).

@@ -9,6 +9,7 @@ from .explainers import LeafInfluence
 from .explainers import LeafInfluenceSP
 from .explainers import LeafInfluenceSPLE
 from .explainers import LeafRefit
+from .explainers import LeafRefitLE
 from .explainers import LOO
 from .explainers import LOOLE
 from .explainers import DShap
@@ -24,7 +25,7 @@ from .explainers import SubSample
 
 class TreeExplainer(object):
     """
-    Wrapper object for the chosen explainer.
+    Influence-method selector.
 
     Currently supported models:
         - LGBMRegressor, LGBMClassifier
@@ -57,9 +58,9 @@ class TreeExplainer(object):
         - BoostInLE (adapted TracIn w/ label estimation)
         - BoostInLEW1 (adapted TracIn w/ label estimation and leaf weight)
         - BoostInLEW2 (adapted TracIn w/ label estimation and leaf weight, squared)
-        - LeafInfluenceSPLE (efficient LeafInfluence w/ label estimation)
-        - LeafInfluenceLE (adapted influence functions w/ label estimation)
         - LeafRefitLE (LOO w/ fixed structure and label estimation)
+        - LeafInfluenceLE (adapted influence functions w/ label estimation)
+        - LeafInfluenceSPLE (efficient LeafInfluence w/ label estimation)
         - LOOLE (leave-one-out retraining w/ label estimation)
 
     Global-only explainers:
@@ -69,75 +70,78 @@ class TreeExplainer(object):
     def __init__(self, method='boostin', params={}, logger=None):
 
         if method == 'boostin':
-            self.explainer = BoostIn(**params, logger=logger)
+            self.explainer_ = BoostIn(**params, logger=logger)
 
         elif method == 'boostinW1':
-            self.explainer = BoostInW1(**params, logger=logger)
+            self.explainer_ = BoostInW1(**params, logger=logger)
 
         elif method == 'boostinW2':
-            self.explainer = BoostInW2(**params, logger=logger)
+            self.explainer_ = BoostInW2(**params, logger=logger)
 
         elif method == 'boostinLE':
-            self.explainer = BoostInLE(**params, logger=logger)
+            self.explainer_ = BoostInLE(**params, logger=logger)
 
         elif method == 'boostinLEW1':
-            self.explainer = BoostInLEW1(**params, logger=logger)
+            self.explainer_ = BoostInLEW1(**params, logger=logger)
 
         elif method == 'boostinLEW2':
-            self.explainer = BoostInLEW2(**params, logger=logger)
+            self.explainer_ = BoostInLEW2(**params, logger=logger)
 
         elif method == 'trex':
-            self.explainer = Trex(**params, logger=logger)
+            self.explainer_ = Trex(**params, logger=logger)
 
         elif method == 'leaf_inf':
-            self.explainer = LeafInfluence(**params, logger=logger)
+            self.explainer_ = LeafInfluence(**params, logger=logger)
 
         elif method == 'leaf_infSP':
-            self.explainer = LeafInfluenceSP(**params, logger=logger)
+            self.explainer_ = LeafInfluenceSP(**params, logger=logger)
 
         elif method == 'leaf_infSPLE':
-            self.explainer = LeafInfluenceSPLE(**params, logger=logger)
+            self.explainer_ = LeafInfluenceSPLE(**params, logger=logger)
 
         elif method == 'leaf_refit':
-            self.explainer = LeafRefit(**params, logger=logger)
+            self.explainer_ = LeafRefit(**params, logger=logger)
+
+        elif method == 'leaf_refitLE':
+            self.explainer_ = LeafRefitLE(**params, logger=logger)
 
         elif method == 'loo':
-            self.explainer = LOO(**params, logger=logger)
+            self.explainer_ = LOO(**params, logger=logger)
 
         elif method == 'looLE':
-            self.explainer = LOOLE(**params, logger=logger)
+            self.explainer_ = LOOLE(**params, logger=logger)
 
         elif method == 'dshap':
-            self.explainer = DShap(**params, logger=logger)
+            self.explainer_ = DShap(**params, logger=logger)
 
         elif method == 'random':
-            self.explainer = Random(**params, logger=logger)
+            self.explainer_ = Random(**params, logger=logger)
 
         elif method == 'minority':
-            self.explainer = Minority(**params, logger=logger)
+            self.explainer_ = Minority(**params, logger=logger)
 
         elif method == 'loss':
-            self.explainer = Loss(**params, logger=logger)
+            self.explainer_ = Loss(**params, logger=logger)
 
         elif method == 'tree_sim':
-            self.explainer = TreeSim(**params, logger=logger)
+            self.explainer_ = TreeSim(**params, logger=logger)
 
         elif method == 'leaf_sim':
-            self.explainer = LeafSim(**params, logger=logger)
+            self.explainer_ = LeafSim(**params, logger=logger)
 
         elif method == 'input_sim':
-            self.explainer = InputSim(**params, logger=logger)
+            self.explainer_ = InputSim(**params, logger=logger)
 
         elif method == 'target':
-            self.explainer = Target(**params, logger=logger)
+            self.explainer_ = Target(**params, logger=logger)
 
         elif method == 'subsample':
-            self.explainer = SubSample(**params, logger=logger)
+            self.explainer_ = SubSample(**params, logger=logger)
 
         else:
             raise ValueError(f'Unknown method {method}')
 
-    def fit(self, model, X, y, new_y=None):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Convert model to internal standardized tree structures.
         - Perform any initialization necessary for the chosen explainer.
@@ -146,44 +150,15 @@ class TreeExplainer(object):
             model: tree ensemble.
             X: 2d array of train data.
             y: 1d array of train targets.
-            new_y: 1d array of new train targets (BoostInLE only).
+            target_labels: 1d array of new train targets (LE methods only).
+
+        Return
+            Fitted explainer.
         """
-        if new_y is None:
-            result = self.explainer.fit(model, X, y)
+        if target_labels is None:
+            result = self.explainer_.fit(model, X, y)
 
         else:
-            result = self.explainer.fit(model, X, y, new_y=new_y)
+            result = self.explainer_.fit(model, X, y, target_labels=target_labels)
 
         return result
-
-    def get_self_influence(self, X, y):
-        """
-        - Compute influence of each training instance on itself.
-        - Provides a global perspective of which training intances
-          are most important.
-
-        Input
-            - X: 2d array of train examples.
-            - y: 1d array of train targets
-
-        Return
-            - 1d array of shape=(no. train,).
-                * Arrays are returned in the same order as the traing data.
-        """
-        return self.explainer.get_self_influence(X, y)
-
-    def get_local_influence(self, X, y):
-        """
-        - Compute most influential training instances on the prediction of the
-          given test instance.
-
-        Input
-            - X: 2d array of test examples.
-            - y: 1d array of test targets
-                * Could be the actual label or the predicted label depending on the explainer.
-
-        Return
-            - 2d array of shape=(no. train, X.shape[0]).
-                * Arrays are returned in the same order as the training data.
-        """
-        return self.explainer.get_local_influence(X, y)

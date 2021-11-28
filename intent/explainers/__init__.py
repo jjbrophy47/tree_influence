@@ -9,6 +9,7 @@ from .leaf_inf import LeafInfluence
 from .leaf_infSP import LeafInfluenceSP
 from .leaf_infSPLE import LeafInfluenceSPLE
 from .leaf_refit import LeafRefit
+from .leaf_refitLE import LeafRefitLE
 from .loo import LOO
 from .looLE import LOOLE
 from .dshap import DShap

@@ -23,6 +23,9 @@ def get_experiment_hash(args):
     if args.exp == 'influence':
         exp_dict = {'n_test': args.n_test}
 
+    elif args.exp == 'influenceLE':
+        exp_dict = {'n_test': args.n_test}
+
     elif args.exp == 'remove':
         exp_dict = {'n_test': args.n_test, 'remove_frac': args.remove_frac}
 
@@ -177,6 +180,10 @@ def main(args):
         args.method_list = ['random', 'leaf_sim', 'trex',
                             'boostin', 'boostinW1', 'boostinW2',
                             'boostinLE', 'boostinLEW1', 'boostinLEW2']
+
+    elif args.exp == 'influenceLE':
+        args.method_list = ['boostinLE', 'boostinLEW1', 'boostinLEW2',
+                            'leaf_infSPLE', 'looLE', 'leaf_refitLE', 'leaf_infLE']
 
     # create output dir.
     out_dir = os.path.join(args.out_dir,

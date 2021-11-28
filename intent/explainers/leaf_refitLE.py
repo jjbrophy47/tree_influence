@@ -8,14 +8,14 @@ from .base import Explainer
 from .parsers import util
 
 
-class LeafRefit(Explainer):
+class LeafRefitLE(Explainer):
     """
-    LeafRefit: Leave-one-out (LOO) keeping the structure fixed.
+    LeafRefit: Leave-one-out (LOO) keeping the structure fixed w/ label estimation.
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) := L(y, F_{w/o x_i}(x_t)) - L(y, F(x_t))
-        - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-        - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+        - Inf.(x_i, x_t) := L(y, F_{w/o x_i w/ y*}(x_t)) - L(y, F(x_t))
+        - Pos. value means removing x_i and adding x_i w/ y* increases the loss (original x_i helpful).
+        - Neg. value means removing x_i and adding x_i w/ y* decreases the loss (original x_i harmful).
 
     Note
         - Does NOT take class or instance weight into account.
@@ -48,7 +48,7 @@ class LeafRefit(Explainer):
         self.n_jobs = n_jobs
         self.logger = logger
 
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Compute and save gradient and hessian sums for each leaf.
             * Compute leaf values using sums.
@@ -65,6 +65,7 @@ class LeafRefit(Explainer):
             model: tree ensemble.
             X: training data.
             y: training targets.
+            target_labels: 1d array of target labels.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
@@ -150,9 +151,9 @@ class LeafRefit(Explainer):
         # copy and compute new leaf values resulting from the removal of each x in X.
         start = time.time()
         if self.logger:
-            self.logger.info(f'\n[INFO] no. leaf vals not within 1e-5 tol.: {n_not_close:,}, '
+            self.logger.info(f'\n[INFO - LRLE] no. leaf vals not within 1e-5 tol.: {n_not_close:,}, '
                              f'max. diff.: {max_diff:.5f}')
-            self.logger.info(f'\n[INFO] computing alternate leaf values...')
+            self.logger.info(f'\n[INFO - LRLE] computing alternate leaf values...')
 
         # check predicted leaf values do not differ too much from actual model
         if max_diff > self.atol:
@@ -167,43 +168,57 @@ class LeafRefit(Explainer):
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
         if self.logger:
-            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
+            self.logger.info(f'[INFO - LRLE] no. cpus: {n_jobs:,}...')
 
-        # process each training example removal in parallel
-        with joblib.Parallel(n_jobs=n_jobs) as parallel:
+        assert target_labels is not None
+        unique_target_labels = np.unique(target_labels)
 
-            # result container
-            new_leaf_values = np.zeros((0, np.sum(leaf_counts)), dtype=util.dtype_t)
+        # generate new leaf values for each target label
+        new_leaf_values_list = []
+        for target_label in unique_target_labels:
 
-            # trackers
-            n_completed = 0
-            n_remaining = X.shape[0]
+            if self.logger:
+                self.logger.info(f'\n[INFO - LRLE] target label: {target_label}')
 
-            # get number of fits to perform for this iteration
-            while n_remaining > 0:
-                n = min(100, n_remaining)
+            # process each training example removal in parallel
+            with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
-                results = parallel(joblib.delayed(_compute_new_leaf_values)
-                                                 (train_idx, leaf_counts, leaf2docs, gradients, hessians,
-                                                  sum_gradients, sum_hessians_l2, leaf_values, original_approx, y,
-                                                  n_boost, n_class, X.shape[0], learning_rate, self.update_set,
-                                                  self.loss_fn_) for train_idx in range(n_completed,
-                                                                                        n_completed + n))
+                # result container
+                new_leaf_values = np.zeros((0, np.sum(leaf_counts)), dtype=util.dtype_t)
 
-                # synchronization barrier
-                results = np.vstack(results)  # shape=(n, 1 or X_test.shape[0])
-                new_leaf_values = np.vstack([new_leaf_values, results])
+                # trackers
+                n_completed = 0
+                n_remaining = X.shape[0]
 
-                n_completed += n
-                n_remaining -= n
+                # get number of fits to perform for this iteration
+                while n_remaining > 0:
+                    n = min(100, n_remaining)
 
-                if self.logger:
-                    cum_time = time.time() - start
-                    self.logger.info(f'[INFO - LR] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
+                    results = parallel(joblib.delayed(_compute_new_leaf_values)
+                                                     (train_idx, leaf_counts, leaf2docs, gradients, hessians,
+                                                      sum_gradients, sum_hessians_l2, leaf_values, original_approx,
+                                                      y, n_boost, n_class, X.shape[0], learning_rate, self.update_set,
+                                                      self.loss_fn_,
+                                                      target_label) for train_idx in range(n_completed,
+                                                                                           n_completed + n))
+
+                    # synchronization barrier
+                    results = np.vstack(results)  # shape=(n, 1 or X_test.shape[0])
+                    new_leaf_values = np.vstack([new_leaf_values, results])
+
+                    n_completed += n
+                    n_remaining -= n
+
+                    if self.logger:
+                        cum_time = time.time() - start
+                        self.logger.info(f'[INFO - LRLE] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
+
+            new_leaf_values_list.append(new_leaf_values)
 
         # save results of this method
         self.leaf_values_ = leaf_values  # shape=(total no. leaves,)
-        self.new_leaf_values_ = new_leaf_values  # shape=(no. train, total no. leaves)
+        self.new_leaf_values_list_ = new_leaf_values_list  # shape=(n_target_labels, n_train, total_n_leaves)
+        self.unique_target_labels_ = unique_target_labels  # 1d
         self.leaf_counts_ = leaf_counts  # shape=(no. boost, no. class)
         self.bias_ = bias
         self.n_boost_ = n_boost
@@ -222,19 +237,26 @@ class LeafRefit(Explainer):
         """
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
-        influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)
+        influence = np.zeros((self.n_train_, X.shape[0]), dtype=util.dtype_t)  # shape=(n_train, n_test)
 
         if self.logger:
-            self.logger.info('\n[INFO] computing influence for each test example...')
+            self.logger.info('\n[INFO - LRLE] computing influence for each test example...')
 
-        # compute influence of each training example on the test example
-        for remove_idx in range(self.n_train_):
-            influence[remove_idx] = self._loss_delta(X, y, remove_idx)  # shape=(X.shape[0],)
+        assert target_labels is not None
+        assert np.all(self.unique_target_labels_ == np.unique(target_labels))
+
+        # compute influence of each training example on the test examples
+        for i, target_label in enumerate(np.unique(target_labels)):
+            test_idxs = np.where(target_labels == target_label)[0]
+
+            for remove_idx in range(self.n_train_):
+                influence[remove_idx, test_idxs] = self._loss_delta(X[test_idxs], y[test_idxs], remove_idx,
+                                                                    self.new_leaf_values_list_[i])
 
         return influence
 
     # private
-    def _loss_delta(self, X, y, remove_idx):
+    def _loss_delta(self, X, y, remove_idx, new_leaf_values):
         """
         Compute the influence on the set of examples (X, y) using the updated
             set of leaf values resulting from removing `remove_idx`.
@@ -243,6 +265,7 @@ class LeafRefit(Explainer):
             X: 2d array of test examples
             y: 1d array of test targets.
             remove_idx: index of removed train instance
+            new_leaf_values: 1d array of new leaf values, shape=(total_n_leaves,).
 
         Return
             - Array of test loss differences of shape=(X.shape[0],).
@@ -261,7 +284,7 @@ class LeafRefit(Explainer):
                 for test_idx in range(X.shape[0]):  # per test example
                     leaf_idx = doc2leaf[test_idx][boost_idx][class_idx]
                     og_pred[test_idx, class_idx] += self.leaf_values_[n_prev_leaves + leaf_idx]
-                    new_pred[test_idx, class_idx] += self.new_leaf_values_[remove_idx][n_prev_leaves + leaf_idx]
+                    new_pred[test_idx, class_idx] += new_leaf_values[remove_idx][n_prev_leaves + leaf_idx]
 
                 n_prev_leaves += self.leaf_counts_[boost_idx, class_idx]
 
@@ -270,7 +293,7 @@ class LeafRefit(Explainer):
 
 def _compute_new_leaf_values(remove_idx, leaf_counts, leaf2docs, gradients, hessians,
                              sum_gradients, sum_hessians_l2, leaf_values, original_approx, y,
-                             n_boost, n_class, n_train, learning_rate, update_set, loss_fn):
+                             n_boost, n_class, n_train, learning_rate, update_set, loss_fn, target_label):
     """
     Compute new leaf values based on the example being removed.
 
@@ -318,10 +341,16 @@ def _compute_new_leaf_values(remove_idx, leaf_counts, leaf2docs, gradients, hess
                     update_sum_gradient = 0
                     update_sum_hessian_l2 = 0
 
-                # remove effect of target training example
                 if remove_idx in leaf_docs:
+
+                    # remove effect of target training example
                     update_sum_gradient -= gradients[remove_idx, boost_idx, class_idx]
                     update_sum_hessian_l2 -= hessians[remove_idx, boost_idx, class_idx]
+
+                    # add effect of target training example with target label
+                    y_new = np.array([target_label], dtype=util.dtype_t)
+                    update_sum_gradient += loss_fn.gradient(y_new, update_approx[[remove_idx]])[:, class_idx][0]
+                    update_sum_hessian_l2 += loss_fn.hessian(y_new, update_approx[[remove_idx]])[:, class_idx][0]
 
                 # compute new leaf value and leaf value delta
                 new_sum_gradient = sum_gradients[n_prev_leaves + leaf_idx] + update_sum_gradient
@@ -331,7 +360,7 @@ def _compute_new_leaf_values(remove_idx, leaf_counts, leaf2docs, gradients, hess
                 leaf_value_delta = new_leaf_value - leaf_values[n_prev_leaves + leaf_idx]
 
                 # update prediction deltas
-                doc_deltas[update_leaf_docs, class_idx] += leaf_value_delta
+                doc_deltas[update_leaf_docs + [remove_idx], class_idx] += leaf_value_delta
 
                 # save
                 new_leaf_values[n_prev_leaves + leaf_idx] = new_leaf_value

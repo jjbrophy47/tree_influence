@@ -132,7 +132,7 @@ def experiment(args, logger, params, out_dir):
 
     # fit explainer
     start = time.time()
-    explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train)
+    explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train, target_labels=adv_labels)
     fit_time = time.time() - start - explainer.parse_time_
 
     logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s')

@@ -33,7 +33,7 @@ class LOOLE(Explainer):
         self.n_jobs = n_jobs
         self.logger = logger
 
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Fit one model with for each training example,
             with that training example removed.
@@ -46,6 +46,8 @@ class LOOLE(Explainer):
             model: tree ensemble.
             X: training data.
             y: training targets.
+            target_labels: 1d array of new training targets.
+                Unused, for compatibility.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
@@ -102,8 +104,8 @@ class LOOLE(Explainer):
 
         start = time.time()
         if self.logger:
-            self.logger.info('\n[INFO] computing LOO values...')
-            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
+            self.logger.info('\n[INFO - LOOLE] computing values...')
+            self.logger.info(f'[INFO - LOOLE] no. cpus: {n_jobs:,}...')
 
         # fit each model in parallel
         with joblib.Parallel(n_jobs=n_jobs) as parallel:
@@ -135,7 +137,7 @@ class LOOLE(Explainer):
 
                 if self.logger:
                     cum_time = time.time() - start
-                    self.logger.info(f'[INFO] fits: {fits_completed:,} / {X_train.shape[0]:,}'
+                    self.logger.info(f'[INFO - LOOLE] fits: {fits_completed:,} / {X_train.shape[0]:,}'
                                      f', cum. time: {cum_time:.3f}s')
 
         return influence

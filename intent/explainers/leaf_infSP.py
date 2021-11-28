@@ -11,7 +11,7 @@ class LeafInfluenceSP(Explainer):
     Efficient implementation of LeafInfluence (single point) method.
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) := L(y, F_{w/o x_i}(x_t)) - L(y, F(x_t))
+        - Inf.(x_i, x_t) ~= L(y, F_{w/o x_i}(x_t)) - L(y, F(x_t))
         - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
         - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
 
