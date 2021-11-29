@@ -6,6 +6,7 @@ from .boostinLEW1 import BoostInLEW1
 from .boostinLEW2 import BoostInLEW2
 from .trex import Trex
 from .leaf_inf import LeafInfluence
+from .leaf_infLE import LeafInfluenceLE
 from .leaf_infSP import LeafInfluenceSP
 from .leaf_infSPLE import LeafInfluenceSPLE
 from .leaf_refit import LeafRefit

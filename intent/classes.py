@@ -6,6 +6,7 @@ from .explainers import BoostInLEW1
 from .explainers import BoostInLEW2
 from .explainers import Trex
 from .explainers import LeafInfluence
+from .explainers import LeafInfluenceLE
 from .explainers import LeafInfluenceSP
 from .explainers import LeafInfluenceSPLE
 from .explainers import LeafRefit
@@ -92,6 +93,9 @@ class TreeExplainer(object):
 
         elif method == 'leaf_inf':
             self.explainer_ = LeafInfluence(**params, logger=logger)
+
+        elif method == 'leaf_infLE':
+            self.explainer_ = LeafInfluenceLE(**params, logger=logger)
 
         elif method == 'leaf_infSP':
             self.explainer_ = LeafInfluenceSP(**params, logger=logger)

@@ -8,14 +8,15 @@ from .base import Explainer
 from .parsers import util
 
 
-class LeafInfluence(Explainer):
+class LeafInfluenceLE(Explainer):
     """
-    LeafInfluence: Explainer that adapts the influence functions method to tree ensembles.
+    LeafInfluenceLE: Explainer that adapts the influence functions method to tree ensembles
+        with label estimation.
 
     Local-Influence Semantics
-        - Inf.(x_i, x_t) := L(y, F_{w/o x_i}(x_t)) - L(y, F(x_t))
-        - Pos. value means removing x_i increases the loss (i.e. adding x_i decreases loss) (helpful).
-        - Neg. value means removing x_i decreases the loss (i.e. adding x_i increases loss) (harmful).
+        - Inf.(x_i, x_t) ~= L(y, F_{w/o x_i w/ y*}(x_t)) - L(y, F(x_t))
+        - Pos. value means removing x_i and adding x_i w/ y* increases the loss (original x_i helpful).
+        - Neg. value means removing x_i and adding x_i w/ y* decreases the loss (original x_i harmful).
 
     Note
         - For GBDT, influence values are multipled by -1; this makes the semantics of
@@ -50,7 +51,7 @@ class LeafInfluence(Explainer):
         self.n_jobs = n_jobs
         self.logger = logger
 
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Compute leaf values using Newton leaf estimation method;
             make sure these match existing leaf values. Put into a 1d array.
@@ -67,6 +68,7 @@ class LeafInfluence(Explainer):
             model: tree ensemble.
             X: training data.
             y: training targets.
+            target_labels: 1d array of target labels.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
@@ -94,12 +96,21 @@ class LeafInfluence(Explainer):
         n_prev_leaves = 0
 
         # result containers
-        naive_gradient_addendum = np.zeros((X.shape[0], n_boost, n_class), dtype=util.dtype_t)
         da_vector_multiplier = np.zeros((X.shape[0], n_boost, n_class), dtype=util.dtype_t)
         denominator = np.zeros(np.sum(leaf_counts), dtype=util.dtype_t)  # shape=(total no. leaves,)
         leaf_values = np.zeros(np.sum(leaf_counts), dtype=util.dtype_t)  # shape=(total no. leaves,)
         n_not_close = 0
         max_diff = 0
+
+        assert target_labels is not None
+        unique_target_labels = np.unique(target_labels)
+
+        naive_gradient_addendum_list = []
+        gradient_list = []
+        hessian_list = []
+
+        for target_label in unique_target_labels:
+            naive_gradient_addendum_list.append(np.zeros((X.shape[0], n_boost, n_class), dtype=util.dtype_t))
 
         # save gradient information of leaf values for each tree
         for boost_idx in range(n_boost):
@@ -109,6 +120,12 @@ class LeafInfluence(Explainer):
             gradient = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
             hessian = self.loss_fn_.hessian(y, current_approx)  # shape=(X.shape[0], no. class)
             third = self.loss_fn_.third(y, current_approx)  # shape=(X.shape[0], no. class)
+
+            # precompute statistics for label estimation
+            for target_label in unique_target_labels:
+                new_y = np.full(y.shape, target_label, dtype=util.dtype_t)  # shape=(X.shape[0], no. class)
+                gradient_list.append(self.loss_fn_.gradient(new_y, current_approx))
+                hessian_list.append(self.loss_fn_.hessian(new_y, current_approx))
 
             for class_idx in range(n_class):
 
@@ -145,18 +162,21 @@ class LeafInfluence(Explainer):
                 leaf2docs.append(leaf2doc)  # list of dicts, one per tree
 
             # precompute influence statistics
-            naive_gradient_addendum[:, boost_idx, :] = hessian * doc_preds / learning_rate + gradient
             da_vector_multiplier[:, boost_idx, :] = doc_preds / learning_rate * third + hessian
 
-            # n_prev_trees += n_class
+            naive_gradient_a = hessian * doc_preds / learning_rate + gradient
+            for i in range(len(unique_target_labels)):
+                naive_gradient_b = hessian_list[i] * doc_preds / learning_rate + gradient_list[i]
+                naive_gradient_addendum_list[i][:, boost_idx, :] = naive_gradient_a - naive_gradient_b
+
             current_approx += doc_preds  # update approximation
 
         # copy and compute new leaf values resulting from the removal of each x in X.
         start = time.time()
         if self.logger:
-            self.logger.info(f'\n[INFO] no. leaf vals not within 1e-5 tol.: {n_not_close:,}, '
+            self.logger.info(f'\n[INFO - LILE] no. leaf vals not within 1e-5 tol.: {n_not_close:,}, '
                              f'max. diff.: {max_diff:.5f}')
-            self.logger.info(f'\n[INFO] computing alternate leaf values...')
+            self.logger.info(f'\n[INFO - LILE] computing alternate leaf values...')
 
         # check predicted leaf values do not differ too much from actual model
         if max_diff > self.atol:
@@ -171,43 +191,52 @@ class LeafInfluence(Explainer):
             n_jobs = min(self.n_jobs, joblib.cpu_count())
 
         if self.logger:
-            self.logger.info(f'[INFO] no. cpus: {n_jobs:,}...')
+            self.logger.info(f'[INFO - LILE] no. cpus: {n_jobs:,}...')
 
-        # process each training example removal in parallel
-        with joblib.Parallel(n_jobs=n_jobs) as parallel:
+        leaf_derivatives_list = []
+        for naive_gradient_addendum, target_label in zip(naive_gradient_addendum_list, unique_target_labels):
 
-            # result container
-            leaf_derivatives = np.zeros((0, np.sum(leaf_counts)), dtype=util.dtype_t)
+            if self.logger:
+                self.logger.info(f'[INFO - LILE] target label: {target_label}')
 
-            # trackers
-            n_completed = 0
-            n_remaining = X.shape[0]
+            # process each training example removal in parallel
+            with joblib.Parallel(n_jobs=n_jobs) as parallel:
 
-            # get number of fits to perform for this iteration
-            while n_remaining > 0:
-                n = min(100, n_remaining)
+                # result container
+                leaf_derivatives = np.zeros((0, np.sum(leaf_counts)), dtype=util.dtype_t)
 
-                results = parallel(joblib.delayed(_compute_leaf_derivatives)
-                                                 (train_idx, leaf_counts, leaf2docs, denominator,
-                                                  da_vector_multiplier, naive_gradient_addendum,
-                                                  n_boost, n_class, X.shape[0], learning_rate,
-                                                  self.update_set) for train_idx in range(n_completed,
-                                                                                          n_completed + n))
+                # trackers
+                n_completed = 0
+                n_remaining = X.shape[0]
 
-                # synchronization barrier
-                results = np.vstack(results)  # shape=(n, 1 or X_test.shape[0])
-                leaf_derivatives = np.vstack([leaf_derivatives, results])
+                # get number of fits to perform for this iteration
+                while n_remaining > 0:
+                    n = min(100, n_remaining)
 
-                n_completed += n
-                n_remaining -= n
+                    results = parallel(joblib.delayed(_compute_leaf_derivatives)
+                                                     (train_idx, leaf_counts, leaf2docs, denominator,
+                                                      da_vector_multiplier, naive_gradient_addendum,
+                                                      n_boost, n_class, X.shape[0], learning_rate,
+                                                      self.update_set) for train_idx in range(n_completed,
+                                                                                              n_completed + n))
 
-                if self.logger:
-                    cum_time = time.time() - start
-                    self.logger.info(f'[INFO - LI] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
+                    # synchronization barrier
+                    results = np.vstack(results)  # shape=(n, 1 or X_test.shape[0])
+                    leaf_derivatives = np.vstack([leaf_derivatives, results])
+
+                    n_completed += n
+                    n_remaining -= n
+
+                    if self.logger:
+                        cum_time = time.time() - start
+                        self.logger.info(f'[INFO - LILE] {n_completed:,} / {X.shape[0]:,}, cum. time: {cum_time:.3f}s')
+
+            leaf_derivatives_list.append(leaf_derivatives)
 
         # save results of this method
         self.leaf_values_ = leaf_values  # shape=(total no. leaves,)
-        self.leaf_derivatives_ = leaf_derivatives  # shape=(no. train, total no. leaves)
+        self.leaf_derivatives_list_ = leaf_derivatives_list  # shape=(n_target_labels, n_train, total_n_leaves)
+        self.unique_target_labels_ = unique_target_labels  # 1d
         self.leaf_counts_ = leaf_counts  # shape=(no. boost, no. class)
         self.bias_ = bias
         self.n_boost_ = n_boost
@@ -216,7 +245,7 @@ class LeafInfluence(Explainer):
 
         return self
 
-    def get_local_influence(self, X, y):
+    def get_local_influence(self, X, y, target_labels=None):
         """
         - Compute influence of each training example on each test example loss.
 
@@ -229,11 +258,18 @@ class LeafInfluence(Explainer):
         influence = np.zeros((self.n_train_, X.shape[0], self.n_class_), dtype=util.dtype_t)
 
         if self.logger:
-            self.logger.info('\n[INFO] computing influence for each test example...')
+            self.logger.info('\n[INFO - LILE] computing influence for each test example...')
+
+        assert target_labels is not None
+        assert np.all(self.unique_target_labels_ == np.unique(target_labels))
 
         # compute influence of each training example on the test example
-        for remove_idx in range(self.n_train_):
-            influence[remove_idx] = self._loss_derivative(X, y, remove_idx)
+        for i, target_label in enumerate(np.unique(target_labels)):
+            test_idxs = np.where(target_labels == target_label)[0]
+
+            for remove_idx in range(self.n_train_):
+                influence[remove_idx, test_idxs] = self._loss_derivative(X[test_idxs], y[test_idxs], remove_idx,
+                                                                         self.leaf_derivatives_list_[i])
 
         # reshape result
         influence = influence.sum(axis=2)  # sum over class, shape=(no. train, X.shape[0])
@@ -241,15 +277,16 @@ class LeafInfluence(Explainer):
         return influence
 
     # private
-    def _loss_derivative(self, X, y, remove_idx):
+    def _loss_derivative(self, X, y, remove_idx, leaf_derivatives):
         """
         Compute the influence on the set of examples (X, y) using the updated
             set of leaf values from removing `remove_idx`.
 
         Input
-            X: 2d array of test examples
+            X: 2d array of test examples.
             y: 1d array of test targets.
-            remove_idx: index of removed train instance
+            remove_idx: index of removed train instance.
+            leaf_derivatives: 1d array of leaf derivatives, shape=(total_n_leaves,).
 
         Return
             - Array of test influences of shape=(X.shape[0], no. class).
@@ -273,7 +310,7 @@ class LeafInfluence(Explainer):
                 for test_idx in range(X.shape[0]):  # per test example
                     leaf_idx = doc2leaf[test_idx][boost_idx][class_idx]
                     og_pred[test_idx, class_idx] += self.leaf_values_[n_prev_leaves + leaf_idx]
-                    new_pred[test_idx, class_idx] += self.leaf_derivatives_[remove_idx][n_prev_leaves + leaf_idx]
+                    new_pred[test_idx, class_idx] += leaf_derivatives[remove_idx][n_prev_leaves + leaf_idx]
 
                 n_prev_leaves += self.leaf_counts_[boost_idx, class_idx]
             tree_idx += 1
