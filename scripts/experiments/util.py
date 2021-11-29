@@ -390,7 +390,7 @@ def explainer_params_to_dict(explainer, exp_params):
         params['n_epoch'] = exp_params['trex_n_epoch']
         params['random_state'] = exp_params['random_state']
 
-    elif explainer == 'loo':
+    elif explainer in ['loo', 'looLE']:
         params['n_jobs'] = exp_params['n_jobs']
 
     elif explainer == 'dshap':
