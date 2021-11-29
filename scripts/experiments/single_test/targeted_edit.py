@@ -24,6 +24,7 @@ from config import exp_args
 from influence import get_special_case_tol
 from influence import select_n_jobs
 from influence import select_elements
+from influenceLE import get_label
 
 
 def edit_labels(y, flip_idxs, objective, adv_label, y_median=None):
@@ -51,90 +52,41 @@ def edit_labels(y, flip_idxs, objective, adv_label, y_median=None):
     return new_y
 
 
-def get_label(y, pred, objective, y_median=False):
-    """
-    Return predicted label, confidence, and adversarial target label,
-        and bool whether or not the predicted label is correct.
-    """
-
-    if objective == 'binary':
-        assert pred.ndim == 2
-
-        target_label = y
-        pred_label = np.argmax(pred)
-        pred_val = pred[0][pred_label]
-        adv_label = 1 if pred_label == 0 else 0
-        is_correct = True if pred_label == y else False
-
-    elif objective == 'regression':
-        assert pred.ndim == 1
-        assert y_median is not None
-
-        target_label = 1 if y > y_median else 0
-        pred_label = 1 if pred[0] > y_median else 0
-        pred_val = pred[0]
-        adv_label = 1 if pred_label == 0 else 0
-        is_correct = True if pred_label == target_label else False
-
-    else:
-        assert objective == 'multiclass'
-        assert pred.ndim == 1
-
-        target_label = y
-        sorted_labels = np.argsort(pred)[::-1]
-        pred_label = sorted_labels[0]
-        pred_val = pred[pred_label]
-        adv_label = sorted_labels[1]  # 2nd most likely
-        is_correct = True if pred_label == y else False
-
-    return pred_label, pred_val, target_label, adv_label, is_correct
-
-
-def relabel_and_evaluate(test_idx, args, params, objective, tree,
-                         X_train, y_train, X_test, y_test, logger):
+def relabel_and_evaluate(test_idx, args, objective, tree,
+                         X_train, y_train, X_test, y_test, influence,
+                         is_le_method, is_correct_a, adv_lbl_a,
+                         logger):
 
     # get appropriate evaluation function
     eval_fn = util.eval_loss
 
-    res = eval_fn(objective, tree, X_test, y_test, None, prefix=f'{0:>5}: {0:>5.2f}%')
+    res = eval_fn(objective, tree, X_test, y_test, logger=None, prefix=f'{0:>5}: {0:>5.2f}%')
 
     y_train_median = np.median(y_train)
     pred_lbl, pred_val, tgt_lbl, adv_lbl, is_correct = get_label(y_test[0], res['pred'], objective, y_train_median)
 
     logger.info(f'\n[Test ID {test_idx}], '
                 f'pred.: {pred_val:.5f}, pred. label: {pred_lbl} '
-                f'target: {y_test[0]:.5f}, target_label {tgt_lbl}, '
+                f'target: {y_test[0]:.5f}, target_label: {tgt_lbl}, '
                 f'is_correct: {is_correct}, adv. target: {adv_lbl}, '
                 f'loss: {res["loss"]:.3f}')
 
-    # fit explainer
-    if 'boostinLE' in args.method:
-        if objective == 'regression':
-            if adv_lbl == 1:
-                fill_val = y_train_median + (y_train_median / 2)
-            else:
-                fill_val = y_train_median - (y_train_median / 2)
+    # sanity checks
+    if is_le_method:
+        assert is_correct_a == is_correct
+
+        if objective in ['binary', 'multiclass']:
+            assert adv_lbl_a == adv_lbl
+
         else:
-            fill_val = adv_lbl
+            assert objective == 'regression'
+            if adv_lbl == 0:
+                assert adv_lbl_a < y_train_median
+            else:
+                assert adv_lbl == 1
+                assert adv_lbl_a > y_train_median
 
-        new_y_train = np.full(y_train.shape, fill_val, dtype=y_train.dtype)
-    else:
-        new_y_train = None
-
-    start = time.time()
-    explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train, new_y=new_y_train)
-    logger.info(f'\n[INFO] explainer fit time: {time.time() - start - explainer.parse_time_:.5f}s')
-
-    # compute influence
-    start2 = time.time()
-    influence = explainer.get_local_influence(X_test, y_test)  # (no. train, 1)
-    logger.info(f'\n[INFO] influence time: {time.time() - start:.5f}s')
-
-    # get ranking
-    if is_correct:  # train examples that decrease lost most are ordered first
-        ranking = np.argsort(influence[:, 0])[::-1]  # shape=(no. train,)
-    else:  # train examples that increase lost most are ordered first
-        ranking = np.argsort(influence[:, 0])  # shape=(no. train,)
+    ranking = np.argsort(influence)[::-1]  # shape=(no. train,)
 
     # result container
     result = {}
@@ -167,7 +119,7 @@ def relabel_and_evaluate(test_idx, args, params, objective, tree,
     return result
 
 
-def experiment(args, logger, out_dir, params):
+def experiment(args, logger, in_dir, out_dir):
 
     # initialize experiment
     begin = time.time()
@@ -180,17 +132,26 @@ def experiment(args, logger, out_dir, params):
     logger.info(f'no. test: {X_test.shape[0]:,}')
     logger.info(f'no. features: {X_train.shape[1]:,}\n')
 
-    # randomly select test instances to compute influence values for
-    avail_idxs = np.arange(X_test.shape[0])
-    n_test = min(args.n_test, len(avail_idxs))
-    test_idxs = select_elements(avail_idxs, rng, n=n_test)
-
     # train tree-ensemble
     hp = util.get_hyperparams(tree_type=args.tree_type, dataset=args.dataset)
     tree = util.get_model(tree_type=args.tree_type, objective=objective, random_state=args.random_state)
     tree.set_params(**hp)
     tree = tree.fit(X_train, y_train)
     util.eval_pred(objective, tree, X_test, y_test, logger, prefix='Test')
+
+    # read influence values
+    inf_res = np.load(os.path.join(in_dir, 'results.npy'), allow_pickle=True)[()]
+    influence = inf_res['influence']  # shape=(no. train, no. test)
+    test_idxs = inf_res['test_idxs']  # shape=(no. test,)
+
+    is_le_method = True if args.method.endswith('LE') else False
+    if is_le_method:
+        is_correct_list = inf_res['is_correct_arr']  # shape=(no. test,)
+        adv_lbl_list = inf_res['adv_labels']  # shape=(no. test,)
+
+    else:
+        is_correct_list = [None] * influence.shape[1]
+        adv_lbl_list = [None] * influence.shape[1]
 
     # get no. jobs to run in parallel
     n_jobs = select_n_jobs(args.n_jobs)
@@ -207,9 +168,11 @@ def experiment(args, logger, out_dir, params):
             n = min(n_jobs, n_remain)
 
             results = parallel(joblib.delayed(relabel_and_evaluate)
-                                             (idx, args, params, objective, tree,
-                                              X_train, y_train, X_test[[idx]], y_test[[idx]], logger)
-                                              for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
+                                             (idx, args, objective, tree,
+                                              X_train, y_train, X_test[[idx]], y_test[[idx]],
+                                              influence[:, n_finish + i], is_le_method, is_correct_list[n_finish + i],
+                                              adv_lbl_list[n_finish + i],
+                                              logger) for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
             res_list += results
@@ -240,8 +203,21 @@ def main(args):
     args.leaf_inf_atol = get_special_case_tol(args.dataset, args.tree_type, args.method, args.leaf_inf_atol)
     params, method_hash = util.explainer_params_to_dict(args.method, vars(args))
 
+    # get input dir., get unique hash for the influence experiment setting
+    exp_dict = {'n_test': args.n_test}
+    exp_hash = util.dict_to_hash(exp_dict)
+
+    if args.method.endswith('LE'):
+        args.in_dir = args.in_dir.replace('influence', 'influenceLE')
+
+    in_dir = os.path.join(args.in_dir,
+                          args.dataset,
+                          args.tree_type,
+                          f'exp_{exp_hash}',
+                          f'{args.method}_{method_hash}')
+
     # create output dir., get unique hash for the influence experiment setting
-    exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
+    exp_dict['edit_frac'] = args.edit_frac
     exp_hash = util.dict_to_hash(exp_dict)
 
     out_dir = os.path.join(args.out_dir,
@@ -258,7 +234,7 @@ def main(args):
     logger.info(args)
     logger.info(f'\ntimestamp: {datetime.now()}')
 
-    experiment(args, logger, out_dir, params)
+    experiment(args, logger, in_dir, out_dir)
 
 
 if __name__ == '__main__':

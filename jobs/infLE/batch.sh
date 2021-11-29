@@ -26,7 +26,7 @@ sbatch -a 9    -c 28 -t 10080 -p 'long'  -o ${o}${t}'_looLE-%a.out'        $run 
 
 # cb only
 sbatch -a 6,11,19          -c 28 -t 2880  -p 'long'  -o ${o}${t}'_leaf_infLE-%a.out'   $run $t 'leaf_infLE'
-sbatch -a 3                -c 28 -t 10080 -p 'short' -o ${o}${t}'_leaf_infLE-%a.out'   $run $t 'leaf_infLE'
+sbatch -a 3                -c 28 -t 10080 -p 'long'  -o ${o}${t}'_leaf_infLE-%a.out'   $run $t 'leaf_infLE'
 sbatch -a 6,11,19          -c 28 -t 2880  -p 'long'  -o ${o}${t}'_leaf_refitLE-%a.out' $run $t 'leaf_refitLE'
 sbatch -a 3                -c 28 -t 10080 -p 'long'  -o ${o}${t}'_leaf_refitLE-%a.out' $run $t 'leaf_refitLE'
 sbatch -a 3,6,12,18,21     -c 28 -t 2880  -p 'long'  -o ${o}${t}'_looLE-%a.out'        $run $t 'looLE'

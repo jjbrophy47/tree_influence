@@ -106,8 +106,8 @@ def experiment(args, logger, in_dir, out_dir):
             results = parallel(joblib.delayed(remove_and_evaluate)
                                              (objective, ranking[:, n_finish + i], tree,
                                               X_train, y_train, X_test[[idx]], y_test[[idx]],
-                                              args.remove_frac, logger)
-                                              for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
+                                              args.remove_frac,
+                                              logger) for i, idx in enumerate(test_idxs[n_finish: n_finish + n]))
 
             # synchronization barrier
             res_list += results

@@ -207,6 +207,7 @@ def get_targeted_edit_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
+    cmd.add('--in_dir', type=str, default='output/influence/')
     cmd.add('--out_dir', type=str, default='output/targeted_edit/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--edit_frac', type=float, nargs='+',
