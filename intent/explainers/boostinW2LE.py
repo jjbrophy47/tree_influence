@@ -6,7 +6,7 @@ from .base import Explainer
 from .parsers import util
 
 
-class BoostInLEW1(Explainer):
+class BoostInW2LE(Explainer):
     """
     Explainer that adapts the TracIn method to tree ensembles, and
     approximates removing an example AND adding that same example with
@@ -51,7 +51,7 @@ class BoostInLEW1(Explainer):
         assert self.model_.tree_type != 'rf', 'RF not supported for BoostIn'
 
         self.n_train_ = X.shape[0]
-        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)   
+        self.loss_fn_ = util.get_loss_fn(self.model_.objective, self.model_.n_class_, self.model_.factor)
 
         self.train_leaf_dvs_ = self._compute_leaf_derivatives(X, y)  # (X.shape[0], n_boost, n_class)
         self.train_leaf_idxs_ = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
@@ -113,7 +113,7 @@ class BoostInLEW1(Explainer):
 
                     # progress
                     if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
-                        self.logger.info(f'[INFO - BoostInLEW1] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                        self.logger.info(f'[INFO - BoostInLEW2] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                          f'cum. time: {time.time() - start:.3f}s')
 
         # removal estimation
@@ -130,7 +130,7 @@ class BoostInLEW1(Explainer):
 
                 # progress
                 if i > 0 and (i + 1) % 10 == 0 and self.logger and verbose:
-                    self.logger.info(f'[INFO - BoostInLEW1] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
+                    self.logger.info(f'[INFO - BoostInLEW2] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
                                      f'cum. time: {time.time() - start:.3f}s')
 
         return influence
@@ -215,7 +215,7 @@ class BoostInLEW1(Explainer):
 
                 for leaf_idx in range(leaf_count):
                     leaf_docs = np.where(leaf_idx == leaf_idxs[:, boost_idx, class_idx])[0]
-                    leaf_weight = 1.0 / len(leaf_docs) if len(leaf_docs) > 0 else 1.0
+                    leaf_weight = 1.0 / len(leaf_docs) ** 2 if len(leaf_docs) > 0 else 1.0
 
                     # compute leaf derivative w.r.t. each train example in `leaf_docs` with OLD label
                     num1 = g[leaf_docs, class_idx] + leaf_vals[leaf_idx] * h[leaf_docs, class_idx]  # (no. docs,)

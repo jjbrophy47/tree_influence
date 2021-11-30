@@ -35,5 +35,4 @@ sbatch -a 1,17             -c 28 -t 10080 -p 'long'  -o ${o}${t}'_looLE-%a.out' 
 sbatch -a 2,11,20          -c 28 -t 10080 -p 'long'  -o ${o}${t}'_looLE-%a.out'        $run $t 'looLE'
 
 # scratch pad
-sbatch -a 7,9   -c 20 -t 1440 -p 'short' -o ${o}${t}'_looLE-%a.out'        $run $t 'looLE'
-sbatch -a 22    -c 28 -t 1440 -p 'short' -o ${o}${t}'_looLE-%a.out'        $run $t 'looLE'
+sbatch -a 3,6,11,13,19     -c 11 -t 1440  -p 'short'  -o ${o}${t}'_leaf_refitLE-%a.out' $run $t 'leaf_refitLE'

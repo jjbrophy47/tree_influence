@@ -177,9 +177,11 @@ def main(args):
                             'leaf_refit', 'boostinW1', 'boostinW2']
 
     elif args.exp == 'targeted_edit':
-        args.method_list = ['random', 'leaf_sim', 'trex',
+        args.method_list = ['random', 'target', 'leaf_sim', 'trex',
+                            'subsample', 'loo', 'leaf_refit', 'leaf_inf', 'leaf_infSP',
                             'boostin', 'boostinW1', 'boostinW2',
-                            'boostinLE', 'boostinLEW1', 'boostinLEW2']
+                            'boostinLE', 'boostinLEW1', 'boostinLEW2',
+                            'looLE', 'leaf_refitLE', 'leaf_infLE', 'leaf_infSPLE']
 
     elif args.exp == 'influenceLE':
         args.method_list = ['boostinLE', 'boostinLEW1', 'boostinLEW2',

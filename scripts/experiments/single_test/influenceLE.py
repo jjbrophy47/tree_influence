@@ -167,8 +167,7 @@ def experiment(args, logger, params, out_dir):
 
 def main(args):
 
-    assert args.method in ['boostinLE', 'boostinLEW1', 'boostinLEW2', 'looLE', 'leaf_infSPLE',
-                           'leaf_infLE', 'leaf_refitLE']
+    assert args.method.endswith('LE')
 
     # get unique hash for this experiment setting
     exp_dict = {'n_test': args.n_test}
