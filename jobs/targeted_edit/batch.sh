@@ -17,8 +17,8 @@ sbatch -a 3-6,8,10-13,16,18-19,21 -c 15 -t 1440 -p 'short' -o ${o}${t}'_leaf_inf
 sbatch -a 3-6,8,10-13,16,18-19,21 -c 15 -t 1440 -p 'short' -o ${o}${t}'_leaf_refit-%a.out' $run $t 'leaf_refit'
 
 sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLE-%a.out'    $run $t 'boostinLE'
-sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLEW1-%a.out'  $run $t 'boostinLEW1'
-sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinLEW2-%a.out'  $run $t 'boostinLEW2'
+sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinW1LE-%a.out'  $run $t 'boostinW1LE'
+sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_boostinW2LE-%a.out'  $run $t 'boostinW2LE'
 sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_leaf_infSPLE-%a.out' $run $t 'leaf_infSPLE'
 sbatch -a 1-22 -c 20 -t 1440 -p 'short' -o ${o}${t}'_looLE-%a.out'        $run $t 'looLE'
 sbatch -a 3-6,8,10-13,16,18-19,21 -c 15 -t 1440 -p 'short' -o ${o}${t}'_leaf_infLE-%a.out'   $run $t 'leaf_infLE'

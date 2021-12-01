@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from scipy.stats import sem
 from scipy.stats import gmean
 from scipy.stats import gstd
@@ -129,51 +130,69 @@ def process(args, exp_hash, out_dir, logger):
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())
 
-    label_dict = {'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.', 'Target': 'RandomSL'}
+    label_dict = {'Target': 'RandomSL'}
 
-    df = df.rename(columns={'mean': 'All datasets'}, index=label_dict)
-    df_li = df_li.rename(columns={'mean': 'SDS'}, index=label_dict)
+    df = df.rename(index=label_dict)
+    df_li = df_li.rename(index=label_dict)
 
     df_rel = df_rel.rename(index=label_dict)
     df_rel_li = df_rel_li.rename(index=label_dict)
 
     # reorder methods
-    order = ['BoostIn', 'BoostInW1', 'BoostInW2', 'LeafInfSP', 'TreeSim',
-             'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
-    order_li = ['LeafRefit', 'LeafInf.', 'BoostIn', 'BoostInW1', 'BoostInW2',
-                'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
+    order = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO']
+    order_li = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafInfluence', 'LeafRefit']
 
     df = df.reindex(order)
     df_li = df_li.reindex(order_li)
     df_rel = df_rel.reindex(order)
     df_rel_li = df_rel_li.reindex(order_li)
 
-    labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
-    labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
+    labels = [x for x in df.index]
+    labels_li = [x for x in df_li.index]
+    # labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
+    # labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
 
-    pp_util.plot_settings(fontsize=28)
-    width = 22
-    height = pp_util.get_height(width, subplots=(1, 2))
+    pp_util.plot_settings(fontsize=12)
+    # width = 22
+    # height = pp_util.get_height(width, subplots=(2, 2))
 
-    fig, axs = plt.subplots(1, 2, figsize=(width, height), gridspec_kw={'width_ratios': [6, 8]})
+    # fig, axs = plt.subplots(2, 2, figsize=(14, 8), gridspec_kw={'width_ratios': [6, 8]})
+    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
+    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
+    xlabel = 'Influence method (ordered fastest to slowest)'
 
-    ax = axs[0]
-    df.plot(kind='bar', y='All datasets', yerr='sem', ax=ax, title=None, capsize=3,
-            ylabel='Average rank', xlabel=None, legend=True, color='#3e9ccf')
-    ax.set_xticklabels(labels, rotation=0)
+    # all datasets
+    ax = axs[0][0]
+    df.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+            ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(labels, rotation=45, ha='right')
 
-    ax = axs[1]
-    df_li.plot(kind='bar', y='SDS', yerr='sem', ax=ax, title=None, capsize=3,
-               ylabel=None, xlabel=None, legend=True, color='#ff7600')
-    ax.set_xticklabels(labels_li, rotation=0)
+    ax = axs[0][1]
+    df_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                ylabel='Gmean. loss increase\n(relative to Random)',
+                xlabel=None, legend=False, color='#ff7600')
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
 
-    ax.axvline(1.5, color='gray', linestyle='--')
-    # ax.axvline(7.5, color='gray', linestyle='--')
+    # SDS
+    ax = axs[1][0]
+    df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+               ylabel='Average rank (SDS)', xlabel=xlabel, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(labels_li, rotation=45, ha='right')
+
+    ax = axs[1][1]
+    df_rel_li.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                   ylabel='Gmean. loss increase (SDS)\n(relative to Random)',
+                   xlabel=xlabel, legend=False, color='#ff7600')
+    ax.set_xticklabels(labels_li, rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'remove.pdf'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))

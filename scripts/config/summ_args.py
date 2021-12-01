@@ -101,8 +101,10 @@ def get_targeted_edit_args():
     cmd = get_general_args()
     cmd = post_args.get_explainer_args(cmd)
     cmd.add('--method_list', type=str, nargs='+',
-            default=['random', 'leaf_sim', 'trex', 'boostin', 'boostinW1', 'boostinW2',
-                     'boostinLE', 'boostinLEW1', 'boostinLEW2'])
+            default=['random', 'target', 'leaf_sim', 'trex', 'leaf_refit', 'leaf_inf', 'leaf_infSP',
+                     'loo', 'subsample', 'boostin', 'boostinW1', 'boostinW2',
+                     'boostinLE', 'boostinLEW1', 'boostinLEW2', 'looLE', 'leaf_refitLE',
+                     'leaf_infLE', 'leaf_infSPLE'])
     cmd.add('--in_dir', type=str, default='temp_targeted_edit/')
     cmd.add('--out_dir', type=str, default='output/plot/targeted_edit/')
     cmd.add('--n_test', type=int, default=100)

@@ -56,7 +56,7 @@ def get_special_case_tol(dataset, tree_type, method, default_tol=1e-5):
     """
     tol = default_tol
 
-    if method in ['leaf_inf', 'leaf_refit']:
+    if method in ['leaf_inf', 'leaf_refit', 'leaf_infLE', 'leaf_refitLE']:
 
         if tree_type == 'lgb' and dataset == 'flight_delays':
             tol = 1e-1

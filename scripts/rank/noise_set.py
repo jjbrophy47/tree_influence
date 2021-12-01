@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from scipy.stats import sem
 from tqdm import tqdm
 
@@ -161,6 +162,7 @@ def process(args, exp_hash, out_dir, logger):
 
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
+    remove_cols = ['LeafInfluence_test_sum', 'LeafRefit_test_sum']
 
     df_fd = get_mean_df(df_fd_all, skip_cols=skip_cols, sort='ascending')
     df_li_fd = get_mean_df(df_li_fd_all, skip_cols=skip_cols, sort='ascending')
@@ -171,22 +173,14 @@ def process(args, exp_hash, out_dir, logger):
     df_auc = get_mean_df(df_auc_all, skip_cols=skip_cols, sort='ascending')
     df_li_auc = get_mean_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
 
-    df_fd_rel = get_mean_df(df_fd_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                            sort='descending', geo_mean=True)
-    df_li_fd_rel = get_mean_df(df_li_fd_rel_all, skip_cols=skip_cols,
-                               sort='descending', geo_mean=True)
-    df_loss_rel = get_mean_df(df_loss_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                              sort='ascending', geo_mean=True)
-    df_li_loss_rel = get_mean_df(df_li_loss_rel_all, skip_cols=skip_cols,
-                                 sort='ascending', geo_mean=True)
-    df_acc_rel = get_mean_df(df_acc_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                             sort='descending', geo_mean=True)
-    df_li_acc_rel = get_mean_df(df_li_acc_rel_all, skip_cols=skip_cols,
-                                sort='descending', geo_mean=True)
-    df_auc_rel = get_mean_df(df_auc_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                             sort='descending', geo_mean=True)
-    df_li_auc_rel = get_mean_df(df_li_auc_rel_all, skip_cols=skip_cols,
-                                sort='descending', geo_mean=True)
+    df_fd_rel = get_mean_df(df_fd_rel_all, skip_cols=skip_cols + remove_cols, sort='descending', geo_mean=True)
+    df_li_fd_rel = get_mean_df(df_li_fd_rel_all, skip_cols=skip_cols, sort='descending', geo_mean=True)
+    df_loss_rel = get_mean_df(df_loss_rel_all, skip_cols=skip_cols + remove_cols, sort='ascending', geo_mean=True)
+    df_li_loss_rel = get_mean_df(df_li_loss_rel_all, skip_cols=skip_cols, sort='ascending', geo_mean=True)
+    df_acc_rel = get_mean_df(df_acc_rel_all, skip_cols=skip_cols + remove_cols, sort='descending', geo_mean=True)
+    df_li_acc_rel = get_mean_df(df_li_acc_rel_all, skip_cols=skip_cols, sort='descending', geo_mean=True)
+    df_auc_rel = get_mean_df(df_auc_rel_all, skip_cols=skip_cols + remove_cols, sort='descending', geo_mean=True)
+    df_li_auc_rel = get_mean_df(df_li_auc_rel_all, skip_cols=skip_cols, sort='descending', geo_mean=True)
 
     logger.info(f'\nFrac. detected (ranking):\n{df_fd}')
     logger.info(f'\nFrac. detected (ranking-LI):\n{df_li_fd}')
@@ -262,6 +256,60 @@ def process(args, exp_hash, out_dir, logger):
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
+
+    # loss only
+    order = ['Random_test_sum', 'Loss_self', 'TreeSim_test_sum', 'BoostIn_test_sum', 'BoostIn_self',
+             'LeafInfSP_test_sum', 'TREX_test_sum', 'SubSample_test_sum', 'LOO_test_sum']
+    order_li = ['Random_test_sum', 'Loss_self', 'TreeSim_test_sum', 'BoostIn_test_sum', 'BoostIn_self',
+                'LeafInfSP_test_sum', 'TREX_test_sum', 'SubSample_test_sum', 'LOO_test_sum',
+                'LeafInfluence_test_sum', 'LeafRefit_test_sum']
+
+    df_fd = df_fd.reindex(order)
+    df_li_fd = df_li_fd.reindex(order_li)
+    df_fd_rel = df_fd_rel.reindex(order)
+    df_li_fd_rel = df_li_fd_rel.reindex(order_li)
+
+    df_loss = df_loss.reindex(order)
+    df_li_loss = df_li_loss.reindex(order_li)
+    df_loss_rel = df_loss_rel.reindex(order)
+    df_li_loss_rel = df_li_loss_rel.reindex(order_li)
+
+    pp_util.plot_settings(fontsize=12)
+
+    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
+    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
+    xlabel = 'Influence method (ordered fastest to slowest)'
+
+    # all datasets
+    ax = axs[0][0]
+    df_fd.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+               ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
+    ax = axs[0][1]
+    df_fd_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                   ylabel='Gmean. frac. detected increase\n(relative to Random)',
+                   xlabel=None, legend=False, color='#ff7600')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
+
+    # SDS
+    ax = axs[1][0]
+    df_li_fd.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+                  ylabel='Average rank (SDS)', xlabel=xlabel, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
+    ax = axs[1][1]
+    df_li_fd_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                      ylabel='Gmean. frac. detected increase (SDS)\n(relative to Random)',
+                      xlabel=xlabel, legend=False, color='#ff7600')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
 
     df_fd.to_csv(os.path.join(out_dir, 'fd_rank.csv'))
     df_li_fd.to_csv(os.path.join(out_dir, 'fd_rank_li.csv'))

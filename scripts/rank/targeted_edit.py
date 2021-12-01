@@ -31,7 +31,7 @@ def process(args, exp_hash, out_dir, logger):
     color, line, label = pp_util.get_plot_dicts()
 
     df_list = []
-    # df_li_list = []
+    df_li_list = []
     df_rel_list = []
 
     for tree_type in args.tree_type:
@@ -50,12 +50,12 @@ def process(args, exp_hash, out_dir, logger):
 
             # ranking
             fp = os.path.join(ckpt_dir, 'loss_rank.csv')
-            # fp_li = os.path.join(ckpt_dir, 'loss_rank_li.csv')
+            fp_li = os.path.join(ckpt_dir, 'loss_rank_li.csv')
             assert os.path.exists(fp), f'{fp} does not exist!'
-            # assert os.path.exists(fp_li), f'{fp_li} does not exist!'
+            assert os.path.exists(fp_li), f'{fp_li} does not exist!'
 
             df_list.append(pd.read_csv(fp))
-            # df_li_list.append(pd.read_csv(fp_li))
+            df_li_list.append(pd.read_csv(fp_li))
 
             # relative increase
             fp_rel = os.path.join(ckpt_dir, 'loss_rel.csv')
@@ -64,90 +64,96 @@ def process(args, exp_hash, out_dir, logger):
             df_rel_list.append(pd.read_csv(fp_rel))
 
     df_all = pd.concat(df_list)
-    # df_li_all = pd.concat(df_li_list)
+    df_li_all = pd.concat(df_li_list)
     df_rel_all = pd.concat(df_rel_list)
 
     # average ranks among different checkpoints and/or tree types
     group_cols = ['dataset']
 
     df_all = df_all.groupby(group_cols).mean().reset_index()
-    # df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
+    df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
     df_rel_all = df_rel_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'edit_frac']
+    li_cols = ['LeafInfluence', 'LeafInfluenceLE', 'LeafRefit', 'LeafRefitLE']
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
-    # df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
-    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                         sort='descending', geo_mean=True)
-    # df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols,
-    #                         sort='descending', geo_mean=True)
+    df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
+    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + li_cols, sort='descending', geo_mean=True)
+    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols,
+                            sort='descending', geo_mean=True)
 
     logger.info(f'\nLoss (ranking):\n{df}')
-    # logger.info(f'\nLoss (ranking-LI):\n{df_li}')
+    logger.info(f'\nLoss (ranking-LI):\n{df_li}')
     logger.info(f'\nLoss (relative):\n{df_rel}')
-    # logger.info(f'\nLoss (relative-LI):\n{df_rel_li}')
+    logger.info(f'\nLoss (relative-LI):\n{df_rel_li}')
 
     # plot
     n_datasets = len(df_all['dataset'].unique())
-    # n_li_datasets = len(df_li_all['dataset'].unique())
+    n_li_datasets = len(df_li_all['dataset'].unique())
 
-    label_dict = {'LeafInfluence': 'LeafInf.', 'SubSample': 'SubS.', 'Target': 'RandomSL'}
+    label_dict = {'Target': 'RandomSL'}
 
     # df = df.rename(columns={'mean': 'All datasets'}, index=label_dict)
     # df_li = df_li.rename(columns={'mean': 'SDS'}, index=label_dict)
 
+    df = df.rename(index=label_dict)
+    df_li = df_li.rename(index=label_dict)
+
     df_rel = df_rel.rename(index=label_dict)
-    # df_rel_li = df_rel_li.rename(index=label_dict)
+    df_rel_li = df_rel_li.rename(index=label_dict)
 
     # reorder methods
-    order = ['TreeSim', 'TREX', 'BoostInLE', 'BoostInLEW1', 'BoostInLEW2',
-             'BoostIn', 'BoostInW1', 'BoostInW2', 'Random']
-    # order = ['TreeSim', 'TREX', 'BoostInLE', 'BoostIn', 'Random']
-    # order = ['TreeSim', 'TREX', 'BoostInLEW1', 'BoostInW1', 'Random']
-    # order = ['BoostIn', 'BoostInW1', 'BoostInW2', 'LeafInfSP', 'TreeSim',
-    #          'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
-    # order_li = ['LeafRefit', 'LeafInf.', 'BoostIn', 'BoostInW1', 'BoostInW2',
-    #             'LeafInfSP', 'TreeSim', 'TREX', 'SubS.', 'LOO', 'RandomSL', 'Random']
+    order = ['Random', 'TreeSim', 'BoostInLE', 'LeafInfSPLE', 'TREX', 'SubSample', 'LOOLE']
+    order_li = ['Random', 'TreeSim', 'BoostInLE', 'LeafInfSPLE', 'TREX', 'SubSample', 'LOOLE',
+                'LeafInfluenceLE', 'LeafRefitLE']
 
     df = df.reindex(order)
-    # df_li = df_li.reindex(order_li)
+    df_li = df_li.reindex(order_li)
     df_rel = df_rel.reindex(order)
+    df_rel_li = df_rel_li.reindex(order_li)
 
     labels = [x for x in df.index]
+    labels_li = [x for x in df_li.index]
     # labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
     # labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
 
-    pp_util.plot_settings(fontsize=28)
-    width = 22
-    height = pp_util.get_height(width, subplots=(1, 2))
+    pp_util.plot_settings(fontsize=12)
+    # width = 22
+    # height = pp_util.get_height(width, subplots=(2, 2))
 
-    fig, axs = plt.subplots(1, 2, figsize=(width, height), gridspec_kw={'width_ratios': [6, 8]})
+    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
+    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
+    xlabel = 'Influence method (ordered fastest to slowest)'
 
-    ax = axs[0]
+    # all datasets
+    ax = axs[0][0]
     df.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
             ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
     ax.set_xticklabels(labels, rotation=45, ha='right')
 
-    ax = axs[1]
-    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x}x')
-
-    df_rel.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+    ax = axs[0][1]
+    df_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
                 ylabel='Geo. avg. loss increase\n(relative to Random)',
                 xlabel=None, legend=False, color='#ff7600')
     ax.set_xticklabels(labels, rotation=45, ha='right')
-
     ax.set_ylim(1.0, None)
     ax.yaxis.set_major_formatter(ticks_y)
 
-    # ax = axs[1]
-    # df_li.plot(kind='bar', y='SDS', yerr='sem', ax=ax, title=None, capsize=3,
-    #            ylabel=None, xlabel=None, legend=True, color='#ff7600')
-    # ax.set_xticklabels(labels_li, rotation=0)
+    # SDS
+    ax = axs[1][0]
+    df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+               ylabel='Average rank', xlabel=xlabel, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(labels_li, rotation=45, ha='right')
 
-    # ax.axvline(1.5, color='gray', linestyle='--')
-    # ax.axvline(7.5, color='gray', linestyle='--')
+    ax = axs[1][1]
+    df_rel_li.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                   ylabel='Gmean. loss increase (SDS)\n(relative to Random)',
+                   xlabel=xlabel, legend=False, color='#ff7600')
+    ax.set_xticklabels(labels_li, rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
 
     logger.info(f'\nSaving results to {out_dir}/...')
 
@@ -155,10 +161,10 @@ def process(args, exp_hash, out_dir, logger):
     plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
-    # df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
+    df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
 
     df_rel.to_csv(os.path.join(out_dir, 'loss_rel.csv'))
-    # df_rel_li.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'))
+    df_rel_li.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'))
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

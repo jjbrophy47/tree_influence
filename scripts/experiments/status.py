@@ -180,11 +180,11 @@ def main(args):
         args.method_list = ['random', 'target', 'leaf_sim', 'trex',
                             'subsample', 'loo', 'leaf_refit', 'leaf_inf', 'leaf_infSP',
                             'boostin', 'boostinW1', 'boostinW2',
-                            'boostinLE', 'boostinLEW1', 'boostinLEW2',
+                            'boostinLE', 'boostinW1LE', 'boostinW2LE',
                             'looLE', 'leaf_refitLE', 'leaf_infLE', 'leaf_infSPLE']
 
     elif args.exp == 'influenceLE':
-        args.method_list = ['boostinLE', 'boostinLEW1', 'boostinLEW2',
+        args.method_list = ['boostinLE', 'boostinW1LE', 'boostinW2LE',
                             'leaf_infSPLE', 'looLE', 'leaf_refitLE', 'leaf_infLE']
 
     # create output dir.

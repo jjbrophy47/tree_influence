@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from scipy.stats import sem
 from tqdm import tqdm
 
@@ -212,6 +213,53 @@ def process(args, exp_hash, out_dir, logger):
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
+
+    # loss only
+    order = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO']
+    order_li = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafInfluence', 'LeafRefit']
+
+    df_loss = df_loss.reindex(order)
+    df_li_loss = df_li_loss.reindex(order_li)
+    df_loss_rel = df_loss_rel.reindex(order)
+    df_li_loss_rel = df_li_loss_rel.reindex(order_li)
+
+    pp_util.plot_settings(fontsize=12)
+
+    # fig, axs = plt.subplots(2, 2, figsize=(14, 8), gridspec_kw={'width_ratios': [6, 8]})
+    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
+    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
+    xlabel = 'Influence method (ordered fastest to slowest)'
+
+    # all datasets
+    ax = axs[0][0]
+    df_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+                 ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
+    ax = axs[0][1]
+    df_loss_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                     ylabel='Gmean. loss increase\n(relative to Random)',
+                     xlabel=None, legend=False, color='#ff7600')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
+
+    # SDS
+    ax = axs[1][0]
+    df_li_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+                    ylabel='Average rank (SDS)', xlabel=xlabel, legend=False, color='#3e9ccf')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+
+    ax = axs[1][1]
+    df_li_loss_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
+                        ylabel='Gmean. loss increase (SDS)\n(relative to Random)',
+                        xlabel=xlabel, legend=False, color='#ff7600')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+    ax.yaxis.set_major_formatter(ticks_y)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
 
     df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))

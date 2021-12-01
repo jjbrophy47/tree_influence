@@ -68,7 +68,7 @@ def process(args, exp_hash, out_dir, logger):
 
     # drop rows with missing values
     skip_cols = ['dataset', 'tree_type', 'edit_frac']
-    remove_cols = ['LeafInfluence', 'LeafRefit']
+    remove_cols = ['LeafInfluence', 'LeafInfluenceLE', 'LeafRefit', 'LeafRefitLE']
 
     cols = [x for x in df.columns if x not in skip_cols + remove_cols]
 
@@ -84,14 +84,19 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nLoss (relative increase):\n{df_rel}')
 
     # rank
-    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['LeafInfluence', 'LeafRefit'])
+    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=remove_cols)
+    rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluence'])], skip_cols=skip_cols)
     logger.info(f'\nLoss ranking:\n{rank_df}')
+    logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df}')
 
     logger.info(f'\nSaving results to {out_dir}...')
 
     df.to_csv(os.path.join(out_dir, 'loss.csv'), index=None)
+
     df_rel.to_csv(os.path.join(out_dir, 'loss_rel.csv'), index=None)
+
     rank_df.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)
+    rank_li_df.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'), index=None)
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 
