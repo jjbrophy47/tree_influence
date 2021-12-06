@@ -248,7 +248,7 @@ class LeafInfluenceSPLE(Explainer):
                         num2b = h2[leaf_docs, class_idx] + leaf_vals[leaf_idx] * k2[leaf_docs, class_idx] / lr  # (doc,)
                         num2 = num2a + (num2b * j[leaf_docs, class_idx])  # (no. docs,)
                         denom2 = denom1 - h[leaf_docs, class_idx] + h2[leaf_docs, class_idx]  # (no. docs,)
-                        leaf_dvs2 = num2 / denom2 * lr  # (no. docs,)
+                        leaf_dvs2 = -num2 / denom2 * lr  # (no. docs,)
 
                         leaf_dvs[leaf_docs, boost_idx, class_idx] = (leaf_dvs1 - leaf_dvs2)  # (no. docs,)
 
