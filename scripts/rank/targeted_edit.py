@@ -33,6 +33,7 @@ def process(args, exp_hash, out_dir, logger):
     df_list = []
     df_li_list = []
     df_rel_list = []
+    df_edit_list = []
 
     for tree_type in args.tree_type:
 
@@ -63,9 +64,15 @@ def process(args, exp_hash, out_dir, logger):
 
             df_rel_list.append(pd.read_csv(fp_rel))
 
+            if ckpt == 1:
+                fp_edit = os.path.join(ckpt_dir, 'edit_frac.csv')
+                assert os.path.exists(fp_edit), f'{fp_edit} does not exist!'
+                df_edit_list.append(pd.read_csv(fp_edit))
+
     df_all = pd.concat(df_list)
     df_li_all = pd.concat(df_li_list)
     df_rel_all = pd.concat(df_rel_list)
+    df_edit_all = pd.concat(df_edit_list) * 100
 
     # average ranks among different checkpoints and/or tree types
     group_cols = ['dataset']
@@ -73,6 +80,7 @@ def process(args, exp_hash, out_dir, logger):
     df_all = df_all.groupby(group_cols).mean().reset_index()
     df_li_all = df_li_all.groupby(group_cols).mean().reset_index()
     df_rel_all = df_rel_all.groupby(group_cols).mean().reset_index()
+    df_edit_all = df_edit_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks
     skip_cols = ['dataset', 'tree_type', 'edit_frac']
@@ -81,22 +89,22 @@ def process(args, exp_hash, out_dir, logger):
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
     df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + li_cols, sort='descending', geo_mean=True)
-    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols,
-                            sort='descending', geo_mean=True)
+    df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols, sort='descending', geo_mean=True)
+    df_edit = get_mean_df(df_edit_all, skip_cols=skip_cols + li_cols, sort='ascending')
+    df_edit_li = get_mean_df(df_edit_all, skip_cols=skip_cols, sort='ascending')
 
     logger.info(f'\nLoss (ranking):\n{df}')
     logger.info(f'\nLoss (ranking-LI):\n{df_li}')
     logger.info(f'\nLoss (relative):\n{df_rel}')
     logger.info(f'\nLoss (relative-LI):\n{df_rel_li}')
+    logger.info(f'\nEdit fraction:\n{df_edit}')
+    logger.info(f'\nEdit fraction (LI):\n{df_edit_li}')
 
     # plot
     n_datasets = len(df_all['dataset'].unique())
     n_li_datasets = len(df_li_all['dataset'].unique())
 
     label_dict = {'Target': 'RandomSL'}
-
-    # df = df.rename(columns={'mean': 'All datasets'}, index=label_dict)
-    # df_li = df_li.rename(columns={'mean': 'SDS'}, index=label_dict)
 
     df = df.rename(index=label_dict)
     df_li = df_li.rename(index=label_dict)
@@ -113,15 +121,13 @@ def process(args, exp_hash, out_dir, logger):
     df_li = df_li.reindex(order_li)
     df_rel = df_rel.reindex(order)
     df_rel_li = df_rel_li.reindex(order_li)
+    df_edit = df_edit.reindex(order)
+    df_edit_li = df_edit_li.reindex(order_li)
 
     labels = [x for x in df.index]
     labels_li = [x for x in df_li.index]
-    # labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
-    # labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
 
     pp_util.plot_settings(fontsize=12)
-    # width = 22
-    # height = pp_util.get_height(width, subplots=(2, 2))
 
     fig, axs = plt.subplots(2, 2, figsize=(14, 8))
     ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
@@ -159,6 +165,23 @@ def process(args, exp_hash, out_dir, logger):
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
+
+    # edit fraction
+    fig, ax = plt.subplots()
+    df_edit.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+                 ylabel='Training-label edits (%)', xlabel=None,
+                 legend=False, color='#3e9ccf')
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'edit_frac.pdf'), bbox_inches='tight')
+
+    fig, ax = plt.subplots()
+    df_edit_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
+                    ylabel='Training-label edits (%)', xlabel=None,
+                    legend=False, color='#3e9ccf')
+    ax.set_xticklabels(labels_li, rotation=45, ha='right')
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, 'edit_frac_li.pdf'), bbox_inches='tight')
 
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))

@@ -38,13 +38,8 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc_list = []
 
     df_loss_rel_list = []
-    df_li_loss_rel_list = []
-
     df_acc_rel_list = []
-    df_li_acc_rel_list = []
-
     df_auc_rel_list = []
-    df_li_auc_rel_list = []
 
     for tree_type in args.tree_type:
 
@@ -80,25 +75,16 @@ def process(args, exp_hash, out_dir, logger):
 
             # relative performance
             fp_loss_rel = os.path.join(ckpt_dir, 'loss_rel.csv')
-            fp_li_loss_rel = os.path.join(ckpt_dir, 'loss_rel_li.csv')
             fp_acc_rel = os.path.join(ckpt_dir, 'acc_rel.csv')
-            fp_li_acc_rel = os.path.join(ckpt_dir, 'acc_rel_li.csv')
             fp_auc_rel = os.path.join(ckpt_dir, 'auc_rel.csv')
-            fp_li_auc_rel = os.path.join(ckpt_dir, 'auc_rel_li.csv')
 
             assert os.path.exists(fp_loss_rel), f'{fp_loss_rel} does not exist!'
-            assert os.path.exists(fp_li_loss_rel), f'{fp_li_loss_rel} does not exist!'
             assert os.path.exists(fp_acc_rel), f'{fp_acc_rel} does not exist!'
-            assert os.path.exists(fp_li_acc_rel), f'{fp_li_acc_rel} does not exist!'
             assert os.path.exists(fp_auc_rel), f'{fp_auc_rel} does not exist!'
-            assert os.path.exists(fp_auc_rel), f'{fp_auc_rel} doess not exist!'
 
             df_loss_rel_list.append(pd.read_csv(fp_loss_rel))
-            df_li_loss_rel_list.append(pd.read_csv(fp_li_loss_rel))
             df_acc_rel_list.append(pd.read_csv(fp_acc_rel))
-            df_li_acc_rel_list.append(pd.read_csv(fp_li_acc_rel))
             df_auc_rel_list.append(pd.read_csv(fp_auc_rel))
-            df_li_auc_rel_list.append(pd.read_csv(fp_li_auc_rel))
 
     # compile results
     df_loss_all = pd.concat(df_loss_list)
@@ -109,11 +95,8 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc_all = pd.concat(df_li_auc_list)
 
     df_loss_rel_all = pd.concat(df_loss_rel_list)
-    df_li_loss_rel_all = pd.concat(df_li_loss_rel_list)
     df_acc_rel_all = pd.concat(df_acc_rel_list)
-    df_li_acc_rel_all = pd.concat(df_li_acc_rel_list)
     df_auc_rel_all = pd.concat(df_auc_rel_list)
-    df_li_auc_rel_all = pd.concat(df_li_auc_rel_list)
 
     # average among different checkpoints
     group_cols = ['dataset']
@@ -126,14 +109,12 @@ def process(args, exp_hash, out_dir, logger):
     df_li_auc_all = df_li_auc_all.groupby(group_cols).mean().reset_index()
 
     df_loss_rel_all = df_loss_rel_all.groupby(group_cols).mean().reset_index()
-    df_li_loss_rel_all = df_li_loss_rel_all.groupby(group_cols).mean().reset_index()
     df_acc_rel_all = df_acc_rel_all.groupby(group_cols).mean().reset_index()
-    df_li_acc_rel_all = df_li_acc_rel_all.groupby(group_cols).mean().reset_index()
     df_auc_rel_all = df_auc_rel_all.groupby(group_cols).mean().reset_index()
-    df_li_auc_rel_all = df_li_auc_rel_all.groupby(group_cols).mean().reset_index()
 
     # compute average ranks and relative perforamnces
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    remove_cols = ['LeafInfluence', 'LeafRefit']
 
     df_loss = get_mean_df(df_loss_all, skip_cols=skip_cols, sort='ascending')
     df_li_loss = get_mean_df(df_li_loss_all, skip_cols=skip_cols, sort='ascending')
@@ -142,18 +123,12 @@ def process(args, exp_hash, out_dir, logger):
     df_auc = get_mean_df(df_auc_all, skip_cols=skip_cols, sort='ascending')
     df_li_auc = get_mean_df(df_li_auc_all, skip_cols=skip_cols, sort='ascending')
 
-    df_loss_rel = get_mean_df(df_loss_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                              sort='descending', geo_mean=True)
-    df_li_loss_rel = get_mean_df(df_li_loss_rel_all, skip_cols=skip_cols,
-                                 sort='descending', geo_mean=True)
-    df_acc_rel = get_mean_df(df_acc_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                             sort='ascending', geo_mean=True)
-    df_li_acc_rel = get_mean_df(df_li_acc_rel_all, skip_cols=skip_cols,
-                                sort='ascending', geo_mean=True)
-    df_auc_rel = get_mean_df(df_auc_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                             sort='ascending', geo_mean=True)
-    df_li_auc_rel = get_mean_df(df_li_auc_rel_all, skip_cols=skip_cols,
-                                sort='ascending', geo_mean=True)
+    df_loss_rel = get_mean_df(df_loss_rel_all, skip_cols=skip_cols + remove_cols, sort='descending', geo_mean=True)
+    df_li_loss_rel = get_mean_df(df_loss_rel_all, skip_cols=skip_cols, sort='descending', geo_mean=True)
+    df_acc_rel = get_mean_df(df_acc_rel_all, skip_cols=skip_cols + remove_cols, sort='ascending', geo_mean=True)
+    df_li_acc_rel = get_mean_df(df_acc_rel_all, skip_cols=skip_cols, sort='ascending', geo_mean=True)
+    df_auc_rel = get_mean_df(df_auc_rel_all, skip_cols=skip_cols + remove_cols, sort='ascending', geo_mean=True)
+    df_li_auc_rel = get_mean_df(df_auc_rel_all, skip_cols=skip_cols, sort='ascending', geo_mean=True)
 
     logger.info(f'\nLoss (ranking):\n{df_loss}')
     logger.info(f'\nLoss (ranking-LI):\n{df_li_loss}')

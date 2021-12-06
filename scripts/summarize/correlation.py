@@ -136,15 +136,12 @@ def experiment(args, logger, out_dir):
     j_mean = j_mean[np.ix_(idxs, idxs)]
 
     # reorder heatmap
-    order = ['boostin', 'leaf_infSP', 'leaf_sim', 'trex', 'subsample', 'loo', 'target']
+    order = ['boostin', 'leaf_infSP', 'trex', 'leaf_sim', 'subsample', 'loo']
 
     if args.out_sub_dir == 'li':
-        order = ['boostin', 'leaf_infSP', 'leaf_sim', 'trex', 'subsample', 'loo', 'target', 'leaf_refit', 'leaf_inf']
+        order = ['boostin', 'leaf_infSP', 'leaf_sim', 'trex', 'subsample', 'loo', 'leaf_refit', 'leaf_inf']
 
     new_idxs = np.array([idx_dict[m] for m in order if m in args.method_list], dtype=np.int32)
-
-    print(new_idxs)
-    print(p_mean)
 
     p_mean = reorder_heatmap(p_mean, new_idxs)
     s_mean = reorder_heatmap(s_mean, new_idxs)
@@ -176,27 +173,26 @@ def experiment(args, logger, out_dir):
     labels = [label_dict[name] for name in order]
     labels_x = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(labels)]
 
+    suffix = '_li' if args.out_sub_dir == 'li' else ''
+
     fig, ax = plt.subplots()
     sns.heatmap(p_mean, xticklabels=labels, yticklabels=labels, ax=ax,
-                cmap='Greens', mask=mask, fmt='.2f', cbar=True, annot=True)
-    ax.set_title(f'Pearson')
+                cmap='Greens', mask=mask, fmt='.2f', cbar=True, annot=False)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    plt.savefig(os.path.join(out_dir, f'pearson.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, f'pearson{suffix}.pdf'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
     sns.heatmap(s_mean, xticklabels=labels, yticklabels=labels, ax=ax,
                 cmap=cmap, mask=mask, fmt='.2f', annot=False)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-
-    suffix = '_li' if args.out_sub_dir == 'li' else ''
     plt.savefig(os.path.join(out_dir, f'spearman{suffix}.pdf'), bbox_inches='tight')
 
     fig, ax = plt.subplots()
     sns.heatmap(j_mean, xticklabels=labels, yticklabels=labels, ax=ax,
-                cmap='Blues', mask=mask, fmt='.2f', annot=True)
+                cmap='Blues', mask=mask, fmt='.2f', annot=False)
     ax.set_title('Jaccard (first 10% of sorted)')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    plt.savefig(os.path.join(out_dir, f'jaccard_10.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, f'jaccard_10{suffix}.pdf'), bbox_inches='tight')
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

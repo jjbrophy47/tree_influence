@@ -22,7 +22,7 @@ from experiments import util as exp_util
 from config import summ_args
 
 
-def get_relative_df(df, ref_col, skip_cols=[]):
+def get_relative_df(df, ref_col, skip_cols=[], remove_cols=[]):
     """
     Compute relative values based on a reference column.
 
@@ -30,6 +30,7 @@ def get_relative_df(df, ref_col, skip_cols=[]):
         df: pd.DataFrame, input dataframe values.
         ref_col: str, reference column.
         skip_cols: list, columns to skip.
+        remove_cols: list, columns to remove from return dataframe.
 
     Return
         - New dataframe with relative values.
@@ -38,6 +39,10 @@ def get_relative_df(df, ref_col, skip_cols=[]):
 
     cols = [c for c in df.columns if c not in skip_cols]
     result_df.loc[:, cols] = result_df.loc[:, cols].div(result_df[ref_col], axis=0)
+
+    # remove columns
+    drop_cols = [c for c in result_df.columns if c in remove_cols]
+    result_df = result_df.drop(columns=drop_cols)
 
     return result_df
 
@@ -136,14 +141,15 @@ def process(args, exp_hash, out_dir, logger):
 
     # compute relative performance and rankings
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    ref_col = 'Random'
 
     # relative performance
-    df_rel = get_relative_df(df, ref_col='Random', skip_cols=skip_cols)
+    df_rel = get_relative_df(df, ref_col=ref_col, skip_cols=skip_cols, remove_cols=[ref_col])
     logger.info(f'\nLoss (relative increase):\n{df_rel}')
 
     # rank
-    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['LeafInfluence', 'LeafRefit'])
-    rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluence'])], skip_cols=skip_cols)
+    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=['LeafInfluence', 'LeafRefit'] + [ref_col])
+    rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluence'])], skip_cols=skip_cols, remove_cols=[ref_col])
     logger.info(f'\nLoss ranking:\n{rank_df}')
     logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df}')
 

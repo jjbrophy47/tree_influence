@@ -24,6 +24,44 @@ from remove import get_rank_df
 from remove import get_relative_df
 
 
+def get_flip_frac(dataset, data_dir, edit_frac, pred_label):
+    """
+    Return fraction of label edits required to flip each prediction.
+
+    Input
+        dataset: str, dataset to compute results for.
+        data_dir: data directory.
+        edit_frac: 1d array of edit fraction checkpoints, shape=(no. ckpts,).
+        pred_label: 2d array of predicted labels, shape=(no. test, no. ckpts).
+
+    Return
+        Array of edit fractions of shape=(no. test,).
+    """
+    assert edit_frac.ndim == 1 and pred_label.ndim == 2
+    assert pred_label.shape[1] == edit_frac.shape[0]
+
+    # regression dataset
+    if dataset in ['concrete', 'energy', 'life', 'naval', 'obesity', 'protein', 'power', 'wine']:
+        X_train, X_test, y_train, y_test, objective = exp_util.get_data(data_dir, dataset)
+        y_train_median = np.median(y_train)
+        pred_label = np.where(pred_label > y_train_median, 1, 0)
+
+    edit_frac_list = []
+
+    for x in pred_label:
+        idxs = np.where(x != x[0])[0]
+
+        if len(idxs) > 0:
+            idx = edit_frac[idxs[0]]
+
+        else:
+            idx = edit_frac[-1]
+
+        edit_frac_list.append(idx)
+
+    return np.array(edit_frac_list, dtype=np.float32)
+
+
 def process(args, exp_hash, out_dir, logger):
     begin = time.time()
 
@@ -32,6 +70,9 @@ def process(args, exp_hash, out_dir, logger):
     n_test = None
 
     rows = []
+
+    if args.ckpt == 1:
+        rows_edit = []
 
     logger.info('')
     for dataset in args.dataset_list:
@@ -47,7 +88,14 @@ def process(args, exp_hash, out_dir, logger):
 
         row = {'dataset': dataset, 'tree_type': args.tree_type}
 
+        if args.ckpt == 1:
+            row_edit = row.copy()
+
         for j, (method, res) in enumerate(res_list):
+
+            if args.ckpt == 1:
+                flip_frac_arr = get_flip_frac(dataset, args.data_dir, res['edit_frac'], res['pred_label'])
+                row_edit[f'{label[method]}'] = np.mean(flip_frac_arr)
 
             # sanity check
             if j == 0:
@@ -64,28 +112,35 @@ def process(args, exp_hash, out_dir, logger):
 
         rows.append(row)
 
+        if args.ckpt == 1:
+            rows_edit.append(row_edit)
+
     df = pd.DataFrame(rows)
 
     # drop rows with missing values
     skip_cols = ['dataset', 'tree_type', 'edit_frac']
     remove_cols = ['LeafInfluence', 'LeafInfluenceLE', 'LeafRefit', 'LeafRefitLE']
+    ref_col = 'Random'
 
     cols = [x for x in df.columns if x not in skip_cols + remove_cols]
 
     df = df.dropna(subset=cols)
 
+    if args.ckpt == 1:
+        df_edit = pd.DataFrame(rows_edit)
+        df_edit = df_edit.dropna(subset=cols)
+        logger.info(f'\nEdit frac.:\n{df_edit}')
+        df_edit.to_csv(os.path.join(out_dir, 'edit_frac.csv'), index=None)
+
     logger.info(f'\nLoss:\n{df}')
 
-    # compute relative peformance and rankings
-    skip_cols = ['dataset', 'tree_type', 'edit_frac']
-
     # relative performance
-    df_rel = get_relative_df(df, ref_col='Random', skip_cols=skip_cols)
+    df_rel = get_relative_df(df, ref_col=ref_col, skip_cols=skip_cols, remove_cols=[ref_col])
     logger.info(f'\nLoss (relative increase):\n{df_rel}')
 
     # rank
-    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluence'])], skip_cols=skip_cols)
+    rank_df = get_rank_df(df, skip_cols=skip_cols, remove_cols=remove_cols + [ref_col])
+    rank_li_df = get_rank_df(df[~pd.isna(df['LeafInfluenceLE'])], skip_cols=skip_cols, remove_cols=[ref_col])
     logger.info(f'\nLoss ranking:\n{rank_df}')
     logger.info(f'\nLoss ranking (w/ leafinf):\n{rank_li_df}')
 
@@ -102,6 +157,8 @@ def process(args, exp_hash, out_dir, logger):
 
 
 def main(args):
+
+    args.method_list += ['boostin']
 
     exp_dict = {'n_test': args.n_test, 'edit_frac': args.edit_frac}
     exp_hash = exp_util.dict_to_hash(exp_dict)

@@ -1,5 +1,5 @@
 """
-Rank commandline arguments.
+Plot commandline arguments.
 """
 import configargparse
 
@@ -31,7 +31,8 @@ def get_ranking_args():
     # single test
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
-    cmd.add('--edit_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
+    cmd.add('--edit_frac', type=float, nargs='+',
+            default=[0.0, 0.002, 0.004, 0.006, 0.008, 0.01, 0.012, 0.014, 0.016, 0.018, 0.02])
     cmd.add('--poison_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
 
     # multi test
@@ -53,6 +54,9 @@ def get_ranking_args():
     cmd.add('--li', action='store_true')
 
     return cmd
+
+
+# deprecated
 
 
 def old_get_ranking_args():

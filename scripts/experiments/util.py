@@ -273,7 +273,7 @@ def eval_pred(objective, model, X, y, logger, prefix='', loss_fn=None):
         result['acc'] = accuracy_score(y, pred)
         result['auc'] = roc_auc_score(y, proba)
         result['loss'] = log_loss(y, proba)
-        if np.isnan(result['loss']):
+        if np.isnan(result['loss']) or np.isinf(result['loss']):
             logger.info('trying log_loss with eps = 1e-7...')
             result['loss'] = log_loss(y, proba, eps=1e-7)
 

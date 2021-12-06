@@ -20,8 +20,8 @@ sys.path.insert(0, here + '/../')
 from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import summ_args
-from summarize.roar import get_rank_df
-from rank.roar import get_mean_df
+from remove import get_rank_df
+from rank.remove import get_mean_df
 from scipy.stats import gmean
 
 
@@ -176,7 +176,7 @@ def process(args, out_dir, logger):
     ax.set_ylim(1, None)
     ax.grid(True, which='major', axis='y')
     ax.set_axisbelow(True)
-    ax.legend(framealpha=1.0)
+    # ax.legend(framealpha=1.0)
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'resources.pdf'), bbox_inches='tight')

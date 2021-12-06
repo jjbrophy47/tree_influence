@@ -77,6 +77,12 @@ def process(args, exp_hash, out_dir, logger):
     df_acc_raw = pd.DataFrame(rows_acc).replace(-1, np.nan)
     df_auc_raw = pd.DataFrame(rows_auc).replace(-1, np.nan)
 
+    # skip BoostIn_self
+    df_fd_raw = df_fd_raw.drop(['BoostIn_self'], axis=1)
+    df_loss_raw = df_loss_raw.drop(['BoostIn_self'], axis=1)
+    df_acc_raw = df_acc_raw.drop(['BoostIn_self'], axis=1)
+    df_auc_raw = df_auc_raw.drop(['BoostIn_self'], axis=1)
+
     # drop rows with missing values
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
     remove_cols = ['LeafInfluence_test_sum', 'LeafRefit_test_sum']
@@ -96,43 +102,30 @@ def process(args, exp_hash, out_dir, logger):
     # compute relative performance and rankings
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']
     remove_cols = ['LeafInfluence_test_sum', 'LeafRefit_test_sum']
-
-    # relative performance
     ref_col = 'Random_test_sum'
 
-    rel_df_fd = get_relative_df(df_fd, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
-    rel_df_loss = get_relative_df(df_loss, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
-    rel_df_acc = get_relative_df(df_acc, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
-    rel_df_auc = get_relative_df(df_auc, ref_col=ref_col, skip_cols=skip_cols + remove_cols)
-
-    rel_li_df_fd = get_relative_df(df_fd, ref_col=ref_col, skip_cols=skip_cols)
-    rel_li_df_loss = get_relative_df(df_loss, ref_col=ref_col, skip_cols=skip_cols)
-    rel_li_df_acc = get_relative_df(df_acc, ref_col=ref_col, skip_cols=skip_cols)
-    rel_li_df_auc = get_relative_df(df_auc, ref_col=ref_col, skip_cols=skip_cols)
+    # relative performance
+    rel_df_fd = get_relative_df(df_fd, ref_col=ref_col, skip_cols=skip_cols, remove_cols=[ref_col])
+    rel_df_loss = get_relative_df(df_loss, ref_col=ref_col, skip_cols=skip_cols, remove_cols=[ref_col])
+    rel_df_acc = get_relative_df(df_acc, ref_col=ref_col, skip_cols=skip_cols, remove_cols=[ref_col])
+    rel_df_auc = get_relative_df(df_auc, ref_col=ref_col, skip_cols=skip_cols, remove_cols=[ref_col])
 
     logger.info(f'\nFrac. detected (relative):\n{rel_df_fd}')
-    logger.info(f'\nFrac. detected (LI-relative):\n{rel_li_df_fd}')
-
     logger.info(f'\nLoss (relative):\n{rel_df_loss}')
-    logger.info(f'\nLoss (LI-relative):\n{rel_li_df_loss}')
-
     logger.info(f'\nAccuracy (relative):\n{rel_df_acc}')
-    logger.info(f'\nAccuracy (LI-relative):\n{rel_li_df_acc}')
-
     logger.info(f'\nAUC (relative):\n{rel_df_auc}')
-    logger.info(f'\nAUC (LI-relative):\n{rel_li_df_auc}')
 
     # rankings
-    rank_df_fd = get_rank_df(df_fd, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)
-    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols)
-    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols)
+    rank_df_fd = get_rank_df(df_fd, skip_cols=skip_cols, remove_cols=remove_cols + [ref_col])
+    rank_df_loss = get_rank_df(df_loss, skip_cols=skip_cols, remove_cols=remove_cols + [ref_col], ascending=True)
+    rank_df_acc = get_rank_df(df_acc, skip_cols=skip_cols, remove_cols=remove_cols + [ref_col])
+    rank_df_auc = get_rank_df(df_auc, skip_cols=skip_cols, remove_cols=remove_cols + [ref_col])
 
-    rank_li_df_fd = get_rank_df(df_fd[~pd.isna(df_fd['LeafInfluence_test_sum'])], skip_cols=skip_cols)
+    rank_li_df_fd = get_rank_df(df_fd[~pd.isna(df_fd['LeafInfluence_test_sum'])], skip_cols, [ref_col])
     rank_li_df_loss = get_rank_df(df_loss[~pd.isna(df_loss['LeafInfluence_test_sum'])],
-                                  skip_cols=skip_cols, ascending=True)
-    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['LeafInfluence_test_sum'])], skip_cols=skip_cols)
-    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['LeafInfluence_test_sum'])], skip_cols=skip_cols)
+                                  skip_cols, [ref_col], ascending=True)
+    rank_li_df_acc = get_rank_df(df_acc[~pd.isna(df_acc['LeafInfluence_test_sum'])], skip_cols, [ref_col])
+    rank_li_df_auc = get_rank_df(df_auc[~pd.isna(df_auc['LeafInfluence_test_sum'])], skip_cols, [ref_col])
 
     logger.info(f'\nFrac. detected ranking:\n{rank_df_fd}')
     logger.info(f'\nFrac. detected ranking (w/ leafinf):\n{rank_li_df_fd}')
@@ -158,11 +151,6 @@ def process(args, exp_hash, out_dir, logger):
     rel_df_loss.to_csv(os.path.join(out_dir, 'loss_rel.csv'), index=None)
     rel_df_acc.to_csv(os.path.join(out_dir, 'acc_rel.csv'), index=None)
     rel_df_auc.to_csv(os.path.join(out_dir, 'auc_rel.csv'), index=None)
-
-    rel_li_df_fd.to_csv(os.path.join(out_dir, 'fd_rel_li.csv'), index=None)
-    rel_li_df_loss.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'), index=None)
-    rel_li_df_acc.to_csv(os.path.join(out_dir, 'acc_rel_li.csv'), index=None)
-    rel_li_df_auc.to_csv(os.path.join(out_dir, 'auc_rel_li.csv'), index=None)
 
     rank_df_fd.to_csv(os.path.join(out_dir, 'frac_detected_rank.csv'), index=None)
     rank_df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'), index=None)

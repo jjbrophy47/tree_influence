@@ -31,9 +31,8 @@ def get_explainer_args(cmd=None):
     """
     if cmd is None:
         cmd = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
-    cmd.add('--method', type=str, nargs='+', default=['random', 'target', 'leaf_sim', 'boostin',
-                                                      'leaf_infSP', 'trex', 'subsample', 'loo', 'leaf_inf',
-                                                      'leaf_refit', 'boostinW1', 'boostinW2'])
+    cmd.add('--method', type=str, nargs='+', default=['random', 'leaf_sim', 'boostin', 'leaf_infSP',
+                                                      'trex', 'subsample', 'loo', 'leaf_inf', 'leaf_refit'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--leaf_inf_update_set', type=int, default=[-1])  # LeafInfluence
     cmd.add('--leaf_inf_atol', type=int, default=[1e-5])  # LeafInfluence
