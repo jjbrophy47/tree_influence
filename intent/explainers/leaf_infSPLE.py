@@ -32,7 +32,7 @@ class LeafInfluenceSPLE(Explainer):
         """
         self.logger = logger
 
-    def fit(self, model, X, y):
+    def fit(self, model, X, y, target_labels=None):
         """
         - Convert model to internal standardized tree structure.
         - Precompute gradients and leaf indices for each x in X.
@@ -41,6 +41,7 @@ class LeafInfluenceSPLE(Explainer):
             model: tree ensemble.
             X: 2d array of train examples.
             y: 1d array of train targets.
+            target_labels: unused, for compatibility.
         """
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)

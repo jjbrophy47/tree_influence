@@ -55,7 +55,7 @@ def get_targeted_edit_args():
     cmd.add('--method_list', type=str, nargs='+',
             default=['random', 'leaf_sim', 'trex',
                      'subsample', 'boostinLE', 'looLE',
-                     'leaf_refitLE', 'leaf_infLE', 'leaf_infSPLE', 'leaf_infSP'])
+                     'leaf_refitLE', 'leaf_infLE', 'leaf_infSPLE'])
     cmd.add('--in_dir', type=str, default='temp_targeted_edit/')
     cmd.add('--out_dir', type=str, default='output/plot/targeted_edit/')
     cmd.add('--n_test', type=int, default=100)

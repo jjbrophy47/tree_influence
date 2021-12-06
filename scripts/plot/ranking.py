@@ -208,7 +208,7 @@ def main(args):
 
     TEMP_TREE = 'lgb+sgb+xgb'
     targeted_edit_hash = exp_util.dict_to_hash({'n_test': args.n_test, 'edit_frac': args.edit_frac})
-    targeted_edit_dir = os.path.join(args.in_dir, 'targeted_edit', 'rank', f'exp_{targeted_edit_hash}', TEMP_TREE)
+    targeted_edit_dir = os.path.join(args.in_dir, 'targeted_edit', 'rank', f'exp_{targeted_edit_hash}', tree_types)
 
     remove_set_hash = exp_util.dict_to_hash({'val_frac': args.val_frac, 'remove_frac': args.remove_set_frac})
     remove_set_dir = os.path.join(args.in_dir, 'remove_set', 'rank', f'exp_{remove_set_hash}', tree_types)
@@ -221,7 +221,7 @@ def main(args):
     noise_set_dir = os.path.join(args.in_dir, 'noise_set', 'rank', f'exp_{noise_set_hash}', tree_types)
 
     single_list = [('Removal', remove_dir), ('Targeted edit', targeted_edit_dir)]
-    multi_list = [(' Removal ', remove_set_dir), ('Relabel', label_set_dir),
+    multi_list = [(' Removal ', remove_set_dir), ('Adding noise', label_set_dir),
                   ('Fix mislabelled', noise_set_dir)]
 
     in_dir_list = single_list + multi_list
