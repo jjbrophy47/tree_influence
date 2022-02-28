@@ -32,7 +32,8 @@ def get_explainer_args(cmd=None):
     if cmd is None:
         cmd = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     cmd.add('--method', type=str, nargs='+', default=['random', 'leaf_sim', 'boostin', 'leaf_infSP',
-                                                      'trex', 'subsample', 'loo', 'leaf_inf', 'leaf_refit'])
+                                                      'trex', 'subsample', 'loo', 'leaf_inf', 'leaf_refit',
+                                                      'target'])
     cmd.add('--skip', type=str, nargs='+', default=[])
     cmd.add('--leaf_inf_update_set', type=int, default=[-1])  # LeafInfluence
     cmd.add('--leaf_inf_atol', type=int, default=[1e-5])  # LeafInfluence
@@ -68,6 +69,7 @@ def get_remove_args():
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
     cmd.add('--std_err', type=int, default=0)
     cmd.add('--custom_dir', type=str, default='')
+    cmd.add('--legend', action='store_true')
     return cmd
 
 

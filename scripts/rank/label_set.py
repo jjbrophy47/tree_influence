@@ -22,6 +22,7 @@ from experiments import util as exp_util
 from postprocess import util as pp_util
 from config import rank_args
 from rank.remove import get_mean_df
+from rank.remove import plot_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -144,97 +145,61 @@ def process(args, exp_hash, out_dir, logger):
     logger.info(f'\nAUC (relative):\n{df_auc_rel}')
     logger.info(f'\nAUC (relative-LI):\n{df_li_auc_rel}')
 
-    # plot
-    n_loss_datasets = len(df_loss_all['dataset'].unique())
-    n_li_loss_datasets = len(df_li_loss_all['dataset'].unique())
-    n_acc_datasets = len(df_acc_all['dataset'].unique())
-    n_li_acc_datasets = len(df_li_acc_all['dataset'].unique())
-    n_auc_datasets = len(df_auc_all['dataset'].unique())
-    n_li_auc_datasets = len(df_li_auc_all['dataset'].unique())
+    label_dict = {'Target': 'RandomSL'}
 
-    fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+    df_loss = df_loss.rename(index=label_dict)
+    df_li_loss = df_li_loss.rename(index=label_dict)
+    df_loss_rel = df_loss_rel.rename(index=label_dict)
+    df_li_loss_rel = df_li_loss_rel.rename(index=label_dict)
 
-    ax = axs[0][0]
-    df_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
-                 title=f'Loss ({n_loss_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    df_acc = df_acc.rename(index=label_dict)
+    df_li_acc = df_li_acc.rename(index=label_dict)
+    df_acc_rel = df_acc_rel.rename(index=label_dict)
+    df_li_acc_rel = df_li_acc_rel.rename(index=label_dict)
 
-    ax = axs[1][0]
-    df_li_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
-                    title=f'w/ LeafInf ({n_li_loss_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    df_auc = df_auc.rename(index=label_dict)
+    df_li_auc = df_li_auc.rename(index=label_dict)
+    df_auc_rel = df_auc_rel.rename(index=label_dict)
+    df_li_auc_rel = df_li_auc_rel.rename(index=label_dict)
 
-    ax = axs[0][1]
-    df_acc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
-                title=f'Accuracy ({n_acc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    order = ['BoostIn', 'LeafInfSP', 'TREX', 'TreeSim', 'SubSample', 'LOO']
+    order_li = ['BoostIn', 'LeafInfSP', 'TREX', 'TreeSim', 'LeafRefit', 'LeafInfluence', 'SubSample', 'LOO']
 
-    ax = axs[1][1]
-    df_li_acc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
-                   title=f'w/ LeafInf ({n_li_acc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-
-    ax = axs[0][2]
-    df_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
-                title=f'AUC ({n_auc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-
-    ax = axs[1][2]
-    df_li_auc.plot(kind='bar', y='mean', yerr='sem', ax=ax, rot=45, legend=None, capsize=3,
-                   title=f'w/ LeafInf ({n_li_auc_datasets} datasets)', ylabel='Avg. rank', xlabel='Method')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-
-    logger.info(f'\nSaving results to {out_dir}/...')
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'rank.png'), bbox_inches='tight')
-
-    # loss only
-    order = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO']
-    order_li = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafInfluence', 'LeafRefit']
+    if 'RandomSL' in df_loss.index:
+        order.append('RandomSL')
+        order_li.append('RandomSL')
 
     df_loss = df_loss.reindex(order)
     df_li_loss = df_li_loss.reindex(order_li)
     df_loss_rel = df_loss_rel.reindex(order)
     df_li_loss_rel = df_li_loss_rel.reindex(order_li)
 
+    df_acc = df_acc.reindex(order)
+    df_li_acc = df_li_acc.reindex(order_li)
+    df_acc_rel = df_acc_rel.reindex(order)
+    df_li_acc_rel = df_li_acc_rel.reindex(order_li)
+
+    df_auc = df_auc.reindex(order)
+    df_li_auc = df_li_auc.reindex(order_li)
+    df_auc_rel = df_auc_rel.reindex(order)
+    df_li_auc_rel = df_li_auc_rel.reindex(order_li)
+
+    logger.info(f'\nSaving results to {out_dir}/...')
+
+    height = 2
+
+    plot_mean_df(df_loss, df_li_loss, out_dir=out_dir, fn='loss_rank', ylabel='Avg. rank', add_height=height)
+    plot_mean_df(df_acc, df_li_acc, out_dir=out_dir, fn='acc_rank', ylabel='Avg. rank', add_height=height)
+    plot_mean_df(df_auc, df_li_auc, out_dir=out_dir, fn='auc_rank', ylabel='Avg. rank', add_height=height)
+
+    plot_mean_df(df_loss_rel, df_li_loss_rel, out_dir=out_dir, fn='loss_magnitude', yerr=None,
+                 ylabel=r'Gmean. loss $\uparrow$' '\n(rel. to Random)', add_height=height)
+    plot_mean_df(df_acc_rel, df_li_acc_rel, out_dir=out_dir, fn='acc_magnitude', yerr=None,
+                 ylabel=r'Gmean. acc. $\uparrow$' '\n(rel. to Random)', add_height=height)
+    plot_mean_df(df_auc_rel, df_li_auc_rel, out_dir=out_dir, fn='auc_magnitude', yerr=None,
+                 ylabel=r'Gmean. AUC $\uparrow$' '\n(rel. to Random)', add_height=height)
+
     pp_util.plot_settings(fontsize=12)
-
-    # fig, axs = plt.subplots(2, 2, figsize=(14, 8), gridspec_kw={'width_ratios': [6, 8]})
-    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
-    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
-    xlabel = 'Influence method (ordered fastest to slowest)'
-
-    # all datasets
-    ax = axs[0][0]
-    df_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-                 ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-
-    ax = axs[0][1]
-    df_loss_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
-                     ylabel='Gmean. loss increase\n(relative to Random)',
-                     xlabel=None, legend=False, color='#ff7600')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    ax.set_ylim(1.0, None)
-    ax.yaxis.set_major_formatter(ticks_y)
-
-    # SDS
-    ax = axs[1][0]
-    df_li_loss.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-                    ylabel='Average rank (SDS)', xlabel=xlabel, legend=False, color='#3e9ccf')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-
-    ax = axs[1][1]
-    df_li_loss_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
-                        ylabel='Gmean. loss increase (SDS)\n(relative to Random)',
-                        xlabel=xlabel, legend=False, color='#ff7600')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    ax.set_ylim(1.0, None)
-    ax.yaxis.set_major_formatter(ticks_y)
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
 
     df_loss.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li_loss.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))

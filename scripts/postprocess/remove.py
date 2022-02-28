@@ -22,8 +22,9 @@ from config import post_args
 
 def process(args, exp_hash, out_dir, logger):
 
+    color, line, label, marker = util.get_plot_dicts(markers=True)
+
     n_test = None
-    results = []
 
     # get dataset
     X_train, X_test, y_train, y_test, objective = exp_util.get_data(args.data_dir, args.dataset)
@@ -34,16 +35,24 @@ def process(args, exp_hash, out_dir, logger):
                            args.tree_type,
                            f'exp_{exp_hash}')
 
-    res = util.get_results(args, exp_dir, logger)
-    res = util.filter_results(res, args.skip)
-    results += res
+    results = util.get_results(args, exp_dir, logger)
+    results = util.filter_results(results, args.skip)
 
-    color, line, label = util.get_plot_dicts()
+    results_dict = {label[method]: (method, res) for method, res in results}
+
+    order = ['BoostIn', 'LeafInfSP', 'TREX', 'TreeSim', 'LeafRefit',
+             'LeafInfluence', 'SubSample', 'LOO', 'Random', 'RandomSL']
+
+    util.plot_settings(fontsize=23)
+
     fig, ax = plt.subplots()
 
-    method_list = []
+    for i, key in enumerate(order):
 
-    for i, (method, res) in enumerate(results):
+        if key not in results_dict:
+            continue
+
+        method, res = results_dict[key]
 
         # sanity check
         if i == 0:
@@ -60,15 +69,15 @@ def process(args, exp_hash, out_dir, logger):
         y_err = y_err if args.std_err else None
 
         ax.errorbar(x, y, yerr=y_err, label=label[method], color=color[method],
-                    linestyle=line[method], alpha=0.75)
+                    linestyle=line[method], marker=marker[method], alpha=0.75)
         ax.set_xlabel('Train data removed (%)')
-        ax.set_ylabel(f'Average test example loss')
-        ax.legend(fontsize=6)
+        ax.set_ylabel(f'Average test loss')
 
-        method_list.append(label[method])
+        if args.legend:
+            ax.legend(fontsize=10)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f'{args.dataset}.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(out_dir, f'{args.dataset}.pdf'), bbox_inches='tight')
 
     logger.info(f'\nSaving results to {out_dir}/...')
 

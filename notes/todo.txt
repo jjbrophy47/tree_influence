@@ -1,0 +1,39 @@
+Influence Estimation
+---
+- Line up numbers in Tables 2 and 3
+	* 2-level sort: metric, then alphabetical.
+- Consider adding batch size for TracInCP to make it more consistent with the original paper.
+- Consider expanding the explanation for Feldman and Zhang before introducing Subsample.
+- Should the name SubSample be changed? Why is the second "s" capitalized?
+
+- State we use the indicator function. DONE.
+- State hyper-parameters for SubSample are recommended by Feldman and Zhang. DONE.
+- Add Daniel and Zayd influence paper reference into the paper. DONE.
+- Fix typo in the abstract. DONE.
+- Fix capitalization errors in references. DONE.
+- Run paper through grammarly. DONE.
+- Add mention of comparison to LeafInfluence (abstract). DONE.
+- Maybe provide some detail about the empirical measures and how rankings
+	may change depending on the measure (introduction). DONE.
+- Make sure sheer number of methods compared comes through (introduction). DONE.
+- Remove Z* from early introduction. DONE.
+- De-emphasize qualitative analysis from DL papers in introduction. DONE.
+- Un-hyphenate "deep-learning". DONE.
+- Change order of empirical findings; our main finding is NOT that
+	LeafInfluence is a poor approximation of LOO (introduction). DONE.
+- DShap is not "more principled", it gives an average LOO given more context (Sec. 2.1). DONE.
+	* Could do "Another approach..."; or something more subtle. DONE.
+- Check capitalization of "Representer-Point" and "Influence Functions". DONE.
+- Merge last par. of sec. 3.1 to prev. par. DONE.
+- Mention LeafInfluence-SP before BoostIn, fully defining or providing a preview
+	in the LeafInfluence section (Sec. 3.1). DONE.
+- Combine last sentence of Sec. 3.2. to previous paragraph (Sec. 3.2). DONE.
+- Make new paragraph in after equations in Sec. 3.2.1 and merge last paragraph
+	to the previous one (Sec. 3.2.1). DONE.
+- Two examples are TREATED identically, sec. 3.3. DONE.
+- Fix "regresion" (Sec. 3.3, footnote 6). DONE.
+- How to interpret Figure 5, make text clearer about the significance. DONE.
+- Potentially summarize experiment descriptions before Figure 2; then supplementary
+	analysis comes after. Still mention extra analysis for each sec. in appendix (experiments). DONE.
+	* Keep backup. DONE.
+	* Move runtime comparison to earlier in supplementary analysis. DONE.

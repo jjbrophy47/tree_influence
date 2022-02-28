@@ -77,11 +77,11 @@ def process(args, exp_hash, out_dir, logger):
     df_acc_raw = pd.DataFrame(rows_acc).replace(-1, np.nan)
     df_auc_raw = pd.DataFrame(rows_auc).replace(-1, np.nan)
 
-    # skip BoostIn_self
-    df_fd_raw = df_fd_raw.drop(['BoostIn_self'], axis=1)
-    df_loss_raw = df_loss_raw.drop(['BoostIn_self'], axis=1)
-    df_acc_raw = df_acc_raw.drop(['BoostIn_self'], axis=1)
-    df_auc_raw = df_auc_raw.drop(['BoostIn_self'], axis=1)
+    # # skip BoostIn_self
+    # df_fd_raw = df_fd_raw.drop(['BoostIn_self'], axis=1)
+    # df_loss_raw = df_loss_raw.drop(['BoostIn_self'], axis=1)
+    # df_acc_raw = df_acc_raw.drop(['BoostIn_self'], axis=1)
+    # df_auc_raw = df_auc_raw.drop(['BoostIn_self'], axis=1)
 
     # drop rows with missing values
     skip_cols = ['dataset', 'tree_type', 'noise_frac', 'check_frac']

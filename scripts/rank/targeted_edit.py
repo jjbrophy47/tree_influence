@@ -23,6 +23,7 @@ from postprocess import util as pp_util
 from experiments import util as exp_util
 from config import rank_args
 from remove import get_mean_df
+from remove import plot_mean_df
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -113,9 +114,13 @@ def process(args, exp_hash, out_dir, logger):
     df_rel_li = df_rel_li.rename(index=label_dict)
 
     # reorder methods
-    order = ['Random', 'TreeSim', 'BoostInLE', 'LeafInfSPLE', 'TREX', 'SubSample', 'LOOLE']
-    order_li = ['Random', 'TreeSim', 'BoostInLE', 'LeafInfSPLE', 'TREX', 'SubSample', 'LOOLE',
-                'LeafInfluenceLE', 'LeafRefitLE']
+    order = ['BoostInLE', 'LeafInfSPLE', 'TREX', 'TreeSim', 'SubSample', 'LOOLE']
+    order_li = ['BoostInLE', 'LeafInfSPLE', 'TREX', 'TreeSim', 'LeafRefitLE', 'LeafInfluenceLE',
+                'SubSample', 'LOOLE']
+
+    if 'RandomSL' in df.index:
+        order.append('RandomSL')
+        order_li.append('RandomSL')
 
     df = df.reindex(order)
     df_li = df_li.reindex(order_li)
@@ -124,70 +129,32 @@ def process(args, exp_hash, out_dir, logger):
     df_edit = df_edit.reindex(order)
     df_edit_li = df_edit_li.reindex(order_li)
 
+    df.index = df.index.str.replace('LE', '')
+    df_li.index = df_li.index.str.replace('LE', '')
+    df_rel.index = df_rel.index.str.replace('LE', '')
+    df_rel_li.index = df_rel_li.index.str.replace('LE', '')
+    df_edit.index = df_edit.index.str.replace('LE', '')
+    df_edit_li.index = df_edit_li.index.str.replace('LE', '')
+
     labels = [x for x in df.index]
     labels_li = [x for x in df_li.index]
 
-    pp_util.plot_settings(fontsize=12)
-
-    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
-    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
-    xlabel = 'Influence method (ordered fastest to slowest)'
-
-    # all datasets
-    ax = axs[0][0]
-    df.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-            ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
-    ax.set_xticklabels(labels, rotation=45, ha='right')
-
-    ax = axs[0][1]
-    df_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
-                ylabel='Geo. avg. loss increase\n(relative to Random)',
-                xlabel=None, legend=False, color='#ff7600')
-    ax.set_xticklabels(labels, rotation=45, ha='right')
-    ax.set_ylim(1.0, None)
-    ax.yaxis.set_major_formatter(ticks_y)
-
-    # SDS
-    ax = axs[1][0]
-    df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-               ylabel='Average rank', xlabel=xlabel, legend=False, color='#3e9ccf')
-    ax.set_xticklabels(labels_li, rotation=45, ha='right')
-
-    ax = axs[1][1]
-    df_rel_li.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
-                   ylabel='Gmean. loss increase (SDS)\n(relative to Random)',
-                   xlabel=xlabel, legend=False, color='#ff7600')
-    ax.set_xticklabels(labels_li, rotation=45, ha='right')
-    ax.set_ylim(1.0, None)
-    ax.yaxis.set_major_formatter(ticks_y)
-
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
+    height = 2
+    plot_mean_df(df, df_li, out_dir=out_dir, fn='loss_rank', ylabel='Avg. rank', add_height=height)
+    plot_mean_df(df_rel, df_rel_li, out_dir=out_dir, fn='loss_magnitude', yerr=None,
+                 ylabel=r'Gmean. loss $\uparrow$' '\n(rel. to Random)', add_height=height)
 
-    # edit fraction
-    fig, ax = plt.subplots()
-    df_edit.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-                 ylabel='Training-label edits (%)', xlabel=None,
-                 legend=False, color='#3e9ccf')
-    ax.set_xticklabels(labels, rotation=45, ha='right')
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'edit_frac.pdf'), bbox_inches='tight')
-
-    fig, ax = plt.subplots()
-    df_edit_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-                    ylabel='Training-label edits (%)', xlabel=None,
-                    legend=False, color='#3e9ccf')
-    ax.set_xticklabels(labels_li, rotation=45, ha='right')
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'edit_frac_li.pdf'), bbox_inches='tight')
-
+    # CSVs
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
 
     df_rel.to_csv(os.path.join(out_dir, 'loss_rel.csv'))
     df_rel_li.to_csv(os.path.join(out_dir, 'loss_rel_li.csv'))
+
+    df_edit.to_csv(os.path.join(out_dir, 'edit_frac.csv'))
+    df_edit_li.to_csv(os.path.join(out_dir, 'edit_frac_li.csv'))
 
     logger.info(f'\nTotal time: {time.time() - begin:.3f}s')
 

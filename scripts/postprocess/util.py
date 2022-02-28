@@ -91,7 +91,7 @@ def filter_results(results, skip_list):
     return result
 
 
-def get_plot_dicts():
+def get_plot_dicts(markers=False):
     """
     Return dict for color, line, and labels for each method.
     """
@@ -121,8 +121,8 @@ def get_plot_dicts():
     color['leaf_refitLE_6bb61e3b7bce0931da574d19d1d82c88'] = 'purple'
 
     line = {}
-    line['random_'] = '-'
-    line['target_'] = '-'
+    line['random_'] = '-.'
+    line['target_'] = '-.'
     line['minority_'] = '-'
     line['loss_'] = '-'
     line['boostin_'] = '-'
@@ -134,20 +134,20 @@ def get_plot_dicts():
     line['leaf_infSP_'] = '-'
     line['leaf_infSPLE_'] = '--'
     line['leaf_sim_'] = '-'
-    line['loo_'] = '-'
+    line['loo_'] = '--'
     line['looLE_'] = '--'
     line['trex_248fba74c1d2d9c0f9d547bb84083c21'] = '-'
     line['input_sim_1edfa114070a90bb762993ab47712d68'] = '--'
     line['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = '--'
-    line['subsample_2b793a1ebcb67340112cf064fbf171cf'] = '-'
-    line['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
+    line['subsample_2b793a1ebcb67340112cf064fbf171cf'] = '--'
+    line['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
     line['leaf_infLE_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
-    line['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = '-'
+    line['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
     line['leaf_refitLE_6bb61e3b7bce0931da574d19d1d82c88'] = '--'
 
     label = {}
     label['random_'] = 'Random'
-    label['target_'] = 'Target'
+    label['target_'] = 'RandomSL'
     label['minority_'] = 'Minority'
     label['loss_'] = 'Loss'
     label['boostin_'] = 'BoostIn'
@@ -170,7 +170,37 @@ def get_plot_dicts():
     label['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafRefit'
     label['leaf_refitLE_6bb61e3b7bce0931da574d19d1d82c88'] = 'LeafRefitLE'
 
-    return color, line, label
+    marker = {}
+    marker['random_'] = 'o'
+    marker['target_'] = '*'
+    marker['minority_'] = '.'
+    marker['loss_'] = '.'
+    marker['boostin_'] = 'o'
+    marker['boostinLE_'] = '.'
+    marker['boostinW1_'] = '.'
+    marker['boostinW1LE_'] = '.'
+    marker['boostinW2_'] = '.'
+    marker['boostinW2LE_'] = '.'
+    marker['leaf_infSP_'] = '*'
+    marker['leaf_infSPLE_'] = '.'
+    marker['leaf_sim_'] = 'd'
+    marker['loo_'] = 'd'
+    marker['looLE_'] = '.'
+    marker['trex_248fba74c1d2d9c0f9d547bb84083c21'] = '+'
+    marker['input_sim_1edfa114070a90bb762993ab47712d68'] = '.'
+    marker['dshap_9c4e142336c11ea7e595a1a66a7571eb'] = '.'
+    marker['subsample_2b793a1ebcb67340112cf064fbf171cf'] = '+'
+    marker['leaf_inf_6bb61e3b7bce0931da574d19d1d82c88'] = '*'
+    marker['leaf_infLE_6bb61e3b7bce0931da574d19d1d82c88'] = '.'
+    marker['leaf_refit_6bb61e3b7bce0931da574d19d1d82c88'] = 'o'
+    marker['leaf_refitLE_6bb61e3b7bce0931da574d19d1d82c88'] = '.'
+
+    result = (color, line, label)
+
+    if markers:
+        result += (marker,)
+
+    return result
 
 
 def plot_settings(family='serif', fontsize=11,

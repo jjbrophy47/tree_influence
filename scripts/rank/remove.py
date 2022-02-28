@@ -11,6 +11,7 @@ from itertools import product
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from scipy.stats import sem
@@ -60,6 +61,47 @@ def get_mean_df(in_df, skip_cols=[], sort=None, geo_mean=False):
         df = df.sort_values('mean', ascending=False)
 
     return df
+
+
+def plot_mean_df(df, df_li, out_dir, fn='rank', ylabel='', yerr='sem', add_width=0, add_height=0):
+    """
+    Plot mean rank or magnitude results.
+
+    Input
+        df: All datasets results.
+        df_li: SDS results.
+    """
+    pp_util.plot_settings(fontsize=23)
+
+    labels = [x for x in df.index]
+    labels_li = [x for x in df_li.index]
+
+    cmap = matplotlib.cm.get_cmap('Blues')
+    cmap_li = matplotlib.cm.get_cmap('Oranges')
+
+    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
+    xlabel = 'Influence method'
+
+    fig, axs = plt.subplots(2, 1, figsize=(6 + add_width, 9 + add_height))
+
+    ax = axs[0]
+    df_li.plot(kind='bar', y='mean', yerr=yerr, ax=ax, title=None, capsize=3,
+               ylabel=f'{ylabel}', xlabel=None, legend=False, color=cmap_li(0.69))
+    ax.set_xticklabels(labels_li, rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+
+    ax = axs[1]
+    df.plot(kind='bar', y='mean', yerr=yerr, ax=ax, title=None, capsize=3,
+            ylabel=ylabel, xlabel=xlabel, legend=False, color=cmap(0.69))
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.set_ylim(1.0, None)
+
+    if 'magnitude' in fn:
+        axs[0].yaxis.set_major_formatter(ticks_y)
+        axs[1].yaxis.set_major_formatter(ticks_y)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(out_dir, f'{fn}.pdf'), bbox_inches='tight')
 
 
 def process(args, exp_hash, out_dir, logger):
@@ -113,11 +155,11 @@ def process(args, exp_hash, out_dir, logger):
 
     # compute average ranks and relative performances
     skip_cols = ['dataset', 'tree_type', 'remove_frac']
+    remove_cols = ['LeafInfluence', 'LeafRefit']
 
     df = get_mean_df(df_all, skip_cols=skip_cols, sort='ascending')
     df_li = get_mean_df(df_li_all, skip_cols=skip_cols, sort='ascending')
-    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + ['LeafInfluence', 'LeafRefit'],
-                         sort='descending', geo_mean=True)
+    df_rel = get_mean_df(df_rel_all, skip_cols=skip_cols + remove_cols, sort='descending', geo_mean=True)
     df_rel_li = get_mean_df(df_rel_all, skip_cols=skip_cols, sort='descending', geo_mean=True)
 
     logger.info(f'\nLoss (ranking):\n{df}')
@@ -138,61 +180,26 @@ def process(args, exp_hash, out_dir, logger):
     df_rel_li = df_rel_li.rename(index=label_dict)
 
     # reorder methods
-    order = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO']
-    order_li = ['Random', 'TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafInfluence', 'LeafRefit']
+    order = ['BoostIn', 'LeafInfSP', 'TREX', 'TreeSim', 'SubSample', 'LOO']
+    order_li = ['BoostIn', 'LeafInfSP', 'TREX', 'TreeSim', 'LeafInfluence', 'LeafRefit', 'SubSample', 'LOO']
+
+    if 'RandomSL' in df.index:
+        order.append('RandomSL')
+        order_li.append('RandomSL')
 
     df = df.reindex(order)
     df_li = df_li.reindex(order_li)
     df_rel = df_rel.reindex(order)
     df_rel_li = df_rel_li.reindex(order_li)
 
-    labels = [x for x in df.index]
-    labels_li = [x for x in df_li.index]
-    # labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df.index)]
-    # labels_li = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(df_li.index)]
-
-    pp_util.plot_settings(fontsize=12)
-    # width = 22
-    # height = pp_util.get_height(width, subplots=(2, 2))
-
-    # fig, axs = plt.subplots(2, 2, figsize=(14, 8), gridspec_kw={'width_ratios': [6, 8]})
-    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
-    ticks_y = ticker.FuncFormatter(lambda x, pos: f'{x:.1f}x')
-    xlabel = 'Influence method (ordered fastest to slowest)'
-
-    # all datasets
-    ax = axs[0][0]
-    df.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-            ylabel='Average rank', xlabel=None, legend=False, color='#3e9ccf')
-    ax.set_xticklabels(labels, rotation=45, ha='right')
-
-    ax = axs[0][1]
-    df_rel.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
-                ylabel='Gmean. loss increase\n(relative to Random)',
-                xlabel=None, legend=False, color='#ff7600')
-    ax.set_xticklabels(labels, rotation=45, ha='right')
-    ax.set_ylim(1.0, None)
-    ax.yaxis.set_major_formatter(ticks_y)
-
-    # SDS
-    ax = axs[1][0]
-    df_li.plot(kind='bar', y='mean', yerr='sem', ax=ax, title=None, capsize=3,
-               ylabel='Average rank (SDS)', xlabel=xlabel, legend=False, color='#3e9ccf')
-    ax.set_xticklabels(labels_li, rotation=45, ha='right')
-
-    ax = axs[1][1]
-    df_rel_li.plot(kind='bar', y='mean', yerr=None, ax=ax, title=None, capsize=3,
-                   ylabel='Gmean. loss increase (SDS)\n(relative to Random)',
-                   xlabel=xlabel, legend=False, color='#ff7600')
-    ax.set_xticklabels(labels_li, rotation=45, ha='right')
-    ax.set_ylim(1.0, None)
-    ax.yaxis.set_major_formatter(ticks_y)
-
     logger.info(f'\nSaving results to {out_dir}/...')
 
-    plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, 'result.pdf'), bbox_inches='tight')
+    height = 2
+    plot_mean_df(df, df_li, out_dir=out_dir, fn='loss_rank', ylabel='Avg. rank', add_height=height)
+    plot_mean_df(df_rel, df_rel_li, out_dir=out_dir, fn='loss_magnitude', yerr=None,
+                 ylabel=r'Gmean. loss $\uparrow$' '\n(rel. to Random)', add_height=height)
 
+    # CSVs
     df.to_csv(os.path.join(out_dir, 'loss_rank.csv'))
     df_li.to_csv(os.path.join(out_dir, 'loss_rank_li.csv'))
 

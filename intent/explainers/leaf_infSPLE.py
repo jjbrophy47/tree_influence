@@ -90,20 +90,6 @@ class LeafInfluenceSPLE(Explainer):
         train_leaf_idxs = self.train_leaf_idxs_  # shape=(no. train, no. boost, no. class)
         test_leaf_idxs = self.model_.apply(X)  # shape=(X.shape[0], no. boost, no. class)
 
-        # # compute attributions for each test example
-        # for i in range(X.shape[0]):
-        #     mask = np.where(train_leaf_idxs == test_leaf_idxs[i], 1, 0)  # shape=(no. train, no. boost, no. class)
-        #     weighted_train_leaf_dvs = np.sum(train_leaf_dvs * mask, axis=1)  # shape=(no. train, no. class)
-        #     prod = -test_gradients[i] * weighted_train_leaf_dvs  # shape=(no. train, no. class)
-
-        #     # sum over classes
-        #     influence[:, i] = np.sum(prod, axis=1)  # shape=(no. train,)
-
-        #     # progress
-        #     if i > 0 and (i + 1) % 100 == 0 and self.logger and verbose:
-        #         self.logger.info(f'[INFO - LeafInfluenceSP] No. finished: {i+1:>10,} / {X.shape[0]:>10,}, '
-        #                          f'cum. time: {time.time() - start:.3f}s')
-
         # label estimation
         if target_labels is not None:
             assert target_labels.shape == (X.shape[0],)

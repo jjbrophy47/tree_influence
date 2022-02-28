@@ -165,7 +165,7 @@ def process(args, in_dir_list, out_dir, logger):
                  color=cmap(1.0), width=width, capsize=3, hatch='..', edgecolor='k')
 
     ax.set_ylabel('Average rank')
-    ax.set_ylim(1, None)
+    ax.set_ylim(1.0, None)
     ax.set_xlabel('Evaluation setting')
     ax.set_xticks(X)
     ax.set_xticklabels([name for name, _ in in_dir_list])

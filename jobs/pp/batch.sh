@@ -1,6 +1,16 @@
 tf=1.0
 trf=1.0
 
+dataset_list=('adult' 'bank_marketing' 'bean' 'compas' 'concrete'
+              'credit_card' 'diabetes' 'energy' 'flight' 'german'
+              'htru2' 'life' 'naval' 'no_show' 'obesity' 'power'
+              'protein' 'spambase' 'surgical' 'twitter' 'vaccine'
+              'wine')
+
+for dataset in ${dataset_list[@]}; do
+    ./jobs/pp/primer.sh $dataset 'skrf' $tf $trf 7 1440 'short'
+done
+
 ./jobs/pp/primer.sh 'adult' 'sgb' $tf $trf 3 300 'short'
 ./jobs/pp/primer.sh 'adult' 'cb'  $tf $trf 3 300 'short'
 ./jobs/pp/primer.sh 'adult' 'xgb' $tf $trf 3 300 'short'
