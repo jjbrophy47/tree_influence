@@ -13,8 +13,8 @@ from scipy.stats import spearmanr
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import LeafRefit
-from intent.explainers.parsers.util import LogisticLoss
+from tree_influence.explainers import LeafRefit
+from tree_influence.explainers.parsers.util import LogisticLoss
 from influence_boosting.influence.leaf_refit import CBOneStepLeafRefitEnsemble
 from test_util import _get_model
 from test_util import _get_test_data

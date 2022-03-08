@@ -15,10 +15,10 @@ from sklearn.base import clone
 import matplotlib.pyplot as plt
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../../')  # tree_influence
 sys.path.insert(0, here + '/../../')  # config
 sys.path.insert(0, here + '/../')  # util
-import intent
+import tree_influence
 import util
 from config import exp_args
 
@@ -121,7 +121,7 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
                         n_remove_list, logger):
 
     # only needed for the structure, and a consistent `apply` method between GBDT types
-    explainer = intent.TreeExplainer('boostin', {}, logger).fit(tree, X_train, y_train)
+    explainer = tree_influence.TreeExplainer('boostin', {}, logger).fit(tree, X_train, y_train)
     init_affinity = compute_affinity(explainer.model_, X_train, X_test)
 
     logger.info(f'\nTest index: {test_idx}')
@@ -136,7 +136,7 @@ def remove_and_evaluate(test_idx, objective, ranking, tree,
         new_y_train = np.delete(y_train, remove_idxs)
         new_tree = clone(tree).fit(new_X_train, new_y_train)
 
-        new_explainer = intent.TreeExplainer('boostin', {}, logger).fit(new_tree, new_X_train, new_y_train)
+        new_explainer = tree_influence.TreeExplainer('boostin', {}, logger).fit(new_tree, new_X_train, new_y_train)
         affinity = compute_affinity(new_explainer.model_, X_train, X_test)
         diff = np.abs(init_affinity - affinity)
         diff_single = np.where(diff > 0, 1, 0)

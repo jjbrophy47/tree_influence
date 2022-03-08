@@ -1,9 +1,8 @@
 Influence Estimation
 ---
-- Consider adding batch size for TracInCP to make it more consistent with the original paper.
 - Should the name SubSample be changed? Why is the second "s" capitalized?
-	* Would require changing ALL plots.
 
+- Add connecting/motivating sentences before BoostIn and TREX. DONE.
 - Put TreeSim absolute runtimes next to efficiency plot or in the appendix. DONE.
 - Made significance of gray box clearer in Figure 5. DONE.
 - Restructured LeafRefit, LeafInfluence, and LeafInfSP. DONE.

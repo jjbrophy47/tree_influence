@@ -20,7 +20,6 @@ from xgboost import XGBClassifier
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
-from intent.explainers import LeafInfluence
 
 
 def test_global_influence_regression(args, explainer_cls, str_explainer, kwargs):

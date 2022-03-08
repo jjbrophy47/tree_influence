@@ -13,7 +13,7 @@ from scipy.stats import spearmanr
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import LeafInfluence
+from tree_influence.explainers import LeafInfluence
 from influence_boosting.influence.leaf_influence import CBLeafInfluenceEnsemble
 from test_util import _get_model
 from test_util import _get_test_data

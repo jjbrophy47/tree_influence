@@ -17,7 +17,7 @@ from sklearn.base import clone
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 sys.path.insert(0, here + '/../')
-import intent
+import tree_influence
 import util
 from config import exp_args
 from influence import get_special_case_tol
@@ -148,7 +148,7 @@ def relabel_and_evaluate(test_idx, objective, ranking, tree,
                 logger.info('Reached 1% of train')
 
                 logger.info('\tcomputing train affinity for initial model...')
-                new_explainer = intent.TreeExplainer('boostin', {}, logger).fit(tree, X_train, y_train)
+                new_explainer = tree_influence.TreeExplainer('boostin', {}, logger).fit(tree, X_train, y_train)
                 result['affinity'] = [compute_affinity(new_explainer.model_, X_train[flip_idxs], X_test)]
                 result['affinity_edit_frac'] = [0]
 
@@ -158,7 +158,7 @@ def relabel_and_evaluate(test_idx, objective, ranking, tree,
                                                                          X_train[flip_idxs], X_test)]
 
                 logger.info('\tcomputing train affinity for 1% edited model...')
-                new_explainer = intent.TreeExplainer('boostin', {}, logger).fit(new_tree, X_train, new_y_train)
+                new_explainer = tree_influence.TreeExplainer('boostin', {}, logger).fit(new_tree, X_train, new_y_train)
                 result['affinity'].append(compute_affinity(new_explainer.model_, X_train[flip_idxs], X_test))
                 result['affinity_edit_frac'].append(edit_frac)
 

@@ -14,10 +14,10 @@ from sklearn.base import clone
 from sklearn.model_selection import train_test_split
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../../')  # tree_influence
 sys.path.insert(0, here + '/../../')  # config
 sys.path.insert(0, here + '/../')  # util
-import intent
+import tree_influence
 import util
 from config import exp_args
 from single_test.influence import get_special_case_tol
@@ -87,7 +87,7 @@ def experiment(args, logger, params, out_dir):
 
     # fit explainer
     start = time.time()
-    explainer = intent.TreeExplainer(args.method, params, logger).fit(tree_noise, X_train_noise, y_train_noise)
+    explainer = tree_influence.TreeExplainer(args.method, params, logger).fit(tree_noise, X_train_noise, y_train_noise)
     fit_time = time.time() - start - explainer.parse_time_
 
     logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s')

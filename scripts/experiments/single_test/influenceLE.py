@@ -13,10 +13,10 @@ import numpy as np
 from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../../')  # tree_influence
 sys.path.insert(0, here + '/../../')  # config
 sys.path.insert(0, here + '/../')  # util
-import intent
+import tree_influence
 import util
 from config import exp_args
 from influence import select_elements
@@ -132,7 +132,8 @@ def experiment(args, logger, params, out_dir):
 
     # fit explainer
     start = time.time()
-    explainer = intent.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train, target_labels=adv_labels)
+    explainer = tree_influence.TreeExplainer(args.method, params, logger).fit(tree, X_train, y_train,
+                                                                              target_labels=adv_labels)
     fit_time = time.time() - start - explainer.parse_time_
 
     logger.info(f'\n[INFO] explainer fit time: {fit_time:.5f}s')

@@ -14,10 +14,8 @@ from sklearn.base import clone
 from sklearn.model_selection import train_test_split
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../../')  # intent
 sys.path.insert(0, here + '/../../')  # config
 sys.path.insert(0, here + '/../')  # util
-import intent
 import util
 from config import exp_args
 from single_test.influence import get_special_case_tol

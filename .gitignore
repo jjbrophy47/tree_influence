@@ -12,6 +12,8 @@ data/
 jobs/logs/
 jobs/errors/
 
+notes/draft
+
 results
 
 old*

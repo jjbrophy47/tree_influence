@@ -19,7 +19,7 @@ from xgboost import XGBClassifier
 
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
-from intent.explainers.parsers import parse_model
+from tree_influence.explainers.parsers import parse_model
 
 
 def get_test_data(args, n_class=2):

@@ -5,7 +5,7 @@ import argparse
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, here + '/../../')
 import test_util
-from intent.explainers import Loss
+from tree_influence.explainers import Loss
 
 
 def main(args):

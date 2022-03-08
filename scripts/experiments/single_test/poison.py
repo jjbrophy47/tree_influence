@@ -13,10 +13,8 @@ import numpy as np
 from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../../')  # intent
 sys.path.insert(0, here + '/../../')  # config
 sys.path.insert(0, here + '/../')  # util
-import intent
 import util
 from config import exp_args
 from influence import get_special_case_tol

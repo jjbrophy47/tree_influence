@@ -14,10 +14,10 @@ import numpy as np
 from sklearn.base import clone
 
 here = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, here + '/../../../')  # intent
+sys.path.insert(0, here + '/../../../')  # tree_influence
 sys.path.insert(0, here + '/../../')  # config
 sys.path.insert(0, here + '/../')  # util
-import intent
+import tree_influence
 import util
 from influence import get_special_case_tol
 from influence import select_elements
@@ -48,7 +48,7 @@ def remove_and_reinfluence(objective, tree, method, params,
     result['loss'][0] = res['loss']
 
     # initial ranking
-    explainer = intent.TreeExplainer(method, params, logger).fit(new_tree, new_X_train, new_y_train)
+    explainer = tree_influence.TreeExplainer(method, params, logger).fit(new_tree, new_X_train, new_y_train)
     inf = explainer.get_local_influence(X_test, y_test).flatten()
     init_ranking = np.argsort(inf)[::-1]
 
@@ -64,7 +64,7 @@ def remove_and_reinfluence(objective, tree, method, params,
         else:
             assert strategy == 'reestimate'
 
-            explainer = intent.TreeExplainer(method, params, logger).fit(new_tree, new_X_train, new_y_train)
+            explainer = tree_influence.TreeExplainer(method, params, logger).fit(new_tree, new_X_train, new_y_train)
             inf = explainer.get_local_influence(X_test, y_test).flatten()
             ranking = np.argsort(inf)[::-1]
 
