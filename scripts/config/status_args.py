@@ -19,7 +19,7 @@ def get_experiments_args():
                                                            'leaf_refit', 'boostinW1', 'boostinW2'])
 
     cmd.add('--exp', type=str, default='influence/')
-    cmd.add('--in_dir', type=str, default='temp_influence/')
+    cmd.add('--in_dir', type=str, default='results/temp_influence/')
     cmd.add('--out_dir', type=str, default='output/status/')
 
     # single-test experiment args

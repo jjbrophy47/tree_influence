@@ -1,6 +1,5 @@
 tf=1.0
 trf=1.0
-
 dataset_list=('adult' 'bank_marketing' 'bean' 'compas' 'concrete'
               'credit_card' 'diabetes' 'energy' 'flight' 'german'
               'htru2' 'life' 'naval' 'no_show' 'obesity' 'power'
@@ -57,8 +56,9 @@ done
 ./jobs/pp/primer.sh 'flight_delays' 'svm'  0.1 $trf 7 1440 'short'
 ./jobs/pp/primer.sh 'flight_delays' 'mlp'  $tf $trf 7 600  'short'
 
-./jobs/pp/primer.sh 'german_credit' 'cb'   $tf $trf 3 300 'short'
-./jobs/pp/primer.sh 'german_credit' 'xgb'  $tf $trf 3 300 'short'
+./jobs/pp/primer.sh 'german_credit' 'cb'    $tf $trf 3 300 'short'
+./jobs/pp/primer.sh 'german_credit' 'xgb'   $tf $trf 3 300 'short'
+./jobs/pp/primer.sh 'german_credit' 'skrf'  $tf $trf 3 300 'short'
 
 ./jobs/pp/primer.sh 'msd' 'lgb'  $tf  $trf 7 1440 'short'
 ./jobs/pp/primer.sh 'msd' 'cb'   $tf  $trf 7 1440 'short'

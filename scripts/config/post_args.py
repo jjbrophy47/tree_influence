@@ -63,7 +63,7 @@ def get_remove_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_remove/')
+    cmd.add('--in_dir', type=str, default='results/temp_remove/')
     cmd.add('--out_dir', type=str, default='output/plot/remove/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
@@ -98,7 +98,7 @@ def get_poison_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_poison/')
+    cmd.add('--in_dir', type=str, default='results/temp_poison/')
     cmd.add('--out_dir', type=str, default='output/plot/poison/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--poison_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
@@ -115,7 +115,7 @@ def get_counterfactual_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_counterfactual/')
+    cmd.add('--in_dir', type=str, default='results/temp_counterfactual/')
     cmd.add('--out_dir', type=str, default='output/plot/counterfactual/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
@@ -135,7 +135,7 @@ def get_correlation_args():
             default=['random', 'target', 'input_sim', 'leaf_sim', 'boostin',
                      'trex', 'leaf_infSP', 'loo', 'subsample'])
     cmd.add('--skip', type=str, nargs='+', default=[])
-    cmd.add('--in_dir', type=str, default='temp_influence/')
+    cmd.add('--in_dir', type=str, default='results/temp_influence/')
     cmd.add('--out_dir', type=str, default='output/plot/correlation/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
@@ -151,7 +151,7 @@ def get_resources_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_resources/')
+    cmd.add('--in_dir', type=str, default='results/temp_resources/')
     cmd.add('--out_dir', type=str, default='output/plot/resources/')
     cmd.add('--n_repeat', type=int, default=5)
     return cmd
@@ -165,7 +165,7 @@ def get_structure_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_structure/')
+    cmd.add('--in_dir', type=str, default='results/temp_structure/')
     cmd.add('--out_dir', type=str, default='output/plot/structure/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
@@ -181,7 +181,7 @@ def get_reinfluence_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_reinfluence/')
+    cmd.add('--in_dir', type=str, default='results/temp_reinfluence/')
     cmd.add('--out_dir', type=str, default='output/plot/reinfluence/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, default=0.02)
@@ -202,7 +202,7 @@ def get_label_edit_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_label_edit/')
+    cmd.add('--in_dir', type=str, default='results/temp_label_edit/')
     cmd.add('--out_dir', type=str, default='output/plot/label_edit/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--remove_frac', type=float, nargs='+', default=[0.0, 0.001, 0.005, 0.01, 0.015, 0.02])
@@ -223,7 +223,7 @@ def get_targeted_edit_args():
                      'loo', 'subsample', 'boostin', 'boostinW1', 'boostinW2',
                      'boostinLE', 'boostinLEW1', 'boostinLEW2', 'looLE', 'leaf_refitLE',
                      'leaf_infLE', 'leaf_infSPLE'])
-    cmd.add('--in_dir', type=str, default='temp_targeted_edit/')
+    cmd.add('--in_dir', type=str, default='results/temp_targeted_edit/')
     cmd.add('--out_dir', type=str, default='output/plot/targeted_edit/')
     cmd.add('--n_test', type=int, default=100)
     cmd.add('--edit_frac', type=float, nargs='+',
@@ -242,7 +242,7 @@ def get_remove_set_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_remove_set/')
+    cmd.add('--in_dir', type=str, default='results/temp_remove_set/')
     cmd.add('--out_dir', type=str, default='output/plot/remove_set/')
     cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--remove_frac', type=float, nargs='+',
@@ -258,7 +258,7 @@ def get_label_set_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_label_set/')
+    cmd.add('--in_dir', type=str, default='results/temp_label_set/')
     cmd.add('--out_dir', type=str, default='output/plot/label_set/')
     cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--edit_frac', type=float, nargs='+',
@@ -274,7 +274,7 @@ def get_poison_set_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_poison_set/')
+    cmd.add('--in_dir', type=str, default='results/temp_poison_set/')
     cmd.add('--out_dir', type=str, default='output/plot/poison_set/')
     cmd.add('--val_frac', type=float, default=0.1)
     cmd.add('--poison_frac', type=float, nargs='+',
@@ -290,7 +290,7 @@ def get_noise_set_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_noise_set/')
+    cmd.add('--in_dir', type=str, default='results/temp_noise_set/')
     cmd.add('--out_dir', type=str, default='output/plot/noise_set/')
     cmd.add('--strategy', type=str, nargs='+', default=['self', 'test_sum'])
     cmd.add('--noise_frac', type=float, default=0.4)
@@ -309,7 +309,7 @@ def get_removal_set_args():
     """
     cmd = get_general_args()
     cmd = get_explainer_args(cmd)
-    cmd.add('--in_dir', type=str, default='temp_removal_set/')
+    cmd.add('--in_dir', type=str, default='results/temp_removal_set/')
     cmd.add('--out_dir', type=str, default='output/plot/removal_set/')
     cmd.add('--remove_frac', type=float, nargs='+',
             default=[0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5])

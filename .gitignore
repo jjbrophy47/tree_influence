@@ -12,5 +12,7 @@ data/
 jobs/logs/
 jobs/errors/
 
+results
+
 old*
 temp*

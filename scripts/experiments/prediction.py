@@ -224,6 +224,12 @@ def experiment(args, logger, out_dir):
     # evaluate
     res = util.eval_pred(objective, model, X_test, y_test, logger, prefix=args.model)
 
+    if args.dataset == 'naval':  # more precision
+        logger.info(f"[{args.model}] "
+                    f"acc.: {res['acc']:>10.2e}, "
+                    f"AUC: {res['auc']:>10.2e}, "
+                    f"loss: {res['loss']:>10.2e}")
+
     # save results
     result = {}
     result['model'] = args.model
