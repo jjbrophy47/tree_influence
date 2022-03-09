@@ -28,7 +28,7 @@ from tree_influence.explainers import BoostIn
 data = load_iris()
 X, y = data['data'], data['target']
 
-# use only two classes, then split into train and test
+# use two classes, then split into train and test
 idxs = np.where(y != 2)[0]
 X, y = X[idxs], y[idxs]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=1)
