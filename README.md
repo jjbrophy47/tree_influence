@@ -31,7 +31,7 @@ X, y = data['data'], data['target']
 # use only two classes, then split into train and test
 idxs = np.where(y != 2)[0]
 X, y = X[idxs], y[idxs]
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, shuffle=True)
 
 # train GBDT model
 model = LGBMClassifier().fit(X_train, y_train)
@@ -39,11 +39,16 @@ model = LGBMClassifier().fit(X_train, y_train)
 # fit influence estimator
 explainer = BoostIn().fit(model, X_train, y_train)
 
-# generate influence values for each test example
+# estimate training influences on each test instance
 influence = explainer.get_local_influence(X_test, y_test)  # shape=(no. train, no. test)
 
-# sort training examples with the most positive influence on the first test example (decreases the loss the most) to most negative
-training_idxs = np.argsort(inf_vals)[::-1]
+# extract influence values for the first test instance
+values = influence[:, 0]  # shape=(no. train,)
+
+# sort training examples from:
+# - most positively influential (decreases loss of the test instance the most), to
+# - most negatively influential (increases loss of the test instance the most)
+training_idxs = np.argsort(values)[::-1]
 ```
 
 License
