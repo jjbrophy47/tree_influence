@@ -15,7 +15,7 @@ pip install tree_influence
 
 Usage
 ---
-Simple example using *BoostIn* to identify the training examples that *most* decrease the loss of a given test instance:
+Simple example using *BoostIn* to identify the most influential training instances to a given test instance:
 
 ```python
 import numpy as np
@@ -50,6 +50,18 @@ values = influence[:, 0]  # shape=(no. train,)
 # - most negatively influential (increases loss of the test instance the most)
 training_idxs = np.argsort(values)[::-1]
 ```
+
+Supported Estimators
+---
+**tree_influence** supports the following influence-estimation techniques in GBDTs:
+
+| Method | Description |
+| -------| ----------- |
+| BoostIn | Traces the influence of a training instance throughout the training process (adaptation of TracIn). |
+| TREX | Trains a surrogate kernel model that approximates the original model and decomposes any prediction into a weighted sum of the training examples (adaptation of representer-point methods). |
+| LeafInfluence | Estimates the impact of a training example on the *final* GBDT model (adaptation of influence functions). |
+| TreeSim | Computes influence via similarity in tree-kernel space. |
+| LOO | Leave-one-out retraining, measures the influence of a training instance by removing and retraining without that instance.
 
 License
 ---
