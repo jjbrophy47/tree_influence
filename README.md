@@ -2,7 +2,9 @@ TreeInfluence: Influence Estimation for Gradient-Boosted Decision Trees
 ---
 **tree_influence** is a python library that implements influence estimation for gradient-boosted decision trees (GBDTs), adapting popular techniques such as TracIn and Influence Functions to GBDTs. This library is compatible with all major GBDT frameworks including LightGBM, XGBoost, CatBoost, and SKLearn.
 
-[Illustration]
+<p align="center">
+	<img align="center" src="images/illustration.png" alt="illustration", width="350">
+</p>
 
 Installation
 ---
@@ -65,7 +67,7 @@ Supported Estimators
 
 License
 ---
-[Apache License 2.0]()
+[Apache License 2.0]().
 
 <!--Reference
 ---
