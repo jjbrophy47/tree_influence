@@ -9,7 +9,6 @@ xlrd==2.0.1  # reading excel
 openpyxl==3.0.7  # reading excel
 mat73==0.50  # reading matlab
 numpy==1.21.0
-ngboost==0.3.12
 scikit-learn==0.24.2
 catboost==0.26
 lightgbm==3.2.1
