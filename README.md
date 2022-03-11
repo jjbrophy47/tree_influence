@@ -13,12 +13,10 @@ TreeInfluence: Influence Estimation for Gradient-Boosted Decision Trees
 
 Installation
 ---
-1. Install Python 3.9.6+.
-2. Run `make all`.
 
-<!--```shell
+```shell
 pip install tree_influence
-```-->
+```
 
 Usage
 ---
