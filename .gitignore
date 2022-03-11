@@ -5,12 +5,15 @@
 **.html
 **build
 **.DS_STORE
+**.egg-info
 
 py39/
 output/
 data/
 jobs/logs/
 jobs/errors/
+
+dist
 
 notes
 
