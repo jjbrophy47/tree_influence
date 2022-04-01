@@ -165,6 +165,8 @@ def _run_iteration(model, X_train, y_train, train_idx, X_test, y_test,
     new_y = np.delete(y_train, train_idx)
     new_model = clone(model).fit(new_X, new_y)
 
+    start = time.time()
+
     if inf == 'local':
         loss = _get_loss(loss_fn, new_model, objective, X=X_test, y=y_test)  # shape=(X_test.shape[0],)
         influence = loss - original_loss
@@ -181,6 +183,8 @@ def _run_iteration(model, X_train, y_train, train_idx, X_test, y_test,
 
         loss = _get_loss(loss_fn, new_model, objective, X=X_temp, y=y_temp)  # shape=(1,)
         influence = loss - original_loss[train_idx]
+
+    inf_time = time.time() - start
 
     return influence
 

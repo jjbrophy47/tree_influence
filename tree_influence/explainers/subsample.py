@@ -7,6 +7,9 @@ from sklearn.base import clone
 from .base import Explainer
 from .parsers import util
 
+n_influence = 0
+influence_time = 0
+
 
 class SubSample(Explainer):
     """
@@ -171,15 +174,27 @@ def _run_iteration(model, X_train, y_train, X_test, y_test, loss_fn, objective, 
     """
     rng = np.random.default_rng(seed)
 
-    start = time.time()
     idxs = rng.choice(X_train.shape[0], size=int(X_train.shape[0] * sub_frac), replace=False)
     new_X_train = X_train[idxs].copy()
     new_y_train = y_train[idxs].copy()
 
     new_model = clone(model).fit(new_X_train, new_y_train)
+    start = time.time()
     loss = _get_loss(loss_fn, new_model, objective, X=X_test, y=y_test)  # shape=(X_test.shape[0],)
+    inf_time = time.time() - start
 
-    return loss, idxs
+    print(inf_time)
+
+    global n_influence
+    global influence_time
+    influence_time += inf_time
+    n_influence += 1
+
+    if n_influence == 5:
+        print(f'\n{influence_time / 5.0}\n')
+        exit(0)
+
+    return loss, idxs, inf_time
 
 
 def _get_loss(loss_fn, model, objective, X, y, batch=False):

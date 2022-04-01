@@ -30,6 +30,7 @@ def process(args, out_dir, logger):
 
     # result containers
     time_rows = []
+    time2_rows = []
     mem_rows = []
 
     color, line, label = pp_util.get_plot_dicts()
@@ -66,6 +67,7 @@ def process(args, out_dir, logger):
                     r1[random_state][label[method]] = r
 
             t = {'dataset': dataset, 'tree_type': tree_type}
+            t2 = t.copy()
             m = t.copy()
 
             # average over random states
@@ -73,10 +75,12 @@ def process(args, out_dir, logger):
                 is_missing = False
 
                 try:
-                    time_vals = [r1[rs][method]['total_time'] for rs in r1.keys()]
-                    time_mean = np.mean(time_vals)
-
+                    time_vals = [r1[rs][method]['fit_time'] for rs in r1.keys()]
+                    time2_vals = [r1[rs][method]['inf_time'] for rs in r1.keys()]
                     mem_vals = [r1[rs][method]['mem_GB'] for rs in r1.keys()]
+
+                    time_mean = np.mean(time_vals)
+                    time2_mean = np.mean(time2_vals)
                     mem_mean = np.mean(mem_vals)
 
                 except:
@@ -84,99 +88,94 @@ def process(args, out_dir, logger):
                     logger.info(f'partially missing: {method}')
 
                     t[f'{method}'] = np.nan
+                    t2[f'{method}'] = np.nan
                     m[f'{method}'] = np.nan
 
                 if not is_missing:
                     t[f'{method}'] = time_mean
+                    t2[f'{method}'] = time2_mean
                     m[f'{method}'] = mem_mean
 
             time_rows.append(t)
+            time2_rows.append(t2)
             mem_rows.append(m)
 
     # compile results
     t_df = pd.DataFrame(time_rows)
+    t2_df = pd.DataFrame(time2_rows)
     m_df = pd.DataFrame(mem_rows)
 
-    # use time results if already availabled
-    fp = os.path.join(out_dir, 'time.csv')
-    if os.path.exists(fp) and args.use_existing:
-        logger.info('\nUsing saved time.csv...')
-        t_df = pd.read_csv(fp)
-
-    logger.info(f'\nTime results:\n{t_df}')
+    logger.info(f'\nFit time (s):\n{t_df}')
+    logger.info(f'\nInfluence time (s):\n{t2_df}')
     logger.info(f'\nMemory results:\n{m_df}')
     logger.info(f'\nSaving results to {out_dir}...')
 
-    t_df.to_csv(os.path.join(out_dir, 'time.csv'), index=None)
+    t_df.to_csv(os.path.join(out_dir, 'fit_time.csv'), index=None)
+    t2_df.to_csv(os.path.join(out_dir, 'influence_time.csv'), index=None)
     m_df.to_csv(os.path.join(out_dir, 'mem.csv'), index=None)
 
     logger.info('\ndropping NaN rows...')
     t_df = t_df.dropna()
+    t2_df = t2_df.dropna()
     m_df = m_df.dropna()
 
-    # get avg. rankings
-    group_cols = ['dataset']
-    skip_cols = ['dataset', 'tree_type', 'remove_frac']
-    remove_cols = ['Random', 'Target', 'Input Sim.']
+    # swap fit and influence times for SubSample and LOO
+    for c in ['SubSample', 'LOO']:
+        t_df[f'{c}2'] = t2_df[c]
+        t2_df[c] = t_df[c]
+        t_df[c] = t_df[f'{c}2']
+        del t_df[f'{c}2']
 
-    t_rank_df = get_rank_df(t_df, skip_cols=skip_cols, remove_cols=remove_cols, ascending=True)  # get ranks
-    t_avg_rank_df = t_rank_df.groupby(group_cols).mean().reset_index()  # average over tree types
-    t_mean_rank_df = get_mean_df(t_avg_rank_df, skip_cols=skip_cols)  # average over datasets
+    # LOO and SubSample correction
+    ls_fp = os.path.join(out_dir, 'loo_subsample.csv')
+    if os.path.exists(ls_fp):
+        ls_df = pd.read_csv(ls_fp)
+        ls_df = ls_df[ls_df['tree_type'].isin(t_df['tree_type'].unique())]
+        for c in ['SubSample', 'LOO']:
+            t_df[c] = t_df[c].values - ls_df[c].values
+            t2_df[c] = t2_df[c].values + ls_df[c].values
 
     # average over tree types
     del t_df['tree_type']
+    del t2_df['tree_type']
     del m_df['tree_type']
 
-    t_df = t_df.groupby(['dataset']).agg(gmean).reset_index()
+    t_df = t_df.groupby(['dataset']).agg(gmean).reset_index()   
+    t2_df = t2_df.groupby(['dataset']).agg(gmean).reset_index()
     m_df = m_df.groupby(['dataset']).agg(gmean).reset_index()
 
     # get relevant columns
     cols = [x for x in t_df.columns if x not in ['dataset', 'tree_type', 'Random', 'Target', 'Input Sim.']]
     t_df = t_df[cols].copy()
+    t2_df = t2_df[cols].copy()
     m_df = m_df[cols].copy()
 
-    # compute relative speedups
-    base_method = 'TreeSim'  # fastest method
-
-    t_df.loc[:, cols] = t_df.loc[:, cols].div(t_df[base_method], axis=0)
-    m_df.loc[:, cols] = m_df.loc[:, cols].div(m_df[base_method], axis=0)
-
-    logger.info(f'\nAvg. time rankings:\n{t_mean_rank_df}')
-
-    logger.info(f'\nRelative time results:\n{t_df}')
-    logger.info(f'\nRelative memory results:\n{m_df}')
-
-    # remove base method
-    del t_df[base_method]
-    del m_df[base_method]
-    cols = [x for x in cols if x != base_method]
-
     # specify ordering
-    order = ['BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafRefit', 'LeafInfluence']
+    order = ['TreeSim', 'BoostIn', 'LeafInfSP', 'TREX', 'SubSample', 'LOO', 'LeafRefit', 'LeafInfluence']
     t_df = t_df[order]
+    t2_df = t2_df[order]
     m_df = m_df[order]
-
-    # compute geo. mean/s.d. over datasets
-    t_mean, t_sd = gmean(t_df[order].values, axis=0), np.std(t_df[order].values, axis=0)
-    m_mean, m_sd = gmean(m_df[order].values, axis=0), np.std(m_df[order].values, axis=0)
 
     # plot
     pp_util.plot_settings(fontsize=18)
-    width = 10
-    height = pp_util.get_height(width * 0.8)
 
-    fig, ax = plt.subplots(figsize=(width, height))
+    fig, axs = plt.subplots(1, 2, figsize=(16, 6), sharey=False)
 
     # alternate above and below for labels
     labels = [c if i % 2 != 0 else f'\n{c}' for i, c in enumerate(order)]
 
-    ax.bar(labels, t_mean, color='#ff7600', label='SDS')
-    ax.set_ylabel('Slowdown relative to TreeSim')
+    ax = axs[0]
+    t_df.boxplot([c for c in t_df.columns], ax=ax)
+    ax.set_ylabel('Fit time (s)')
     ax.set_yscale('log')
-    ax.set_ylim(1, None)
-    ax.grid(True, which='major', axis='y')
-    ax.set_axisbelow(True)
-    # ax.legend(framealpha=1.0)
+    ax.set_xticklabels(labels)
+    ax.set_yticks([1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4, 1e5])
+
+    ax = axs[1]
+    t2_df.boxplot([c for c in t2_df.columns], ax=ax)
+    ax.set_ylabel('Influence time (s)')
+    ax.set_yscale('log')
+    ax.set_xticklabels(labels)
 
     plt.tight_layout()
     plt.savefig(os.path.join(out_dir, 'resources.pdf'), bbox_inches='tight')
