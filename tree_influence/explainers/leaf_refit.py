@@ -66,6 +66,7 @@ class LeafRefit(Explainer):
             X: training data.
             y: training targets.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 

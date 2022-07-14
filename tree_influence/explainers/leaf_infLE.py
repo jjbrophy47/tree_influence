@@ -70,6 +70,7 @@ class LeafInfluenceLE(Explainer):
             y: training targets.
             target_labels: 1d array of target labels.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 

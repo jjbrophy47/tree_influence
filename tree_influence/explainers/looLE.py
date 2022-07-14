@@ -49,6 +49,7 @@ class LOOLE(Explainer):
             target_labels: 1d array of new training targets.
                 Unused, for compatibility.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 

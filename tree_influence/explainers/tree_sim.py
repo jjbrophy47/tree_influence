@@ -49,6 +49,7 @@ class TreeSim(Explainer):
             X: 2d array of train examples.
             y: 1d array of train targets.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 

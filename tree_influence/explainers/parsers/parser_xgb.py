@@ -198,7 +198,7 @@ def _parse_decision_node_line(line):
     """
     substr = line[line.find('[') + 1: line.find(']')]
     feature_str, border_str = substr.split('<')
-    feature_ndx = int(feature_str[1:])
+    feature_ndx = int(feature_str[1:]) if feature_str[0] == 'f' else int(feature_str)
     border = float(border_str)
     return feature_ndx, border
 

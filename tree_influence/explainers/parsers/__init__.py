@@ -2,6 +2,7 @@
 Parse the incoming model into a standardized representation.
 """
 import numpy as np
+import pandas as pd
 
 from .parser_cb import parse_cb_ensemble
 from .parser_lgb import parse_lgb_ensemble

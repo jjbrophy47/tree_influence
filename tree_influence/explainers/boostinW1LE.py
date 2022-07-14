@@ -45,6 +45,7 @@ class BoostInW1LE(Explainer):
             target_labels: 1d array of new train targets.
                 Unused, for compatibility.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 

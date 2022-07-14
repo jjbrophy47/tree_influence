@@ -41,6 +41,7 @@ class BoostIn(Explainer):
             X: 2d array of train examples.
             y: 1d array of train targets.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
@@ -123,7 +124,6 @@ class BoostIn(Explainer):
 
         # compute gradients for each boosting iteration
         for boost_idx in range(n_boost):
-
             gradients[:, boost_idx, :] = self.loss_fn_.gradient(y, current_approx)  # shape=(X.shape[0], no. class)
 
             # update approximation

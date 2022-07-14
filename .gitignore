@@ -6,6 +6,7 @@
 **build
 **.DS_STORE
 **.egg-info
+**.vscode
 
 py39/
 output/

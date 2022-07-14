@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 
 # constants
@@ -13,10 +14,22 @@ def set_dtype_t(is_float32):
     dtype_t = np.float32 if is_float32 else np.float64
 
 
+def convert_to_np(X, y):
+    """
+    Convert Pandas dataframes to numpy arrays.
+    """
+    if type(X) == pd.DataFrame:
+        X = X.values
+    if type(y) in [pd.Series, pd.DataFrame]:
+        y = y.values.squeeze()
+    return X, y
+
+
 def check_data(X, y=None, objective='regression'):
     """
     Make sure the data is valid.
     """
+    X, y = convert_to_np(X, y)
     X = check_input_data(X)
 
     if y is not None:

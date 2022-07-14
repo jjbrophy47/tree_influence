@@ -43,6 +43,7 @@ class LeafInfluenceSPLE(Explainer):
             y: 1d array of train targets.
             target_labels: unused, for compatibility.
         """
+        X, y = util.convert_to_np(X, y)
         super().fit(model, X, y)
         X, y = util.check_data(X, y, objective=self.model_.objective)
 
