@@ -16,7 +16,7 @@ if os.name == 'posix':
     libraries.append('m')
 
 setup(name="tree-influence",
-      version="0.0.3",
+      version="0.1.1",
       description="Influence Estimation for Gradient-Boosted Decision Trees",
       author="Jonathan Brophy",
       author_email="jonathanbrophy47@gmail.com",
@@ -31,7 +31,7 @@ setup(name="tree-influence",
                    "License :: OSI Approved :: Apache Software License",
                    "Operating System :: OS Independent"],
       python_requires='>=3.9',
-      install_requires=["numpy>=1.21",
+      install_requires=["numpy>=1.22",
                         "scikit-learn>=0.24.2"
                         "torch>=1.9.0"],
       ext_modules=cythonize(ext_modules,
