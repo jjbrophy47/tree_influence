@@ -32,7 +32,7 @@ setup(name="tree-influence",
                    "Operating System :: OS Independent"],
       python_requires='>=3.9',
       install_requires=["numpy>=1.22",
-                        "scikit-learn>=0.24.2"
+                        "scikit-learn>=0.24.2",
                         "torch>=1.9.0"],
       ext_modules=cythonize(ext_modules,
                             compiler_directives={'language_level': 3},
