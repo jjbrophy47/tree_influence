@@ -78,6 +78,7 @@ def _check_predictions(original_model, model, X, y):
         p2 = model.predict(X)
 
     try:
+        print(p1, p2)
         assert np.allclose(p1, p2)
 
     except:

@@ -21,7 +21,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
-from sklearn.datasets import load_boston
 from sklearn.datasets import load_iris
 from sklearn.datasets import load_diabetes
 from sklearn.datasets import load_digits
