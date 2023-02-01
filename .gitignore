@@ -10,15 +10,22 @@
 
 py39/
 output/
-data/
 jobs/logs/
 jobs/errors/
 
-dist
+dist/
+notes/
+results/
 
-notes
-
-results
-
-old*
-temp*
+/data/**/*.npy
+/data/**/*.arff
+/data/**/*.csv
+/data/**/*.zip
+/data/**/*.data
+/data/**/*.names
+/data/**/*.txt
+/data/**/*.pdf
+/data/**/*.xls
+/data/**/*.R
+/data/**/*.ods
+/data/**/*.xlsx
