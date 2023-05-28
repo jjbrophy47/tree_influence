@@ -74,13 +74,17 @@ License
 
 Reference
 ---
-Brophy, Hammoudeh, and Lowd. [Adapting and Evaluating Influence-Estimation Methods for Gradient-Boosted Decision Trees](https://arxiv.org/abs/2205.00359). arXiv 2022.
+Brophy, Hammoudeh, and Lowd. [Adapting and Evaluating Influence-Estimation Methods for Gradient-Boosted Decision Trees](http://jmlr.org/papers/v24/22-0449.html). *Journal of Machine Learning Research* (JMLR), 2023.
 
 ```
-@article{brophy2022treeinfluence,
-  title={Adapting and Evaluating Influence-Estimation Methods for Gradient-Boosted Decision Trees},
-  author={Brophy, Jonathan, and Hammoudeh, Zayd, and Lowd, Daniel},
-  journal={arXiv preprint arXiv:2205.00359},
-  year={2022},
+@article{brophy2023treeinfluence,
+  author  = {Jonathan Brophy and Zayd Hammoudeh and Daniel Lowd},
+  title   = {Adapting and Evaluating Influence-Estimation Methods for Gradient-Boosted Decision Trees},
+  journal = {Journal of Machine Learning Research},
+  year    = {2023},
+  volume  = {24},
+  number  = {154},
+  pages   = {1--48},
+  url     = {http://jmlr.org/papers/v24/22-0449.html},
 }
 ```
