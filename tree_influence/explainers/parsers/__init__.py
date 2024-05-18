@@ -2,7 +2,6 @@
 Parse the incoming model into a standardized representation.
 """
 import numpy as np
-import pandas as pd
 
 from .parser_cb import parse_cb_ensemble
 from .parser_lgb import parse_lgb_ensemble
@@ -78,7 +77,6 @@ def _check_predictions(original_model, model, X, y):
         p2 = model.predict(X)
 
     try:
-        print(p1, p2)
         assert np.allclose(p1, p2)
 
     except:

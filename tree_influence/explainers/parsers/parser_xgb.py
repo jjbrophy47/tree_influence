@@ -19,7 +19,6 @@ def parse_xgb_ensemble(model):
 
         if model.n_classes_ == 2:  # binary
             assert model_params['objective'] == 'binary:logistic'
-            assert model_params['scale_pos_weight'] == 1
             trees = trees.reshape(-1, 1)  # shape=(no. trees, 1)
             bias = 0.0  # log space
             objective = 'binary'
@@ -37,7 +36,6 @@ def parse_xgb_ensemble(model):
 
     else:  # regression
         assert model_params['objective'] == 'reg:squarederror'
-        assert model_params['scale_pos_weight'] == 1
         trees = trees.reshape(-1, 1)  # shape=(no. trees, 1)
         bias = model.get_params()['base_score']  # 0.5
         objective = 'regression'
@@ -45,8 +43,8 @@ def parse_xgb_ensemble(model):
 
     params = {}
     params['bias'] = bias
-    params['learning_rate'] = model_params['learning_rate']
-    params['l2_leaf_reg'] = model_params['reg_lambda']
+    params['learning_rate'] = model_params['learning_rate'] or 0.3
+    params['l2_leaf_reg'] = model_params['reg_lambda'] or 1
     params['objective'] = objective
     params['tree_type'] = 'gbdt'
     params['factor'] = factor
