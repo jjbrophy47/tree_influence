@@ -16,7 +16,7 @@ if os.name == 'posix':
     libraries.append('m')
 
 setup(name="tree-influence",
-      version="0.1.5",
+      version="0.1.6",
       description="Influence Estimation for Gradient-Boosted Decision Trees",
       author="Jonathan Brophy",
       author_email="jonathanbrophy47@gmail.com",
